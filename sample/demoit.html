@@ -1,0 +1,70 @@
+<h1>Hello, World!</h1>
+
+<h2>This is a simple slide</h2>
+<h2>With just <em>text</em></h2>
+
+---
+
+<h1>Logos</h1>
+
+<div class="logos">
+    <img src="/images/kubernetes.png" />
+    <img src="/images/kubernetes.png" />
+</div>
+
+---
+
+<h1>Snapshot</h1>
+
+<img src="/images/bazel.png" />
+
+---
+
+<h1>Terminal</h1>
+
+<div class="split">
+    <web-term path="folder"></web-term>
+</div>
+
+---
+
+<h1>Split view - Shell/Browser</h1>
+
+<p>Type `python -m SimpleHTTPServer` in the shell window</p>
+
+<div class="split">
+    <web-term path="folder"></web-term>
+    <web-browser src="http://localhost:8000/"></web-browser>
+</div>
+
+<style>
+    p {
+        font-style: italic;
+        font-size: .5em;
+    }
+
+    .split {
+        height: calc(100% - 9em);
+    }
+</style>
+
+---
+
+<h1>Code samples</h1>
+
+<div class="split">
+    <source-code folder="sources"
+        files="main.go pod.yaml"
+        start-lines="10;4,7"
+        end-lines="11;4,8">
+    </source-code>
+</div>
+
+---
+
+<h1>Draw on slides</h1>
+
+<p>On the left border of the page there's a pen that can be used to draw on the slides. Type <em>&lt;ESC&gt;</em> to exit draw mode.</p>
+
+<img src="/images/bazel.png" />
+<script src="/js/draw.js"></script>
