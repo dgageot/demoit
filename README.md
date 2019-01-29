@@ -56,6 +56,8 @@ cd $HOME/go/src/github.com/dgageot/demoit
 demoit sample
 ```
 
+Then, browse to http://localhost:8888
+
 *Pro tip:* Run `demoit -dev sample` instead and enjoy live reload each time you change the content of the slides.
 
 ## Build
