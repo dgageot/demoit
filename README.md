@@ -49,6 +49,11 @@ go get -u github.com/dgageot/demoit
 *As any go application, it will download demoit's sources to your `$HOME/go/src/github.com/dgageot/demoit` folder.  
 Add `$HOME/go/bin/` directory to your $PATH in order to be able to call any go executable (including `demoit`) to your path.*
 
+### Shell font
+
+To have a correct display in the web terminal, you have to install the font `Inconsolata for Powerline` on your computer.  
+This font can be found [here](https://github.com/powerline/fonts/tree/master/Inconsolata).
+
 ## Demo
 
 ```bash
