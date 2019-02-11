@@ -24,12 +24,16 @@ func Index(content []byte) string {
         <meta charset="utf-8">
         <title>Demo</title>
         <link rel="stylesheet" href="/style.css">
+        <script>
+            const NextURL = '{{ .NextURL }}';
+            const PrevURL = '{{ .PrevURL }}';
+        </script>
       </head>
       <body>
       <div id="top">` + string(content) + `
       <div id="nav">
-        <a class="{{ if not .PrevURL }}disabled{{ end }}" onclick="window.location.href='{{ .PrevURL }}';">&lt;</a>
-        <a class="{{ if not .NextURL }}disabled{{ end }}" onclick="window.location.href='{{ .NextURL }}';">&gt;</a>
+        <a class="{{ if not .PrevURL }}disabled{{ end }}" onclick="prev()">&lt;</a>
+        <a class="{{ if not .NextURL }}disabled{{ end }}" onclick="next()">&gt;</a>
       </div>
       </div>
       <div id="progression" style="width: calc(100vw * {{ .CurrentStep }} / {{ .StepCount }})"></div>
