@@ -14,6 +14,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Move the page to the next slide
+function next() {
+    window.location.href = NextURL;
+}
+
+// Move the page to the previous slide
+function prev() {
+    window.location.href = PrevURL;
+}
+
+// Capture keydown events, and change slides accordingly
+document.addEventListener("keydown", event => {
+    switch (event.key) {
+        case "ArrowRight":
+        case " ":
+            next();
+            break;
+        case "ArrowLeft":
+            prev();
+            break;
+        default:
+            return;
+    }
+});
+
 // Maximize a "window".
 function maximize(w) {
     if (w.savedStyle != undefined) {
@@ -73,7 +98,7 @@ customElements.define('source-code', class extends HTMLElement {
     border-bottom: 2px solid #cbcbcb;
     border-radius: 0.4em 0.4em 0 0;
 }
-    
+
 .browser i {
     display: inline-block;
     height: 0.7em;
@@ -133,7 +158,7 @@ customElements.define('source-code', class extends HTMLElement {
     height: 42px;
     text-align: left;
     border-bottom: 1.5px solid rgb(236, 236, 236);
-    overflow: hidden; 
+    overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap
 }
@@ -264,7 +289,7 @@ iframe {
     border-bottom: 2px solid #cbcbcb;
     border-radius: 0.4em 0.4em 0 0;
 }
- 
+
 .browser i {
     display: inline-block;
     height: 0.7em;
@@ -454,7 +479,7 @@ iframe {
     font-size: 1.5em;
     text-decoration: none;
 }
-    
+
 .browser i {
     display: inline-block;
     height: 0.7em;
