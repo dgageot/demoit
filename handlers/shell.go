@@ -70,7 +70,8 @@ func Shell(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	http.Redirect(w, r, "http://"+domain+":9999/?"+parameters.Encode(), 303)
+	url := fmt.Sprintf("http://%s:%d/?%s", domain, *flags.ShellPort, parameters.Encode())
+	http.Redirect(w, r, url, 303)
 }
 
 func getBashHistoryCopy() (string, error) {
