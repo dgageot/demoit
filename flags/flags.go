@@ -18,3 +18,9 @@ package flags
 
 // DevMode activates dev mode with live reload
 var DevMode *bool
+
+// WebServerPort is the local port for presentation
+var WebServerPort *int
+
+// ShellPort is the local port for shell server
+var ShellPort *int

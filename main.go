@@ -31,6 +31,8 @@ import (
 
 func main() {
 	flags.DevMode = flag.Bool("dev", false, "dev mode with live reload")
+	flags.WebServerPort = flag.Int("port", 8888, "presentation port")
+	flags.ShellPort = flag.Int("shellport", 9999, "shell server port (terminal)")
 	flag.Parse()
 	if len(flag.Args()) > 0 {
 		files.Root = flag.Args()[0]
@@ -47,12 +49,12 @@ func main() {
 	r.PathPrefix("/images/").HandlerFunc(handlers.Static).Methods("GET")
 	r.HandleFunc("/style.css", handlers.Static).Methods("GET")
 
-	go startWebServer(8888, r)
+	go startWebServer(*flags.WebServerPort, r)
 	if *flags.DevMode {
 		go startFileWatch(files.Root)
 	}
 
-	startShellServer(9999, files.Root)
+	startShellServer(*flags.ShellPort, files.Root)
 }
 
 func startFileWatch(root string) {
