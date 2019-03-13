@@ -49,6 +49,11 @@ func main() {
 	r.PathPrefix("/images/").HandlerFunc(handlers.Static).Methods("GET")
 	r.HandleFunc("/style.css", handlers.Static).Methods("GET")
 
+	// Fail fast, in case we're not in a cromulent directory
+	if err := handlers.VerifyStepsFile(); err != nil {
+		log.Fatalln(err)
+	}
+
 	go startWebServer(*flags.WebServerPort, r)
 	if *flags.DevMode {
 		go startFileWatch(files.Root)

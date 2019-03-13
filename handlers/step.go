@@ -49,7 +49,7 @@ func Step(w http.ResponseWriter, r *http.Request) {
 
 	steps, err := readSteps(files.Root)
 	if err != nil {
-		http.Error(w, "Unable to read steps", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Unable to read steps: %v", err), http.StatusInternalServerError)
 		return
 	}
 
@@ -117,4 +117,10 @@ func readSteps(folder string) ([]Page, error) {
 	}
 
 	return steps, nil
+}
+
+// VerifyStepsFile returns non-nil error if it can't read demoit.html
+func VerifyStepsFile() error {
+	_, err := readSteps(files.Root)
+	return err
 }
