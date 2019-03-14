@@ -25,6 +25,7 @@ import (
 	"strings"
 
 	"github.com/dgageot/demoit/files"
+	"github.com/dgageot/demoit/flags"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
