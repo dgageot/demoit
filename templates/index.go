@@ -32,8 +32,8 @@ func Index(content []byte) string {
       <body>
       <div id="top">` + string(content) + `
       <div id="nav">
-        <a class="{{ if not .PrevURL }}disabled{{ end }}" onclick="prev()">&lt;</a>
-        <a class="{{ if not .NextURL }}disabled{{ end }}" onclick="next()">&gt;</a>
+        <a class="{{ if not .PrevURL }}disabled{{ end }}" onclick="window.location.href='{{ .PrevURL }}';">&lt;</a>
+        <a class="{{ if not .NextURL }}disabled{{ end }}" onclick="window.location.href='{{ .NextURL }}';">&gt;</a>
       </div>
       </div>
       <div id="progression" style="width: calc(100vw * {{ .CurrentStep }} / {{ .StepCount }})"></div>

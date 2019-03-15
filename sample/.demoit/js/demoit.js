@@ -14,25 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Move the page to the next slide
-function next() {
-    window.location.href = NextURL;
-}
-
-// Move the page to the previous slide
-function prev() {
-    window.location.href = PrevURL;
-}
-
 // Capture keydown events, and change slides accordingly
 document.addEventListener("keydown", event => {
     switch (event.key) {
         case "ArrowRight":
         case " ":
-            next();
+            window.location.href = NextURL;
             break;
         case "ArrowLeft":
-            prev();
+            window.location.href = PrevURL;
             break;
         default:
             return;
