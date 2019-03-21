@@ -34,13 +34,10 @@ func Watch(root string) error {
 
 	w := watcher.New()
 	w.FilterOps(watcher.Create, watcher.Write, watcher.Remove, watcher.Rename, watcher.Move)
+	if err := w.Ignore(filepath.Join(root, ".git")); err != nil {
+		return err
+	}
 	if err := w.AddRecursive(root); err != nil {
-		return err
-	}
-	if err := w.AddRecursive(filepath.Join(root, ".demoit")); err != nil {
-		return err
-	}
-	if err := w.RemoveRecursive(filepath.Join(root, ".git")); err != nil {
 		return err
 	}
 
