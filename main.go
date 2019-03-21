@@ -18,7 +18,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -32,7 +31,9 @@ import (
 func main() {
 	flags.DevMode = flag.Bool("dev", false, "dev mode with live reload")
 	flags.WebServerPort = flag.Int("port", 8888, "presentation port")
+	flags.WebServerHost = flag.String("host", "localhost", "host to bind the presentation server")
 	flags.ShellPort = flag.Int("shellport", 9999, "shell server port (terminal)")
+	flags.ShellHost = flag.String("shellhost", "localhost", "host to bind the the shell server (terminal)")
 	flag.Parse()
 	if len(flag.Args()) > 0 {
 		files.Root = flag.Args()[0]
@@ -54,26 +55,33 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	go startWebServer(*flags.WebServerPort, r)
+	go startWebServer(r)
 	if *flags.DevMode {
 		go startFileWatch(files.Root)
 	}
 
-	startShellServer(*flags.ShellPort, files.Root)
+	startShellServer(files.Root)
 }
 
 func startFileWatch(root string) {
 	log.Fatal(files.Watch(root))
 }
 
-func startWebServer(port int, r http.Handler) {
+func startWebServer(r http.Handler) {
+	addr := flags.WebServerAddress()
+	port := *flags.WebServerPort
+
 	log.Printf("Welcome to DemoIt. Please, open http://localhost:%d", port)
 	if !*flags.DevMode {
 		log.Printf("\"Dev Mode\" to live reload your slides can be enabled with '--dev'")
 	}
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), r))
+
+	log.Fatal(http.ListenAndServe(addr, r))
 }
 
-func startShellServer(port int, root string) {
-	log.Fatal(shell.ListenAndServe(root, port, "sh", "-c"))
+func startShellServer(root string) {
+	port := *flags.ShellPort
+	host := *flags.ShellHost
+
+	log.Fatal(shell.ListenAndServe(root, port, host, "sh", "-c"))
 }

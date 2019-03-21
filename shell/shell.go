@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	"github.com/yudai/gotty/backend/localcommand"
@@ -28,9 +29,10 @@ import (
 )
 
 // ListenAndServe starts a server for a browser based shell.
-func ListenAndServe(workingDir string, port int, command string, args ...string) error {
+func ListenAndServe(workingDir string, port int, host string, command string, args ...string) error {
 	appOptions := &server.Options{
-		Port:            fmt.Sprintf("%d", port),
+		Port:            strconv.Itoa(port),
+		Address:         host,
 		PermitWrite:     true,
 		Term:            "hterm",
 		PermitArguments: true,
