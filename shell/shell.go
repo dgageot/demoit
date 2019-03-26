@@ -28,6 +28,10 @@ import (
 	"github.com/yudai/gotty/server"
 )
 
+func strPtr(v string) *string {
+	return &v
+}
+
 // ListenAndServe starts a server for a browser based shell.
 func ListenAndServe(workingDir string, port int, host string, command string, args ...string) error {
 	appOptions := &server.Options{
@@ -42,6 +46,24 @@ func ListenAndServe(workingDir string, port int, host string, command string, ar
 			BackgroundColor: "rgb(11,40,50)",
 			// ForegroundColor: "rgb(131,148,150)",
 			ForegroundColor: "rgb(255, 255, 255)",
+			ColorPaletteOverrides: []*string{
+				strPtr("#073642"),
+				strPtr("#dc322f"),
+				strPtr("#859900"),
+				strPtr("#b58900"),
+				strPtr("#538bd0"),
+				strPtr("#d33682"),
+				strPtr("#2aa198"),
+				strPtr("#eee8d5"),
+				strPtr("#002b36"),
+				strPtr("#cb4b16"),
+				strPtr("#586e75"),
+				strPtr("#657b83"),
+				strPtr("#839496"),
+				strPtr("#6c71c4"),
+				strPtr("#93a1a1"),
+				strPtr("#fdf6e3"),
+			},
 		},
 	}
 
