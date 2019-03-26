@@ -12,7 +12,7 @@ require (
 	github.com/kr/pty v1.1.2 // indirect
 	github.com/mattn/go-isatty v0.0.7 // indirect
 	github.com/pkg/errors v0.8.1
-	github.com/radovskyb/watcher v1.0.2
+	github.com/radovskyb/watcher v1.0.6
 	github.com/smartystreets/goconvey v0.0.0-20190306220146-200a235640ff // indirect
 	github.com/yudai/gotty v2.0.0-alpha.3+incompatible
 	golang.org/x/sys v0.0.0-20190322080309-f49334f85ddc // indirect
