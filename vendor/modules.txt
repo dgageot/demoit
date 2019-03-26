@@ -46,7 +46,7 @@ github.com/gorilla/websocket
 github.com/jaschaephraim/lrserver
 # github.com/kr/pty v1.1.2
 github.com/kr/pty
-# github.com/pkg/errors v0.8.0
+# github.com/pkg/errors v0.8.1
 github.com/pkg/errors
 # github.com/radovskyb/watcher v1.0.2
 github.com/radovskyb/watcher
