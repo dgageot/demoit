@@ -72,7 +72,7 @@ type nonDefaultYAMLLexer struct {
 }
 
 func (n *nonDefaultYAMLLexer) Tokenise(options *chroma.TokeniseOptions, text string) (chroma.Iterator, error) {
-	var updated []*chroma.Token
+	var updated []chroma.Token
 
 	iterator, err := n.Lexer.Tokenise(nil, text)
 	if err != nil {
@@ -94,11 +94,11 @@ func (n *nonDefaultYAMLLexer) Tokenise(options *chroma.TokeniseOptions, text str
 
 		k := value[0 : position+1]
 		v := value[position+1:]
-		updated = append(updated, &chroma.Token{
+		updated = append(updated, chroma.Token{
 			Type:  chroma.Text,
 			Value: k,
 		})
-		updated = append(updated, &chroma.Token{
+		updated = append(updated, chroma.Token{
 			Type:  chroma.StringSymbol,
 			Value: v,
 		})

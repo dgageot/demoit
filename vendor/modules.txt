@@ -1,6 +1,6 @@
 # github.com/NYTimes/gziphandler v1.1.1
 github.com/NYTimes/gziphandler
-# github.com/alecthomas/chroma v0.6.3 => github.com/dgageot/chroma v0.4.1-0.20180907095738-1a068d65da5e
+# github.com/alecthomas/chroma v0.6.3 => github.com/dgageot/chroma v0.4.1-0.20190326114921-11eec8e9afad
 github.com/alecthomas/chroma
 github.com/alecthomas/chroma/formatters/html
 github.com/alecthomas/chroma/lexers
