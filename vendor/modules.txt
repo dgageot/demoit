@@ -1,0 +1,60 @@
+# github.com/NYTimes/gziphandler v1.1.1
+github.com/NYTimes/gziphandler
+# github.com/alecthomas/chroma v0.6.3 => github.com/dgageot/chroma v0.4.1-0.20180907095738-1a068d65da5e
+github.com/alecthomas/chroma
+github.com/alecthomas/chroma/formatters/html
+github.com/alecthomas/chroma/lexers
+github.com/alecthomas/chroma/styles
+github.com/alecthomas/chroma/lexers/a
+github.com/alecthomas/chroma/lexers/b
+github.com/alecthomas/chroma/lexers/c
+github.com/alecthomas/chroma/lexers/circular
+github.com/alecthomas/chroma/lexers/d
+github.com/alecthomas/chroma/lexers/e
+github.com/alecthomas/chroma/lexers/f
+github.com/alecthomas/chroma/lexers/g
+github.com/alecthomas/chroma/lexers/h
+github.com/alecthomas/chroma/lexers/i
+github.com/alecthomas/chroma/lexers/internal
+github.com/alecthomas/chroma/lexers/j
+github.com/alecthomas/chroma/lexers/k
+github.com/alecthomas/chroma/lexers/l
+github.com/alecthomas/chroma/lexers/m
+github.com/alecthomas/chroma/lexers/n
+github.com/alecthomas/chroma/lexers/o
+github.com/alecthomas/chroma/lexers/p
+github.com/alecthomas/chroma/lexers/q
+github.com/alecthomas/chroma/lexers/r
+github.com/alecthomas/chroma/lexers/s
+github.com/alecthomas/chroma/lexers/t
+github.com/alecthomas/chroma/lexers/v
+github.com/alecthomas/chroma/lexers/w
+github.com/alecthomas/chroma/lexers/x
+github.com/alecthomas/chroma/lexers/y
+# github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964
+github.com/danwakefield/fnmatch
+# github.com/dlclark/regexp2 v1.1.6
+github.com/dlclark/regexp2
+github.com/dlclark/regexp2/syntax
+# github.com/elazarl/go-bindata-assetfs v1.0.0
+github.com/elazarl/go-bindata-assetfs
+# github.com/gorilla/context v1.1.1
+github.com/gorilla/context
+# github.com/gorilla/mux v1.6.2
+github.com/gorilla/mux
+# github.com/gorilla/websocket v1.4.0
+github.com/gorilla/websocket
+# github.com/jaschaephraim/lrserver v0.0.0-20171129202958-50d19f603f71
+github.com/jaschaephraim/lrserver
+# github.com/kr/pty v1.1.2
+github.com/kr/pty
+# github.com/pkg/errors v0.8.0
+github.com/pkg/errors
+# github.com/radovskyb/watcher v1.0.2
+github.com/radovskyb/watcher
+# github.com/yudai/gotty v2.0.0-alpha.3+incompatible
+github.com/yudai/gotty/backend/localcommand
+github.com/yudai/gotty/server
+github.com/yudai/gotty/pkg/homedir
+github.com/yudai/gotty/pkg/randomstring
+github.com/yudai/gotty/webtty
