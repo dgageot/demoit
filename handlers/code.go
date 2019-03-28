@@ -72,36 +72,31 @@ type nonDefaultYAMLLexer struct {
 }
 
 func (n *nonDefaultYAMLLexer) Tokenise(options *chroma.TokeniseOptions, text string) (chroma.Iterator, error) {
-	var updated []chroma.Token
-
 	iterator, err := n.Lexer.Tokenise(nil, text)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, token := range iterator.Tokens() {
-		if token.Type != chroma.Text {
-			updated = append(updated, token)
-			continue
-		}
+	updated := iterator.Tokens()
 
-		value := token.Value
-		position := strings.Index(value, ":")
-		if position == -1 {
-			updated = append(updated, token)
-			continue
-		}
+	for i, token := range updated {
+		if token.Type == chroma.Text {
+			if token.Value == "-" {
+				continue
+			}
 
-		k := value[0 : position+1]
-		v := value[position+1:]
-		updated = append(updated, chroma.Token{
-			Type:  chroma.Text,
-			Value: k,
-		})
-		updated = append(updated, chroma.Token{
-			Type:  chroma.StringSymbol,
-			Value: v,
-		})
+			if i+1 >= len(updated) {
+				continue
+			}
+
+			next := updated[i+1]
+			if next.Type == chroma.Punctuation && next.Value == ":" {
+				continue
+			}
+
+			token.Type = chroma.LiteralStringSingle
+			updated[i] = token
+		}
 	}
 
 	return chroma.Literator(updated...), nil
@@ -112,7 +107,7 @@ func lexer(file string) chroma.Lexer {
 	if lexer != nil {
 		if strings.HasSuffix(file, ".yaml") || strings.HasSuffix(file, ".yml") {
 			fmt.Println("Using non default YAML Lexer")
-			return &nonDefaultYAMLLexer{lexers.Fallback}
+			return &nonDefaultYAMLLexer{lexers.Get(".yaml")}
 		}
 		return lexer
 	}
