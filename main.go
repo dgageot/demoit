@@ -41,6 +41,7 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/{id:[0-9]*}", handlers.Step).Methods("GET")
+	r.HandleFunc("/last", handlers.LastStep).Methods("GET")
 	r.PathPrefix("/sourceCode/").HandlerFunc(handlers.Code).Methods("GET")
 	r.HandleFunc("/shell/", handlers.Shell).Methods("GET")
 	r.HandleFunc("/shell/{folder}", handlers.Shell).Methods("GET")
