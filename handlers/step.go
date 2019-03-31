@@ -62,6 +62,11 @@ func Step(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	if id >= len(steps) {
+		http.NotFound(w, r)
+		return
+	}
+
 	step := steps[id]
 	pageTemplate, err := template.New("page").Parse(templates.Index(step.HTML))
 	if err != nil {
