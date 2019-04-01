@@ -58,7 +58,6 @@ const gridTmpl = `
 <!DOCTYPE html>
 <html>
 	<head>
-		<link rel="stylesheet" href="/style.css">
         <style>
 			.cell {
 				display: inline-block;
@@ -92,7 +91,7 @@ const gridTmpl = `
 
 {{range $i, $step := .}}
 	<div class="cell">
-		<a href="/{{$i}}">Step {{$i}}</a>
+		<h2><a href="/{{$i}}">Step {{$i}}</a></h2>
 		<div class="thumb">
 			<iframe src="/{{$i}}"></iframe>
 		</div>
