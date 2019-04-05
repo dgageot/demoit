@@ -48,22 +48,22 @@ func ListenAndServe(workingDir string, port int, host string, command string, ar
 			// ForegroundColor: "rgb(131,148,150)",
 			ForegroundColor: "rgb(255, 255, 255)",
 			ColorPaletteOverrides: []*string{
-				strPtr("#073642"),
-				strPtr("#dc322f"),
-				strPtr("#859900"),
-				strPtr("#b58900"),
-				strPtr("#538bd0"),
-				strPtr("#d33682"),
-				strPtr("#2aa198"),
-				strPtr("#eee8d5"),
-				strPtr("#002b36"),
-				strPtr("#cb4b16"),
-				strPtr("#586e75"),
-				strPtr("#657b83"),
-				strPtr("#839496"),
-				strPtr("#6c71c4"),
-				strPtr("#93a1a1"),
-				strPtr("#fdf6e3"),
+				strPtr("#073642"), // 30 Black
+				strPtr("#dc322f"), // 31 Red
+				strPtr("#859900"), // 32 Green
+				strPtr("#b58900"), // 33 Yellow
+				strPtr("#268bd2"), // 34 Blue
+				strPtr("#d33682"), // 35 Magenta
+				strPtr("#2aa198"), // 36 Cyan
+				strPtr("#eee8d5"), // 37 White
+				strPtr("#002b36"), // Bright Black
+				strPtr("#cb4b16"), // Bright Red
+				strPtr("#586e75"), // Bright Green
+				strPtr("#657b83"), // Bright Yellow
+				strPtr("#839496"), // Bright Blue
+				strPtr("#6c71c4"), // Bright Magenta
+				strPtr("#93a1a1"), // Bright Cyan
+				strPtr("#fdf6e3"), // Bright White
 			},
 		},
 	}
