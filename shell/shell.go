@@ -19,6 +19,7 @@ package shell
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"strconv"
@@ -88,6 +89,7 @@ func ListenAndServe(workingDir string, port int, host string, command string, ar
 
 	err = waitSignals(errs, cancel, gCancel)
 	if err != nil && err != context.Canceled {
+		log.Println(err)
 		os.Exit(8)
 	}
 
