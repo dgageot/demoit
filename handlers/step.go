@@ -56,7 +56,7 @@ func Step(w http.ResponseWriter, r *http.Request) {
 	id := 0
 	if vars["id"] != "" {
 		id, err = strconv.Atoi(vars["id"])
-		if err != nil {
+		if err != nil || id >= len(steps) {
 			http.NotFound(w, r)
 			return
 		}
