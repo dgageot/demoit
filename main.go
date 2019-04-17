@@ -72,7 +72,7 @@ func startFileWatch(root string) {
 func startWebServer(r http.Handler) {
 	addr := flags.WebServerAddress()
 
-	log.Printf("Welcome to DemoIt. Please, open %s", addr)
+	log.Printf("Welcome to DemoIt. Please, open %s", "http://"+addr)
 	if !*flags.DevMode {
 		log.Printf("\"Dev Mode\" to live reload your slides can be enabled with '--dev'")
 	}
