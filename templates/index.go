@@ -38,7 +38,7 @@ func Index(content []byte) string {
       </div>
       <div id="progression" style="width: calc(100vw * {{ .CurrentStep }} / {{ .StepCount }})"></div>
       </body>
-      <script src="/js/demoit.js"></script>
+      <script type="module" src="/js/demoit.js"></script>
       {{ if .DevMode }}<script src="http://localhost:35729/livereload.js"></script>{{ end }}
     </html>`
 }
