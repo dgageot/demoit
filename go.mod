@@ -4,6 +4,7 @@ require (
 	github.com/NYTimes/gziphandler v1.1.1 // indirect
 	github.com/alecthomas/chroma v0.6.3
 	github.com/alecthomas/repr v0.0.0-20181024024818-d37bc2a10ba1 // indirect
+	github.com/boombuler/barcode v1.0.0
 	github.com/elazarl/go-bindata-assetfs v1.0.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.7 // indirect
 	github.com/gorilla/mux v1.7.0
