@@ -41,7 +41,6 @@ class BaseLitElement extends LitElement {
     }
 }
 
-// slot {overflow-y: scroll}; browser
 class FakeWindow extends BaseLitElement {
     static get properties() {
         return {
@@ -66,7 +65,7 @@ class FakeWindow extends BaseLitElement {
             position: relative;
             overflow: hidden;
             box-shadow: 0 0.25em 0.9em -0.1em rgba(0,0,0,.2);
-            width: calc(100% - 10px);
+            width: 100%;
             height: calc(100% - 40px);
             background-color: white;
         }
@@ -109,7 +108,6 @@ class FakeWindow extends BaseLitElement {
         i:hover {
             filter: brightness(110%);
         }
-
 
         #red {background-color: rgb(255, 90, 82);}
         #yellow {background-color: rgb(230, 192, 41);}
@@ -195,7 +193,7 @@ class SourceCode extends BaseLitElement {
             overflow-y: scroll;
             overflow-x: hidden;
         }
-        
+
         .chroma {
             text-align: left;
             color: #212121;
