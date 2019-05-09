@@ -357,13 +357,14 @@ class WebBrowser extends BaseLitElement {
     reset() {
         console.log('reset');
         this.previousStatus = 200;
-        this.refreshUntilSuccess();
+        this.refreshUntilSuccess(true);
     }
 
-    async refreshUntilSuccess() {
+    async refreshUntilSuccess(force) {
         const response = await fetch(`/ping?url=${this.src}`, { method: 'HEAD' });
+
         const status = response.status;
-        if (status !== this.previousStatus) {
+        if ((status !== this.previousStatus) || force) {
             this.previousStatus = status;
             this.$('#site').src = this.$('#site').src;
         }
@@ -372,7 +373,7 @@ class WebBrowser extends BaseLitElement {
             return;
         }
 
-        window.setTimeout(() => this.refreshUntilSuccess(), 1000);
+        window.setTimeout(() => this.refreshUntilSuccess(false), 1000);
     }
 }
 
