@@ -119,13 +119,13 @@ class FakeWindow extends BaseLitElement {
 
         .maximized {
             position: absolute !important;
-            top: 20px;
-            left: 20px;
-            width: calc(100% - 40px);
-            height: calc(100% - 40px);
-            margin: 0;
-            box-sizing: border-box;
-            z-index: 20;
+            top: 1vw !important;
+            left: 1vw !important;
+            width: calc(100% - 2vw) !important;
+            height: calc(100% - 2vw) !important;
+            margin: 0 !important;
+            box-sizing: border-box !important;
+            z-index: 20 !important;
         }`;
     }
 
