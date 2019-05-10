@@ -73,8 +73,12 @@ a, a:visited {
 }
 
 .split {
-    display: flex;
-    height: calc(100% - 8em);
+    display: grid;
+    grid-template-columns: calc(50% - .5vw) calc(50% - .5vw);
+    grid-template-rows: 100%;
+    column-gap: 1vw;
+    height: calc(100% - 11vw);
+    padding: 0 2vw;
 }
 
 web-term, web-browser, source-code {
