@@ -81,20 +81,8 @@ a, a:visited {
     padding: 0 2vw;
 }
 
-web-term, web-browser, source-code {
-    flex: 1;
-}
-
-web-term:first-child, web-browser:first-child, source-code:first-child {
-    margin-right: 5px;
-}
-
-web-term:last-child, web-browser:last-child, source-code:last-child {
-    margin-left: 5px;
-}
-
-web-term:only-child, web-browser:only-child, source-code:only-child {
-    margin: 0;
+.split *:only-child {
+    grid-column: span 2;
 }
 
 #nav {
