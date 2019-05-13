@@ -17,6 +17,9 @@ limitations under the License.
 package files
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -28,9 +31,9 @@ var Root = "."
 
 // Read reads a file in .demoit folder.
 func Read(path ...string) ([]byte, error) {
-	content, err := ioutil.ReadFile(fullpath(path))
+	content, err := ioutil.ReadFile(fullpath(path...))
 	if err != nil {
-		return nil, errors.Wrap(err, "Unable to read "+fullpath(path))
+		return nil, errors.Wrap(err, "Unable to read "+fullpath(path...))
 	}
 
 	return content, nil
@@ -38,10 +41,26 @@ func Read(path ...string) ([]byte, error) {
 
 // Exists tests if a file exists.
 func Exists(path ...string) bool {
-	_, err := os.Stat(fullpath(path))
+	_, err := os.Stat(fullpath(path...))
 	return err == nil
 }
 
-func fullpath(path []string) string {
+// Sha256 returns the sha256 digest of a file.
+func Sha256(path string) (string, error) {
+	file, err := os.Open(fullpath(".demoit", path))
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	hash := sha256.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(hash.Sum(nil)), nil
+}
+
+func fullpath(path ...string) string {
 	return filepath.Join(Root, filepath.Join(path...))
 }

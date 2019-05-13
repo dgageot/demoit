@@ -16,6 +16,8 @@ limitations under the License.
 
 package templates
 
+import "github.com/dgageot/demoit/files"
+
 // Index is the template for the index page.
 func Index(content []byte) string {
 	return `<!doctype html>
@@ -23,7 +25,7 @@ func Index(content []byte) string {
       <head>
         <meta charset="utf-8">
         <title>Demo</title>
-        <link rel="stylesheet" href="/style.css">
+        <link rel="stylesheet" href="/style.css?hash=` + hash("style.css") + `">
         <script>
             const NextURL = '{{ .NextURL }}';
             const PrevURL = '{{ .PrevURL }}';
@@ -38,7 +40,13 @@ func Index(content []byte) string {
       </div>
       <div id="progression" style="width: calc(100vw * {{ .CurrentStep }} / {{ .StepCount }})"></div>
       </body>
-      <script src="/js/demoit.js"></script>
+      <script src="/js/demoit.js?hash=` + hash("js/demoit.js") + `"></script>
       {{ if .DevMode }}<script src="http://localhost:35729/livereload.js"></script>{{ end }}
     </html>`
+}
+
+// Ignore errors and return empty string if an error occurs.
+func hash(path string) string {
+	h, _ := files.Sha256(path)
+	return h[:10]
 }
