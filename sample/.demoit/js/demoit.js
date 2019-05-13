@@ -340,6 +340,8 @@ class WebBrowser extends BaseLitElement {
     }
 
     async refreshUntilSuccess(url, force) {
+        window.clearTimeout(this.bgTask);
+
         const response = await fetch(`/ping?url=${url}`, { method: 'HEAD' });
 
         const status = response.status;
@@ -352,7 +354,7 @@ class WebBrowser extends BaseLitElement {
             return;
         }
 
-        window.setTimeout(() => this.refreshUntilSuccess(url, false), 1000);
+        this.bgTask = window.setTimeout(() => this.refreshUntilSuccess(url, false), 1000);
     }
 }
 
