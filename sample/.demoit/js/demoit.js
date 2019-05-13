@@ -14,21 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Capture keydown events, and change slides accordingly
-document.addEventListener('keydown', event => {
-    switch (event.key) {
-        case 'ArrowRight':
-        case ' ':
-            window.location.href = NextURL;
-            break;
-        case 'ArrowLeft':
-            window.location.href = PrevURL;
-            break;
-        default:
-            return;
-    }
-});
-
 class BaseLitElement extends HTMLElement {
     constructor() {
         super();
@@ -447,3 +432,69 @@ class SplitView extends BaseLitElement {
 }
 
 customElements.define('split-view', SplitView);
+
+class NavArrows extends BaseLitElement {
+    constructor() {
+        super();
+        this.previous = this.getAttribute('previous');
+        this.next = this.getAttribute('next');
+    }
+
+    get styles() {
+        return `
+        :host {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 85px;
+            height: 40px;
+            z-index: 30;
+        }
+
+        a {
+            display: inline-block;
+            visibility: hidden;
+            background-color: black;
+            opacity: .4;
+            width: 40px;
+            text-align: center;
+            font-weight: bold;
+            line-height: 40px;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+        }
+
+        :host(:hover) a:not(.disabled) {
+            visibility: visible;
+        }`;
+    }
+
+    render() {
+        return `
+        <a class="${this.previous ? '' : 'disabled'}" onclick="window.location.href='${this.previous}';">&lt;</a>
+        <a class="${this.next ? '' : 'disabled'}" onclick="window.location.href='${this.next}';">&gt;</a>`;
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+
+        // Capture keydown events, and change slides accordingly
+        document.addEventListener('keydown', event => {
+            switch (event.key) {
+                case 'ArrowRight':
+                case ' ':
+                    window.location.href = this.next;
+                    break;
+                case 'ArrowLeft':
+                    window.location.href = this.previous;
+                    break;
+                default:
+                    return;
+            }
+        });
+    }
+}
+
+customElements.define('nav-arrows', NavArrows);
