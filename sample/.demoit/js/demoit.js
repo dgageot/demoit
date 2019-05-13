@@ -35,8 +35,12 @@ class BaseLitElement extends HTMLElement {
         this.attachShadow({ mode: 'open' });
     }
 
+    render() {
+        return ``;
+    }
+
     connectedCallback() {
-        this.shadowRoot.innerHTML = `<style>${this.constructor.styles}</style>${this.render()}`;
+        this.shadowRoot.innerHTML = `<style>${this.styles}</style>${this.render()}`;
     }
 
     $(selector) {
@@ -54,7 +58,7 @@ class FakeWindow extends BaseLitElement {
         this.title = this.getAttribute('title') || '';
     }
 
-    static get styles() {
+    get styles() {
         return `
         #main {
             font-size: 18px;
@@ -160,7 +164,7 @@ class SourceCode extends BaseLitElement {
         this.endLines = this.getAttribute('end-lines').split(';');
     }
 
-    static get styles() {
+    get styles() {
         return `
         #container {
             height: 100%;
@@ -267,7 +271,7 @@ class WebBrowser extends BaseLitElement {
         this.src = this.getAttribute('src');
     }
 
-    static get styles() {
+    get styles() {
         return `
         input {
             font-size: 0.75em;
@@ -366,7 +370,7 @@ class WebTerm extends BaseLitElement {
         this.path = this.getAttribute('path');
     }
 
-    static get styles() {
+    get styles() {
         return `
         :host {
             display: flex;
@@ -399,10 +403,6 @@ class WebTerm extends BaseLitElement {
         }`
     }
 
-    render() {
-        return ``;
-    }
-
     connectedCallback() {
         super.connectedCallback();
         this.addTab();
@@ -422,3 +422,26 @@ class WebTerm extends BaseLitElement {
 }
 
 customElements.define('web-term', WebTerm);
+
+class SplitView extends BaseLitElement {
+    constructor() {
+        super();
+        this.cols = this.getAttribute('columns') || 2;
+    }
+
+    get styles() {
+        return `
+        :host {
+            display: grid;
+            grid-template-columns: repeat(${this.cols}, calc((100% - (${this.cols} - 1) * 1vw) / ${this.cols}));
+            grid-template-rows: 100%;
+            column-gap: 1vw;
+        }`;
+    }
+
+    render() {
+        return `<slot></slot>`;
+    }
+}
+
+customElements.define('split-view', SplitView);

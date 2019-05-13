@@ -87,16 +87,12 @@ a, a:visited {
 	text-decoration: none;
 }
 
-.split {
-    display: grid;
-    grid-template-columns: calc(50% - .5vw) calc(50% - .5vw);
-    grid-template-rows: 100%;
-    column-gap: 1vw;
+split-view {
     height: calc(100% - 13vw);
     padding: 0 2vw;
 }
 
-.split *:only-child {
+split-view *:only-child {
     grid-column: span 2;
 }
 
