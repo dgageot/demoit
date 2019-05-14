@@ -277,7 +277,7 @@ class WebBrowser extends BaseHTMLElement {
         
         iframe {
             width: 100%;
-            height: 100%;
+            height: calc(100% + 1px);
             border: none;
         }`;
     }
@@ -358,7 +358,7 @@ class WebTerm extends BaseHTMLElement {
 
         iframe {
             width: calc(100% + 1px);
-            height: 100%;
+            height: calc(100% + 1px);
             border: none;
             background-color: rgb(10,39,50);
         }
