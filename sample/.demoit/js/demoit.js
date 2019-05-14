@@ -139,7 +139,7 @@ class SourceCode extends BaseHTMLElement {
     static get styles() {
         return `
         #container {
-            height: 100%;
+            height: calc(100% - 42px);
             overflow-y: scroll;
             overflow-x: hidden;
         }
@@ -147,7 +147,9 @@ class SourceCode extends BaseHTMLElement {
         .chroma {
             text-align: left;
             color: #212121;
-            padding: 2px 0;
+            padding: 0;
+            padding-bottom: 10px;
+            margin: 0;
             font-size: var(--source-code-font-size, 16px);
             font-family: 'Roboto Mono', monospace;
         }
@@ -167,6 +169,7 @@ class SourceCode extends BaseHTMLElement {
             text-overflow: ellipsis;
             white-space: nowrap;
             text-align: left;
+            height: 42px;
         }
         
         #tabs a {
