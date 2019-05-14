@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-class BaseLitElement extends HTMLElement {
+class BaseHTMLElement extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
@@ -25,7 +25,7 @@ class BaseLitElement extends HTMLElement {
     }
 
     connectedCallback() {
-        this.shadowRoot.innerHTML = `<style>${this.styles}</style>${this.render()}`;
+        this.shadowRoot.innerHTML = `<style>${this.constructor.styles}</style>${this.render()}`;
     }
 
     $(selector) {
@@ -37,13 +37,13 @@ class BaseLitElement extends HTMLElement {
     }
 }
 
-class FakeWindow extends BaseLitElement {
+class FakeWindow extends BaseHTMLElement {
     constructor() {
         super();
         this.title = this.getAttribute('title') || '';
     }
 
-    get styles() {
+    static get styles() {
         return `
         #main {
             font-size: 18px;
@@ -140,7 +140,7 @@ customElements.define('fake-window', FakeWindow);
 
 // External css variables:
 // --color-selection
-class SourceCode extends BaseLitElement {
+class SourceCode extends BaseHTMLElement {
     constructor() {
         super();
         this.folder = this.getAttribute('folder');
@@ -149,7 +149,7 @@ class SourceCode extends BaseLitElement {
         this.endLines = this.getAttribute('end-lines').split(';');
     }
 
-    get styles() {
+    static get styles() {
         return `
         #container {
             height: 100%;
@@ -251,13 +251,13 @@ class SourceCode extends BaseLitElement {
 
 customElements.define('source-code', SourceCode);
 
-class WebBrowser extends BaseLitElement {
+class WebBrowser extends BaseHTMLElement {
     constructor() {
         super();
         this.src = this.getAttribute('src');
     }
 
-    get styles() {
+    static get styles() {
         return `
         input {
             font-size: 0.75em;
@@ -350,13 +350,13 @@ class WebBrowser extends BaseLitElement {
 
 customElements.define('web-browser', WebBrowser);
 
-class WebTerm extends BaseLitElement {
+class WebTerm extends BaseHTMLElement {
     constructor() {
         super();
         this.path = this.getAttribute('path');
     }
 
-    get styles() {
+    static get styles() {
         return `
         :host {
             display: flex;
@@ -398,7 +398,7 @@ class WebTerm extends BaseLitElement {
     addTab() {
         const div = document.createElement('div');
         div.innerHTML = `
-        <fake-window title="bash ~ ${this.path}" add-tab="true">
+        <fake-window title="bash ~ ${this.path}">
             <a slot="bar" class="newtab" href="#">+</a>
             <iframe scrolling="no" src="/shell/${this.path}"></iframe>
         </fake-window>`;
@@ -410,37 +410,42 @@ class WebTerm extends BaseLitElement {
 
 customElements.define('web-term', WebTerm);
 
-class SplitView extends BaseLitElement {
+class SplitView extends BaseHTMLElement {
     constructor() {
         super();
         this.cols = this.getAttribute('columns') || 2;
     }
 
-    get styles() {
+    static get styles() {
         return `
         :host {
             display: grid;
-            grid-template-columns: repeat(${this.cols}, calc((100% - (${this.cols} - 1) * 1vw) / ${this.cols}));
             grid-template-rows: 100%;
             column-gap: 1vw;
         }`;
     }
 
     render() {
-        return `<slot></slot>`;
+        return `
+        <style>
+        :host {
+            grid-template-columns: repeat(${this.cols}, calc((100% - (${this.cols} - 1) * 1vw) / ${this.cols}));
+        }
+        </style>
+        <slot></slot>`;
     }
 }
 
 customElements.define('split-view', SplitView);
 
-class NavArrows extends BaseLitElement {
+class NavArrows extends BaseHTMLElement {
     constructor() {
         super();
         this.previous = this.getAttribute('previous');
         this.next = this.getAttribute('next');
     }
 
-    get styles() {
+    static get styles() {
         return `
         :host {
             position: absolute;
