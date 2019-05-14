@@ -21,7 +21,7 @@ class BaseHTMLElement extends HTMLElement {
     }
 
     render() {
-        return ``;
+        return '';
     }
 
     connectedCallback() {
@@ -38,11 +38,6 @@ class BaseHTMLElement extends HTMLElement {
 }
 
 class FakeWindow extends BaseHTMLElement {
-    constructor() {
-        super();
-        this.title = this.getAttribute('title') || '';
-    }
-
     static get styles() {
         return `
         #main {
@@ -83,7 +78,7 @@ class FakeWindow extends BaseHTMLElement {
             text-align: left;
             overflow: hidden;
             white-space: nowrap;
-            font-family: system-ui;
+            font-family: sans-serif;
         }
 
         i {
@@ -119,6 +114,8 @@ class FakeWindow extends BaseHTMLElement {
     }
 
     render() {
+        this.title = this.getAttribute('title') || '';
+
         return `
         <div id="main">
             <div id="bar">
@@ -138,17 +135,7 @@ class FakeWindow extends BaseHTMLElement {
 
 customElements.define('fake-window', FakeWindow);
 
-// External css variables:
-// --color-selection
 class SourceCode extends BaseHTMLElement {
-    constructor() {
-        super();
-        this.folder = this.getAttribute('folder');
-        this.files = this.getAttribute('files').split(' ').filter(n => n.trim() !== '');
-        this.startLines = this.getAttribute('start-lines').split(';');
-        this.endLines = this.getAttribute('end-lines').split(';');
-    }
-
     static get styles() {
         return `
         #container {
@@ -190,7 +177,7 @@ class SourceCode extends BaseHTMLElement {
             text-decoration: none !important;
             color: black;
             font-size: 0.9em;
-            font-family: system-ui;
+            font-family: sans-serif;
         }
         
         #tabs a .close {
@@ -217,6 +204,11 @@ class SourceCode extends BaseHTMLElement {
     }
 
     render() {
+        this.folder = this.getAttribute('folder');
+        this.files = this.getAttribute('files').split(' ').filter(n => n.trim() !== '');
+        this.startLines = this.getAttribute('start-lines').split(';');
+        this.endLines = this.getAttribute('end-lines').split(';');
+
         return `
         <fake-window title="code ~ ${this.folder}">
             <div id="tabs">
@@ -252,11 +244,6 @@ class SourceCode extends BaseHTMLElement {
 customElements.define('source-code', SourceCode);
 
 class WebBrowser extends BaseHTMLElement {
-    constructor() {
-        super();
-        this.src = this.getAttribute('src');
-    }
-
     static get styles() {
         return `
         input {
@@ -296,6 +283,8 @@ class WebBrowser extends BaseHTMLElement {
     }
 
     render() {
+        this.src = this.getAttribute('src');
+
         return `
         <fake-window>
             <span slot="bar">
@@ -351,11 +340,6 @@ class WebBrowser extends BaseHTMLElement {
 customElements.define('web-browser', WebBrowser);
 
 class WebTerm extends BaseHTMLElement {
-    constructor() {
-        super();
-        this.path = this.getAttribute('path');
-    }
-
     static get styles() {
         return `
         :host {
@@ -386,8 +370,14 @@ class WebTerm extends BaseHTMLElement {
             color: #AAAAAA;
             font-size: 1.1em;
             text-decoration: none;
-            font-family: system-ui;
+            font-family: sans-serif;
         }`
+    }
+
+    render() {
+        this.path = this.getAttribute('path');
+
+        return '';
     }
 
     connectedCallback() {
@@ -411,11 +401,6 @@ class WebTerm extends BaseHTMLElement {
 customElements.define('web-term', WebTerm);
 
 class SplitView extends BaseHTMLElement {
-    constructor() {
-        super();
-        this.cols = this.getAttribute('columns') || 2;
-    }
-
     static get styles() {
         return `
         :host {
@@ -426,6 +411,8 @@ class SplitView extends BaseHTMLElement {
     }
 
     render() {
+        this.cols = this.getAttribute('columns') || 2;
+
         return `
         <style>
         :host {
@@ -439,12 +426,6 @@ class SplitView extends BaseHTMLElement {
 customElements.define('split-view', SplitView);
 
 class NavArrows extends BaseHTMLElement {
-    constructor() {
-        super();
-        this.previous = this.getAttribute('previous');
-        this.next = this.getAttribute('next');
-    }
-
     static get styles() {
         return `
         :host {
@@ -477,6 +458,9 @@ class NavArrows extends BaseHTMLElement {
     }
 
     render() {
+        this.previous = this.getAttribute('previous');
+        this.next = this.getAttribute('next');
+
         return `
         <a class="${this.previous ? '' : 'disabled'}" onclick="window.location.href='${this.previous}';">&lt;</a>
         <a class="${this.next ? '' : 'disabled'}" onclick="window.location.href='${this.next}';">&gt;</a>`;
