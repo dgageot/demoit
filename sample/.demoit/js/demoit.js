@@ -69,9 +69,8 @@ class FakeWindow extends BaseHTMLElement {
 
         #title {
             font-size: 0.75em;
-            vertical-align: top;
             display: inline-block;
-            height: 2.1em;
+            height: 1.6em;
             width: calc(100% - 6em);
             padding: 0.4em 0.4em 0 0.4em;
             color: black;
@@ -148,7 +147,7 @@ class SourceCode extends BaseHTMLElement {
             text-align: left;
             color: #212121;
             padding: 0;
-            padding-bottom: 10px;
+            padding-bottom: 0px;
             margin: 0;
             font-size: var(--source-code-font-size, 16px);
             font-family: 'Roboto Mono', monospace;
