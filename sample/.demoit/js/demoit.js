@@ -435,6 +435,8 @@ class NavArrows extends BaseHTMLElement {
             width: 85px;
             height: 40px;
             z-index: 30;
+            font-family: sans-serif;
+            font-size: .8rem;
         }
 
         a {
