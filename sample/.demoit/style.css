@@ -92,10 +92,6 @@ split-view {
     padding: 0 2vw;
 }
 
-split-view *:only-child {
-    grid-column: span 2;
-}
-
 em {
     font-style: normal;
     color: var(--color-main);

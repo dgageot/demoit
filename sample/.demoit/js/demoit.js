@@ -405,21 +405,14 @@ class SplitView extends BaseHTMLElement {
         return `
         :host {
             display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
             grid-template-rows: 100%;
             column-gap: 1vw;
         }`;
     }
 
     render() {
-        this.cols = this.getAttribute('columns') || 2;
-
-        return `
-        <style>
-        :host {
-            grid-template-columns: repeat(${this.cols}, calc((100% - (${this.cols} - 1) * 1vw) / ${this.cols}));
-        }
-        </style>
-        <slot></slot>`;
+        return `<slot></slot>`;
     }
 }
 
