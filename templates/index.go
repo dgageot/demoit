@@ -24,7 +24,7 @@ func Index(content []byte) string {
     <html lang=en>
       <head>
         <meta charset="utf-8">
-        <title>Demo</title>
+        <title>Demo {{ .CurrentStep }}/{{ .StepCount }}</title>
         <link rel="stylesheet" href="/style.css?hash=` + hash("style.css") + `">
         <script>
             const NextURL = '{{ .NextURL }}';
