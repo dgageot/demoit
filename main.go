@@ -58,6 +58,11 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	// Fail fast, in case we can't find the resource folder ".demoit"
+	if err := handlers.VerifyResourceFolder(); err != nil {
+		log.Fatalf("mandatory resource folder \".demoit\": %v", err)
+	}
+
 	go startWebServer(r)
 	if *flags.DevMode {
 		go startFileWatch(files.Root)

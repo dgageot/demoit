@@ -18,10 +18,12 @@ package handlers
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"html/template"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 
@@ -134,4 +136,19 @@ func readSteps(folder string) ([]Page, error) {
 func VerifyStepsFile() error {
 	_, err := readSteps(files.Root)
 	return err
+}
+
+// VerifyResourceFolder returns non-nil error if it can't find folder .demoit
+func VerifyResourceFolder() error {
+	info, err := os.Stat(".demoit")
+	if os.IsNotExist(err) {
+		return errors.New(".demoit doesn't exist")
+	}
+	if err != nil {
+		return err
+	}
+	if !info.IsDir() {
+		return errors.New(".demoit is not a folder")
+	}
+	return nil
 }
