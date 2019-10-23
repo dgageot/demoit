@@ -473,10 +473,12 @@ class NavArrows extends BaseHTMLElement {
         document.addEventListener('keydown', event => {
             switch (event.key) {
                 case 'ArrowRight':
+                case 'PageDown':
                 case ' ':
                     window.location.href = this.next;
                     break;
                 case 'ArrowLeft':
+                case 'PageUp':
                     window.location.href = this.previous;
                     break;
                 default:
