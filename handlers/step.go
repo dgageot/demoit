@@ -140,7 +140,8 @@ func VerifyStepsFile() error {
 
 // VerifyResourceFolder returns non-nil error if it can't find folder .demoit
 func VerifyResourceFolder() error {
-	info, err := os.Stat(".demoit")
+	folderpath := filepath.Join(files.Root, ".demoit")
+	info, err := os.Stat(folderpath)
 	if os.IsNotExist(err) {
 		return errors.New(".demoit doesn't exist")
 	}
