@@ -44,6 +44,9 @@ func Index(content []byte) string {
 
 // Ignore errors and return empty string if an error occurs.
 func hash(path string) string {
-	h, _ := files.Sha256(path)
+	h, err := files.Sha256(path)
+	if err != nil {
+		return ""
+	}
 	return h[:10]
 }
