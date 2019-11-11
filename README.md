@@ -39,9 +39,12 @@ Basically, the idea is to:
  + Add images, fonts and scripts in a `.demoit` folder at the root of the project.
  + Customize the style sheet in `.demoit/style.css`.
  + [sample/demoit.html](sample/demoit.html) demonstrates how to use the web components.
+ 
+See [Run Demo](#run-demo) for setting up and running a demo to get started with your first presentation.
 
 ## Install
 
+### Clone and install
 ```bash
 go get -u github.com/dgageot/demoit
 ```
@@ -49,15 +52,23 @@ go get -u github.com/dgageot/demoit
 *As any go application, it will download demoit's sources to your `$HOME/go/src/github.com/dgageot/demoit` folder.  
 Add `$HOME/go/bin/` directory to your $PATH in order to be able to call any go executable (including `demoit`) to your path.*
 
-### Shell font
+### Build it
+```bash
+cd $HOME/go/src/github.com/dgageot/demoit
+go build
+go install
+```
+
+### Add shell font
 
 To have a correct display in the web terminal, you have to install the font `Inconsolata for Powerline` on your computer.  
 This font can be found [here](https://github.com/powerline/fonts/tree/master/Inconsolata).
 
-## Demo
+## Run Demo
 
 ```bash
-cd $HOME/go/src/github.com/dgageot/demoit
+cd $HOME; mkdir my_demoit_presentations; cd $HOME/my_demoit_presentations
+cp -r $HOME/go/src/github.com/dgageot/demoit/sample .
 demoit sample
 ```
 
@@ -65,9 +76,3 @@ Then, browse to http://localhost:8888
 
 *Pro tip:* Run `demoit -dev sample` instead and enjoy live reload each time you change the content of the slides.
 
-## Build
-
-```bash
-go build
-go install
-```
