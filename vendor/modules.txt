@@ -1,10 +1,9 @@
 # github.com/NYTimes/gziphandler v1.1.1
 github.com/NYTimes/gziphandler
-# github.com/alecthomas/chroma v0.6.3 => github.com/dgageot/chroma v0.4.1-0.20190326114921-11eec8e9afad
+# github.com/alecthomas/chroma v0.6.9 => github.com/dgageot/chroma v0.4.1-0.20190326114921-11eec8e9afad
 github.com/alecthomas/chroma
 github.com/alecthomas/chroma/formatters/html
 github.com/alecthomas/chroma/lexers
-github.com/alecthomas/chroma/styles
 github.com/alecthomas/chroma/lexers/a
 github.com/alecthomas/chroma/lexers/b
 github.com/alecthomas/chroma/lexers/c
@@ -31,32 +30,37 @@ github.com/alecthomas/chroma/lexers/v
 github.com/alecthomas/chroma/lexers/w
 github.com/alecthomas/chroma/lexers/x
 github.com/alecthomas/chroma/lexers/y
+github.com/alecthomas/chroma/styles
 # github.com/boombuler/barcode v1.0.0
 github.com/boombuler/barcode
 github.com/boombuler/barcode/qr
 github.com/boombuler/barcode/utils
+# github.com/creack/pty v1.1.9
+github.com/creack/pty
 # github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964
 github.com/danwakefield/fnmatch
-# github.com/dlclark/regexp2 v1.1.6
+# github.com/dlclark/regexp2 v1.2.0
 github.com/dlclark/regexp2
 github.com/dlclark/regexp2/syntax
 # github.com/elazarl/go-bindata-assetfs v1.0.0
 github.com/elazarl/go-bindata-assetfs
-# github.com/gorilla/mux v1.7.0
+# github.com/gorilla/mux v1.7.3
 github.com/gorilla/mux
-# github.com/gorilla/websocket v1.4.0
+# github.com/gorilla/websocket v1.4.1
 github.com/gorilla/websocket
 # github.com/jaschaephraim/lrserver v0.0.0-20171129202958-50d19f603f71
 github.com/jaschaephraim/lrserver
-# github.com/kr/pty v1.1.2
+# github.com/kr/pty v1.1.8
 github.com/kr/pty
 # github.com/pkg/errors v0.8.1
 github.com/pkg/errors
-# github.com/radovskyb/watcher v1.0.6
+# github.com/radovskyb/watcher v1.0.7
 github.com/radovskyb/watcher
 # github.com/yudai/gotty v2.0.0-alpha.3+incompatible
 github.com/yudai/gotty/backend/localcommand
-github.com/yudai/gotty/server
 github.com/yudai/gotty/pkg/homedir
 github.com/yudai/gotty/pkg/randomstring
+github.com/yudai/gotty/server
 github.com/yudai/gotty/webtty
+# golang.org/x/sys v0.0.0-20191110163157-d32e6e3b99c4
+golang.org/x/sys/unix

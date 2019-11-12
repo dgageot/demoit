@@ -45,6 +45,7 @@ See [Run Demo](#run-demo) for setting up and running a demo to get started with 
 ## Install
 
 ### Clone and install
+
 ```bash
 go get -u github.com/dgageot/demoit
 ```
@@ -53,10 +54,10 @@ go get -u github.com/dgageot/demoit
 Add `$HOME/go/bin/` directory to your $PATH in order to be able to call any go executable (including `demoit`) to your path.*
 
 ### Build it
+
 ```bash
 cd $HOME/go/src/github.com/dgageot/demoit
-go build
-go install
+go install -mod=vendor
 ```
 
 ### Add shell font
