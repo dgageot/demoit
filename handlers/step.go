@@ -82,6 +82,22 @@ func Step(w http.ResponseWriter, r *http.Request) {
 	html.WriteTo(w)
 }
 
+// AllSteps renders all frames for printing
+func AllSteps(w http.ResponseWriter, r *http.Request) {
+	steps, err := readSteps(files.Root)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Unable to read steps: %v", err), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte("<html>\n"))
+
+	for i, _ := range steps {
+		w.Write([]byte(fmt.Sprintf("<iframe src='/%d' height=768 width=1366></iframe>\n", i)))
+	}
+	w.Write([]byte("\n</html>\n"))
+}
+
 // LastStep redirects to the latest page.
 func LastStep(w http.ResponseWriter, r *http.Request) {
 	steps, err := readSteps(files.Root)
