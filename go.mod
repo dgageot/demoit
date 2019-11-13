@@ -6,6 +6,8 @@ require (
 	github.com/alecthomas/colour v0.1.0 // indirect
 	github.com/alecthomas/repr v0.0.0-20181024024818-d37bc2a10ba1 // indirect
 	github.com/boombuler/barcode v1.0.0
+	github.com/chromedp/cdproto v0.0.0-20191106214403-065a57e9115a
+	github.com/chromedp/chromedp v0.5.1
 	github.com/creack/pty v1.1.9 // indirect
 	github.com/dlclark/regexp2 v1.2.0 // indirect
 	github.com/elazarl/go-bindata-assetfs v1.0.0 // indirect
@@ -14,6 +16,7 @@ require (
 	github.com/gorilla/mux v1.7.3
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/jaschaephraim/lrserver v0.0.0-20171129202958-50d19f603f71
+	github.com/jung-kurt/gofpdf v1.15.1
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/kr/pty v1.1.8 // indirect
 	github.com/mattn/go-isatty v0.0.10 // indirect

@@ -52,6 +52,7 @@ func main() {
 	r.HandleFunc("/style.css", handlers.Static).Methods("GET")
 	r.HandleFunc("/favicon.ico", handlers.Static).Methods("GET")
 	r.HandleFunc("/qrcode", handlers.QRCode).Methods("GET")
+	r.HandleFunc("/pdf", handlers.ExportToPDF).Methods("GET")
 
 	// Fail fast, in case we're not in a cromulent directory
 	if err := handlers.VerifyStepsFile(); err != nil {
