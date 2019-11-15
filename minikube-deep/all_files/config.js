@@ -1,0 +1,1 @@
+var gotty_term = 'hterm';
