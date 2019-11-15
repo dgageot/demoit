@@ -21,3 +21,5 @@ require (
 )
 
 replace github.com/alecthomas/chroma => github.com/dgageot/chroma v0.4.1-0.20190326114921-11eec8e9afad
+
+go 1.13
