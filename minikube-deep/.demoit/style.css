@@ -19,24 +19,57 @@ limitations under the License.
 html, body, #top {
     margin: 0;
     padding: 0;
-    background-color: black;
-
     --color-text: rgb(61, 64, 67);
-    --color-main: #d9650c;
+    --color-main: #345492;
+}
+
+main {
+    padding-left: 4vw;
+    padding-right: 4vw;
+}
+
+main.center img {
+    width: 68vw;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+}
+
+img.left {
+    display: block;
+    height: calc(75vw * 9 / 16);
+}
+
+div.flexy {
+    display: flex;
+    flex-direction: row;
+}
+
+.right {
+    padding-left: 2vw;
+}
+
+ul.tech {
+    font-family: "Source Code Pro for Powerline";
+    list-style: none;
+}
+
+i {
+    font-style: normal;
+    float: right;
+    clear: right;
+    margin-right: 2vw;
+}
+pre, code {
+    font-family: "Source Code Pro for Powerline";
+    font-size: 2.5vw;
 }
 
 table {
-    background-color: #eee;
+    background-color: #000;
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 1em;
-    padding: 1.5em;
-}
-
-blockquote, ul, p, h2, h3, h4, h5, ul, img {
-    text-align: left;
-    margin-left: 5%;
-    margin-right: 5%;
+    padding: 1vw;
 }
 
 html {
@@ -45,35 +78,43 @@ html {
 }
 
 body {
-    font-family: 'Arvo', serif;
+    font-family: 'xkcd Script';
+    /*    font-family: 'Arvo', serif; */
     color: var(--color-text);
     display: flex;
-    font-size: 32px;
-    align-items: left;
+    color: #ddd;
+    background-color: #112;
+    font-size: 3vw;
+    align-it2vws: left;
     height: 100%;
 }
 
 #top {
     position: relative;
-    background-color: white;
     width: 100%;
     height: calc(100vw * 9 / 16);
+    padding-bottom: 8vw;
+    border-bottom: 1px dashed #000;
     overflow: hidden;
-    text-align: center;
 }
 
 h1 {
     background: var(--color-main);
-    width: calc(100% - 6vw);
-    padding: 2vw;
+    width: calc(100% - 8vw);
+    padding: 0.5vw;
+    padding-left: 3vw;
+    margin-top: 3vw;
+    margin-bottom: 3vw;
     overflow: hidden;
     white-space: nowrap;
-    text-align: left;
     text-overflow: ellipsis;
     border-radius: 0 8px 8px 0;
     text-transform: none;
     font-weight: normal;
     color: white;
+    font-size: 3.5vw;
+    filter: drop-shadow(8px 8x -2px #000);
+    border-radius: 0px 1em 1em  0px;
 }
 
 h2, h3, h4, h5, h6 {
@@ -83,22 +124,57 @@ h2, h3, h4, h5, h6 {
 h2 {
     font-size: 4vw;
 }
+@import url('https://fonts.googleapis.com/css?family=Special+Elite');
+
+.quote {
+	font-family: 'Special Elite', cursive;
+    background: #fffdf5;
+    padding: 2vw;
+	color: #3f3f5a;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
 
 blockquote {
-    color: #888;
-    font-style: italic;
+	font-weight: 100;
+    font-size: 2.5vw;
+    margin-left: 2vw;
+    margin-right: 2vw;
+    line-height: 1.4;
+    width: 70vw;
+	position: relative;
+	margin: 0;
+	padding: .5rem;
 }
 
-img {
-    height: 65%;
-    width: auto;
+blockquote:before,
+blockquote:after {
+	position: absolute;
+	color: #f1efe6;
+	font-size: 8rem;
+	width: 4rem;
+	height: 4rem;
 }
 
-.logos {
-    width: 80%;
-    margin: 7vw auto;
-    text-align: center;
+blockquote:before {
+	content: '“';
+	left: -5rem;
+	top: -2rem;
 }
+
+blockquote:after {
+	content: '”';
+	right: -5rem;
+	bottom: 1rem;
+}
+
+cite {
+	line-height: 3;
+	text-align: left;
+}
+
 
 a, a:visited {
     color: var(--color-main);
@@ -120,7 +196,7 @@ em {
     height: 6px;
     bottom: calc((100vh - (100vw * 9 / 16)) / 2);
     left: 0;
-    background-color: black;
+    background-color: FFF;
     border-radius: 0 3px 3px 0;
     opacity: .4;
 }
@@ -134,6 +210,6 @@ em {
 }
 
 .smaller-img {
-    width: 10em;
+    width: 25vw;
     height: auto;
 }
