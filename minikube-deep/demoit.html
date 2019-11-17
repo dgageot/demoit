@@ -1,0 +1,395 @@
+<main>
+<pre>
+% minikube ssh "uptime"
+                             _             _            
+                _         _ ( )           ( )           
+      ___ ___  (_)  ___  (_)| |/')  _   _ | |_      __  
+    /' _ ` _ `\| |/' _ `\| || , <  ( ) ( )| '_`\  /'__`\
+    | ( ) ( ) || || ( ) || || |\`\ | (_) || |_) )(  ___/
+    (_) (_) (_)(_)(_) (_)(_)(_) (_)`\___/'(_,__/'`\____) 
+  
+              🔥Burning laps since 2016🔥
+           a #sig-cluster-lifecycle project
+
+17:30 up 3.5 years, 60,000 users, load: 0.00, 0.00, 0.00
+
+% minikube status
+Progress: Steady
+Community: Excited about 2020!
+ </pre>
+</main>
+
+---
+<h1>Who are y'all?<i>👀</i></h1>
+<main>
+<table style="align-left: auto; align-right: auto;">
+    <tr>
+        <td>
+            <img src="/images/medya.jpg" class="smaller-img" />
+            <br /><center>Medya Ghazizadeh</center>
+        </td>
+        <td>
+            <img src="/images/selgamal.jpg" class="smaller-img" />
+            <br /><center>Sharif El-Gamal</center>
+        </td>
+        <td>
+            <img src="/images/tstromberg.jpg" class="smaller-img" />
+            <br /><center>Thomas Str&ouml;mberg</center>
+        </td>
+    </tr>
+</table>
+
+<p><center>Shout-out to @RA489, who's Visa was denied :(</center></p>
+</main>
+
+---
+
+<h1>Principles<i>📜</i></h1>
+<main>
+<p>Simple local Kubernetes, for day-to-day development &amp; learning.</p>
+
+<ul>
+    <li>Inclusive and community-driven</li>
+    <li>User-friendly</li>
+    <li>Support all Kubernetes features</li>
+    <li>Cross-platform</li>
+    <li>Reliable</li>
+    <li>High Performance</li>
+    <li>Developer Focused</li>
+</ul>
+</main>
+
+---
+
+<h1>Help Wanted!<i>🙋</i></h1>
+
+<main>
+<ul>
+<li>1st principle is inclusive and community-driven</li>
+<li>We know minikube could be better. That's why we're here.</li>
+<li>There is plenty of low hanging fruit: documentation, anyone?</li>
+<li>We could use your help!</li>
+<li>We are happy to hold your hand and turn you into a Kubernetes contributor</li>
+</ul>
+
+</main>
+
+---
+<h1>The Origin Story<i>✨</i></h1>
+
+<main>
+<div class="quote">
+<blockquote>The most powerful magic is in the knowledge of the origin word. To know the birth and breeding of a thing or person, to reveal it, to recite it, and name it is to have power over it.
+</blockquote>
+<cite>Eino Friberg, The Kalevala: Epic of the Finnish People</cite>
+</div>
+
+<!-- drawing: character from Kalevala -->
+</main>
+
+---
+
+<h1>Chesterton's Fence<i>🚧</i></h1>
+
+<main>
+<div class="quote">
+<blockquote>
+The more modern type of reformer goes gaily up to it and says, "I don't see the use of this; let us clear it away". To which the more intelligent type of reformer will do well to answer: "If you don't see the use of it, I certainly won't let you clear it away. Go away and think. Then, when you can come back and tell me that you do see the use of it, I may allow you to destroy
+</blockquote>
+<cite>G. K. Chesterton, The Thing</cite>
+</div>
+</main>
+<!-- drawing: fence -->
+
+---
+
+<h1>A Brief History of Time<i>⌛</i></h1>
+
+<main class="center">
+    <img src="/images/history.png" />
+</main>
+
+<!-- drawing: declaration of independence -->
+
+---
+
+<h1>Architecture<i>🏛️</i></h1>
+
+<main>
+<div class="flexy">
+    <div>
+    <img src="/images/minikube-xkcd-vertical.png" class="left" />
+    </div>
+    <div class="right">
+    <ul class="tech">
+        <li>T-85: start -> libmachine -> hyperkit VM</li>
+        <li>T-62: cluster -> ssh, sync time, CRI</li>
+        <li>T-60: cache -> load images into CRI</li>
+        <li>T-41: bootstrapper -> install kubeadm</li>
+        <li>T-40: kubeadm -> pull</li>
+        <li>T-28: kubeadm -> init</li>
+        <li>T-8: bootstrapper -> wait for apiserver</li>
+        <li>T-0: kubeconfig -> set context</li>
+        </li>
+    </ul>
+    </div>
+</div>
+
+</section>
+
+</min>
+---
+<h1>Support Matrix <i>😱</i></h1>
+
+<main class="center">
+    <img src="/images/matrix.png" />
+</main>
+
+---
+<h1>minikube vs prod <i>🦄</i></h1>
+
+<main>
+<ul>
+    <li>The master allows jobs to be scheduled</li>
+    <li>Node won't resolve Kubernetes DNS records (pods can though!)</li>
+    <li>More likely to OOM due to 2GB default memory size (<code>--memory</code>)</li>
+    <li>Defaults to Docker runtime, allows direct image pushes</li>
+</ul>
+</main>
+
+---
+<h1>minikube vs others <i>❤️</i></h1>
+
+<main>
+    <div class="quote">
+    <blockquote>
+    minikube is what we recommend when you’re willing to pay some overhead for a more high-fidelity cluster</blockquote>
+    <cite>&mdash; <a href="https://docs.tilt.dev/choosing_clusters.html">Tilt's guide to cluster selection</cite>
+    </div>
+</main>
+
+---
+
+<h1>minikube pros<i>👍</i></h1>
+
+<main>
+    <ul>
+        <li>The most full-featured local Kubernetes</li>
+        <li>Easily run different k8s versions, container runtimes, controllers</li>
+        <li>Build images in-cluster with <code>minikube docker-env</code></li>
+        <li>Developer-focused: LoadBalancer, addons, dashboard.</li>
+        <li>Always supports the latest k8s + 5 older releases</li>
+        <li>Ability to use tech that requires kernel module support</li>
+        <li>Open-Source</li>
+    </ul>
+</main>
+
+---
+
+<h1>minikube cons<i>👎</i></h1>
+
+<main>
+<ul>
+    <li>Higher overhead - you'll want to stop it when not in use</li>
+    <li>Running within a VM makes Kubernetes performance slower</li>
+    <li>Hypervisors can be difficult to configure</li>
+    <li>Incompatible with VPN's that block LAN IP's</li>
+</ul>
+</main>
+
+---
+<h1>VM overhead is much less than you may think.<i>🔥</i></h1>
+
+<main class="center">
+<img src="/images/overhead.png" />
+</main>
+
+---
+<h1>Since KubeCon Seattle<i>🚀</i></h1>
+<main>
+    <ul>
+        <li>Automatic driver selection &amp; download</li>
+        <li>6 languages: de, es, en-US, fr, ja, pl, zh-CN</li>
+        <li>Stable multi-cluster support (`profiles`)</li>
+        <li>Image mirrors (China)</li>
+        <li>kubectl version incompatibility detection</li>
+        <li>More command line options: `delete --all`, `--addon`, `-f json`</li>
+        <li>Improved proxy support</li>
+        <li>Detects networking issues</li>
+        <li>Reduced start latency (HEAD)</li>
+        <li>Same-day release candence with Kubernetes</li>
+    </ul>
+</main>
+---
+<h1>minikube today<i>😀</i></h1>
+
+    <!--
+# driver auto-select, lang, addons, deletion
+minikube config set memory 16384
+minikube start --kubernetes-version v1.17.0-beta.0 --addons helm-tiller -p kubecon --wait=false
+minikube profile list
+minikube delete --all
+-->
+
+<split-view>
+    <web-term path="."></web-term>
+    <source-code folder="src" files="cmd/start.go pkg/hyperkit.go pkg/docker.go pkg/kubeadm.go pkg/templates.go"
+        start-lines="271;57;89;279;99" end-lines="273;58;90;281;152">
+    </source-code>
+</split-view>
+
+
+---
+
+<h1>Surveys are critical for user empathy<i>💡</i></h1>
+
+<main class="center">
+  <img src="/images/q4-categories.png">
+</main>
+
+---
+
+<h1>Documentation <i>📚</i></h1>
+
+<main class="center">
+<img src="/images/q4-docs.png">
+</main>
+
+---
+
+<h1>Features <i>💯</i></h1>
+
+<main class="center">
+<img src="/images/q4-features.png">
+</main>
+
+---
+
+<h1>Y U FAIL?<i>🤷</i></h1>
+
+<main>
+<ul class="tech">
+    <li>#1: None driver compatibility (6x)</li>
+    <li>#2: Great Firewall of China (3x)</li>
+    <li>#3: Nested virtualization(2x)</li>
+    <li>#4: None driver - incomplete cleanup (2x)</li>
+    <li>#5: VirtualBox/Hyper-V conflict (2x)</li>
+    <li>#6: Services confusion (2x)</li>
+    <li>#7: KVM/libvirt networking (2x)</li>
+    <li>#8: VPN or firewall issue (2x)</li>
+    <li>#9: Obsolete Kubernetes flags (2x)</li>
+</ul>
+</main>
+
+---
+<h1>Debugging common issues<i>🐛</i></h1>
+<main>
+<ul>
+    <li>Hypervisor failure: <code>--alsologtostderr</code></li>
+    <li>kubelet failed: <code>kubelet</code> section of <code>minikube logs</code>
+    <li>not scheduling: <code>kubectl describe node</code></li>
+    <li>apiserver crashed: <code>minikube logs</code>, look for OOM in <code>dmesg</code></li>
+    <li>apiserver did to appear: <code>minikube logs</code>, see <code>kubelet</code> & <code>apiserver</code></li>
+    <li>connectivity failure: <code>VPN, firewall</code> reboot?</li>
+</ul>
+There is also <code>minikube logs --problems</code>, but it isn't great (yet!)
+</main>
+
+---
+<h1>Confusing configuration persistence<i>😣</i></h1>
+
+<main>
+<ul>
+    <li>start flags are not persistent across restarts</li>
+    <li>For persistence, use `minikube config`</li>
+    <li>In v1.6, will become `--kubernetes-version` sticky across restarts</li>
+    <li>Addons enable/disable is still global and persistent</li>
+</ul>
+</main>
+
+---
+
+<h1>Multi-node: Prototype<i>🐙</i></h1>
+
+<split-view>
+    <web-term path="."></web-term>
+    <source-code folder="src" files="cmd/start.go pkg/hyperkit.go pkg/docker.go pkg/kubeadm.go pkg/templates.go"
+        start-lines="271;57;89;279;99" end-lines="273;58;90;281;152">
+    </source-code>
+</split-view>
+
+
+---
+
+<h1>Docker deployment: Prototype<i>🐳</i></h1>
+
+
+<split-view>
+    <web-term path="."></web-term>
+    <source-code folder="src" files="cmd/start.go pkg/hyperkit.go pkg/docker.go pkg/kubeadm.go pkg/templates.go"
+        start-lines="271;57;89;279;99" end-lines="273;58;90;281;152">
+    </source-code>
+</split-view>
+
+---
+
+<h1>UI Prototype <i>🐷</i></h1>
+
+<main>
+<ul>
+    <li>Persistent process allows us to signal alerts</li>
+    <li>Resource starvation</li>
+    <li>Deployment failures</li>
+    <li>Switch between Kubernetes contexts</li>
+    <li>Stop/start (and eventually suspend)</li>
+    <li>hyperkit time sync</li>
+</ul>
+</main>
+
+---
+
+<h1>2020 roadmap<i>🗺️</i></h1>
+
+<main>
+<div class="flexy">
+<div>
+<ul>
+    <li>Multi-node</li>
+    <li>VM-free by default</li>
+    <li>Hypervisor installation</li>
+    <li>Improved CNI integration</li>
+    <li>Revamp of addons</li>
+    <li>&gt;25% CPU overhead</li>
+    <li>Startup latency under 45s</li>
+    <li>Kernel-assisted mounts</li>
+</ul>
+</div>
+<div class="right">
+<ul>
+    <li>Suspend and Resume</li>
+    <li>Optional toolbar UI</li>
+    <li>post-libmachine exploration</li>
+    <li>Newbie-friendly documentation</li>
+    <li>Separation of create vs start</li>
+</ul>
+</div>
+</div>
+</main>
+
+---
+
+<h1>HELP WANTED! <i>😍</i></h1>
+
+<main>
+We are a friendly and patient group of maintainers who want to help people learn Kubernetes.
+Many Kubernetes org members got their start by contributing to minikube.
+
+<!-- insert help wanted art -->
+
+    <ul>
+        <li>#minikube on Slack</li>
+        <li>mailing list</li>
+        <li>bi-weekly office-hours</li>
+        <li>https://minikube.sigs.k8s.io/</li>
+    </ul>
+</main>

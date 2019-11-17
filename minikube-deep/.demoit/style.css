@@ -29,7 +29,7 @@ main {
 }
 
 main.center img {
-    width: 68vw;
+    height: 42vw;
     margin-left: auto;
     margin-right: auto;
     display: block;
@@ -63,6 +63,10 @@ i {
 pre, code {
     font-family: "Source Code Pro for Powerline";
     font-size: 2.5vw;
+}
+
+code {
+    color: #39FF14;
 }
 
 table {
