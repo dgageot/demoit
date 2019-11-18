@@ -27,7 +27,6 @@ import (
 	"github.com/dgageot/demoit/files"
 	"github.com/dgageot/demoit/flags"
 	"github.com/gorilla/mux"
-	"github.com/pkg/errors"
 )
 
 // Shell redirects to the url of a shell running in the given folder.
@@ -82,17 +81,17 @@ func getBashHistoryCopy() (string, error) {
 
 	tmpFile, err := ioutil.TempFile("", "demoit")
 	if err != nil {
-		return "", errors.Wrap(err, "Unable to create temp file for bash history")
+		return "", fmt.Errorf("Unable to create temp file for bash history: %w", err)
 	}
 
 	history, err := files.Read(".demoit", ".bash_history")
 	if err != nil {
-		return "", errors.Wrap(err, "Unable to read bash history")
+		return "", fmt.Errorf("Unable to read bash history: %w", err)
 	}
 
 	_, err = tmpFile.Write(history)
 	if err != nil {
-		return "", errors.Wrap(err, "Unable to write bash history")
+		return "", fmt.Errorf("Unable to write bash history: %w", err)
 	}
 
 	return tmpFile.Name(), nil

@@ -19,12 +19,11 @@ package files
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-
-	"github.com/pkg/errors"
 )
 
 var Root = "."
@@ -33,7 +32,7 @@ var Root = "."
 func Read(path ...string) ([]byte, error) {
 	content, err := ioutil.ReadFile(fullpath(path...))
 	if err != nil {
-		return nil, errors.Wrap(err, "Unable to read "+fullpath(path...))
+		return nil, fmt.Errorf("Unable to read %s: %w", fullpath(path...), err)
 	}
 
 	return content, nil
