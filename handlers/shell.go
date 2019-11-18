@@ -17,6 +17,7 @@ limitations under the License.
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -75,18 +76,18 @@ func Shell(w http.ResponseWriter, r *http.Request) {
 }
 
 func getBashHistoryCopy() (string, error) {
-	if !files.Exists(".demoit", ".bash_history") {
-		return "", nil
+	history, err := files.Read(".demoit", ".bash_history")
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			// Ignore silently
+			return "", nil
+		}
+		return "", fmt.Errorf("Unable to read bash history: %w", err)
 	}
 
 	tmpFile, err := ioutil.TempFile("", "demoit")
 	if err != nil {
 		return "", fmt.Errorf("Unable to create temp file for bash history: %w", err)
-	}
-
-	history, err := files.Read(".demoit", ".bash_history")
-	if err != nil {
-		return "", fmt.Errorf("Unable to read bash history: %w", err)
 	}
 
 	_, err = tmpFile.Write(history)
