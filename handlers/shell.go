@@ -47,10 +47,22 @@ func Shell(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println("Using shell", shell)
 
-	bashHistory, err := getBashHistoryCopy()
-	if err != nil {
-		fmt.Println(err)
-		http.Error(w, err.Error(), 500)
+	bashRc, bashRcErr := getBashRcFile()
+	if bashRcErr != nil {
+		fmt.Println(bashRcErr)
+		http.Error(w, bashRcErr.Error(), 500)
+		return
+	}
+	if bashRc != "" {
+		fmt.Println("Using bashrc file", bashRc)
+
+		commands = append(commands, fmt.Sprintf("source %s", bashRc))
+	}
+
+	bashHistory, bashHistoryErr := getBashHistoryCopy()
+	if bashHistoryErr != nil {
+		fmt.Println(bashHistoryErr)
+		http.Error(w, bashHistoryErr.Error(), 500)
 		return
 	}
 	if bashHistory != "" {
@@ -93,6 +105,29 @@ func getBashHistoryCopy() (string, error) {
 	_, err = tmpFile.Write(history)
 	if err != nil {
 		return "", fmt.Errorf("Unable to write bash history: %w", err)
+	}
+
+	return tmpFile.Name(), nil
+}
+
+func getBashRcFile() (string, error) {
+	bashrc, err := files.Read(".demoit", ".bashrc")
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			// Ignore silently
+			return "", nil
+		}
+		return "", fmt.Errorf("Unable to read bashrc file: %w", err)
+	}
+
+	tmpFile, err := ioutil.TempFile("", "demoit")
+	if err != nil {
+		return "", fmt.Errorf("Unable to create temp file for bash history: %w", err)
+	}
+
+	_, err = tmpFile.Write(bashrc)
+	if err != nil {
+		return "", fmt.Errorf("Unable to write bashrc file: %w", err)
 	}
 
 	return tmpFile.Name(), nil
