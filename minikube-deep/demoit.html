@@ -7,15 +7,15 @@
     /' _ ` _ `\| |/' _ `\| || , <  ( ) ( )| '_`\  /'__`\
     | ( ) ( ) || || ( ) || || |\`\ | (_) || |_) )(  ___/
     (_) (_) (_)(_)(_) (_)(_)(_) (_)`\___/'(_,__/'`\____) 
-  
+              https://minikube.sigs.k8s.io/
+
               🔥Burning laps since 2016🔥
            a #sig-cluster-lifecycle project
 
 17:30 up 3.5 years, 60,000 users, load: 0.00, 0.00, 0.00
 
 % minikube status
-Progress: Steady
-Community: Excited about 2020!
+Community: Excited for 2020!
  </pre>
 </main>
 
@@ -60,21 +60,6 @@ Community: Excited about 2020!
 </main>
 
 ---
-
-<h1>Help Wanted!<i>🙋</i></h1>
-
-<main>
-<ul>
-<li>1st principle is inclusive and community-driven</li>
-<li>We know minikube could be better. That's why we're here.</li>
-<li>There is plenty of low hanging fruit: documentation, anyone?</li>
-<li>We could use your help!</li>
-<li>We are happy to hold your hand and turn you into a Kubernetes contributor</li>
-</ul>
-
-</main>
-
----
 <h1>The Origin Story<i>✨</i></h1>
 
 <main>
@@ -102,12 +87,28 @@ The more modern type of reformer goes gaily up to it and says, "I don't see the 
 <!-- drawing: fence -->
 
 ---
+<h1>Who here was running Kubernetes v1.2.x?</h1>
+
+<main class="center">
+<img src="/images/genesis.png">
+</main>
+
+---
 
 <h1>A Brief History of Time<i>⌛</i></h1>
 
 <main class="center">
     <img src="/images/history.png" />
 </main>
+
+---
+
+<h1>Started by the community, maintained by the community</h1>
+
+<main>
+
+</main>
+
 
 <!-- drawing: declaration of independence -->
 
@@ -144,6 +145,37 @@ The more modern type of reformer goes gaily up to it and says, "I don't see the 
 <main class="center">
     <img src="/images/matrix.png" />
 </main>
+
+---
+<h1>Accomplishments in 2019<i>🚀</i></h1>
+<main>
+    <ul>
+        <li>Same-day cadence with Kubernetes major releases</li>
+        <li>Simplified installation</li>
+        <li>Multi-lingual: de, es, en-US, fr, ja, pl, zh-CN</li>
+        <li>Multi-cluster (<code>profiles</code>)</li>
+        <li>Loads more options: image mirrors, JSON output, profile list, --all</li>
+        <li>Environment checks: kubectl, proxies, networking</li>
+        <li>Reduced start latency</li>
+    </ul>
+</main>
+---
+<h1>minikube today<i>😀</i></h1>
+
+    <!--
+# driver auto-select, lang, addons, deletion
+minikube config set memory 16384
+minikube start --kubernetes-version v1.17.0-beta.0 --addons helm-tiller -p kubecon --wait=false
+minikube profile list
+minikube delete --all
+-->
+
+<split-view>
+    <web-term path="."></web-term>
+    <source-code folder="src" files="cmd/start.go pkg/hyperkit.go pkg/docker.go pkg/kubeadm.go pkg/templates.go"
+        start-lines="271;57;89;279;99" end-lines="273;58;90;281;152">
+    </source-code>
+</split-view>
 
 ---
 <h1>minikube vs prod <i>🦄</i></h1>
@@ -205,41 +237,6 @@ The more modern type of reformer goes gaily up to it and says, "I don't see the 
 </main>
 
 ---
-<h1>Since KubeCon Seattle<i>🚀</i></h1>
-<main>
-    <ul>
-        <li>Automatic driver selection &amp; download</li>
-        <li>6 languages: de, es, en-US, fr, ja, pl, zh-CN</li>
-        <li>Stable multi-cluster support (`profiles`)</li>
-        <li>Image mirrors (China)</li>
-        <li>kubectl version incompatibility detection</li>
-        <li>More command line options: `delete --all`, `--addon`, `-f json`</li>
-        <li>Improved proxy support</li>
-        <li>Detects networking issues</li>
-        <li>Reduced start latency (HEAD)</li>
-        <li>Same-day release candence with Kubernetes</li>
-    </ul>
-</main>
----
-<h1>minikube today<i>😀</i></h1>
-
-    <!--
-# driver auto-select, lang, addons, deletion
-minikube config set memory 16384
-minikube start --kubernetes-version v1.17.0-beta.0 --addons helm-tiller -p kubecon --wait=false
-minikube profile list
-minikube delete --all
--->
-
-<split-view>
-    <web-term path="."></web-term>
-    <source-code folder="src" files="cmd/start.go pkg/hyperkit.go pkg/docker.go pkg/kubeadm.go pkg/templates.go"
-        start-lines="271;57;89;279;99" end-lines="273;58;90;281;152">
-    </source-code>
-</split-view>
-
-
----
 
 <h1>Surveys are critical for user empathy<i>💡</i></h1>
 
@@ -269,16 +266,17 @@ minikube delete --all
 
 <main>
 <ul class="tech">
-    <li>#1: None driver compatibility (6x)</li>
-    <li>#2: Great Firewall of China (3x)</li>
-    <li>#3: Nested virtualization(2x)</li>
-    <li>#4: None driver - incomplete cleanup (2x)</li>
-    <li>#5: VirtualBox/Hyper-V conflict (2x)</li>
-    <li>#6: Services confusion (2x)</li>
-    <li>#7: KVM/libvirt networking (2x)</li>
-    <li>#8: VPN or firewall issue (2x)</li>
-    <li>#9: Obsolete Kubernetes flags (2x)</li>
-</ul>
+<ol>
+    <li>None driver compatibility (6x)</li>
+    <li>Confounding Windows errors (4x)</li>
+    <li>Great Firewall of China (3x)</li>
+    <li>Nested virtualization(2x)</li>
+    <li>None driver - incomplete cleanup (2x)</li>
+    <li>Services confusion (2x)</li>
+    <li>KVM/libvirt networking (2x)</li>
+    <li>VPN or firewall issue (2x)</li>
+    <li>Obsolete Kubernetes flags (2x)</li>
+</ol>
 </main>
 
 ---
@@ -309,6 +307,38 @@ There is also <code>minikube logs --problems</code>, but it isn't great (yet!)
 
 ---
 
+<h1>Draft 2020 roadmap<i>🗺️</i></h1>
+
+<main>
+<div class="flexy">
+<div>
+<ul>
+    <li>Multi-node</li>
+    <li>Improved VM-free deployments</li>
+    <li>Background-friendly</li>
+    <li>Pause / Unpause</li>
+    <li>Toolbar with resource alerts</li>
+    <li>Hypervisor installation</li>
+</ul>
+</div>
+<div class="right">
+<ul>
+    <li>Revamp of addons</li>
+    <li>&gt;25% CPU overhead</li>
+    <li>Startup latency under 45s</li>
+    <li>post-libmachine exploration</li>
+    <li>Kernel-assisted mounts</li>
+    <li>Improved CNI integration</li>
+</ul>
+</div>
+</div>
+</main>
+
+---
+
+
+---
+
 <h1>Multi-node: Prototype<i>🐙</i></h1>
 
 <split-view>
@@ -323,7 +353,6 @@ There is also <code>minikube logs --problems</code>, but it isn't great (yet!)
 
 <h1>Docker deployment: Prototype<i>🐳</i></h1>
 
-
 <split-view>
     <web-term path="."></web-term>
     <source-code folder="src" files="cmd/start.go pkg/hyperkit.go pkg/docker.go pkg/kubeadm.go pkg/templates.go"
@@ -333,63 +362,56 @@ There is also <code>minikube logs --problems</code>, but it isn't great (yet!)
 
 ---
 
-<h1>UI Prototype <i>🐷</i></h1>
+<h1>Container deployments</h1>
 
 <main>
 <ul>
-    <li>Persistent process allows us to signal alerts</li>
-    <li>Resource starvation</li>
-    <li>Deployment failures</li>
-    <li>Switch between Kubernetes contexts</li>
-    <li>Stop/start (and eventually suspend)</li>
-    <li>hyperkit time sync</li>
+    <li>Prototyped with Kind, but rewritten to be full-featured</li>
+    <li>Deployable using Docker or Podman</li>
+    <li>Container runtimes: Docker, containerd, CRIO</li>
+    <li>Feature-parity with current minikube</li>
+    <li>Effectively deprecates the none driver</li>
+</ul>
+</main>
+
+---
+<h1>VM-free shortcomings</h1>
+
+<main>
+<ul>
+    <li>Resource scheduling misbehaves if swap is enabled</li>
+    <li>Unable to use tools that require kernel support, like gVisor</li>
+    <li>Network issues: No IP connectivity, LoadBalancer, Ingress</li>
+    <li>No performance advantage on non-Linux platforms</li>
 </ul>
 </main>
 
 ---
 
-<h1>2020 roadmap<i>🗺️</i></h1>
+<h1>UI: Prototype<i>🐳</i></h1>
+
+<split-view>
+    <web-term path="."></web-term>
+    <source-code folder="src" files="ui/main.go ui/clusters.go ui/pause.go"
+        start-lines="283;80;50" end-lines="288;101;60">
+
+    </source-code>
+</split-view>
+
+
+<h1>Help Wanted!<i>😍</i></h1>
 
 <main>
-<div class="flexy">
-<div>
-<ul>
-    <li>Multi-node</li>
-    <li>VM-free by default</li>
-    <li>Hypervisor installation</li>
-    <li>Improved CNI integration</li>
-    <li>Revamp of addons</li>
-    <li>&gt;25% CPU overhead</li>
-    <li>Startup latency under 45s</li>
-    <li>Kernel-assisted mounts</li>
-</ul>
-</div>
-<div class="right">
-<ul>
-    <li>Suspend and Resume</li>
-    <li>Optional toolbar UI</li>
-    <li>post-libmachine exploration</li>
-    <li>Newbie-friendly documentation</li>
-    <li>Separation of create vs start</li>
-</ul>
-</div>
-</div>
-</main>
-
----
-
-<h1>HELP WANTED! <i>😍</i></h1>
-
-<main>
-We are a friendly and patient group of maintainers who want to help people learn Kubernetes.
-Many Kubernetes org members got their start by contributing to minikube.
-
 <!-- insert help wanted art -->
 
-    <ul>
-        <li>#minikube on Slack</li>
-        <li>mailing list</li>
-        <li>bi-weekly office-hours</li>
-        <li>https://minikube.sigs.k8s.io/</li>
-    </ul>
+<ul>
+<li>1st principle is inclusive and community-driven</li>
+<li>We would love to help you learn and become into a Kubernetes contributor</li>
+<li>Docs are a great place to start. We would love more tutorials!</li>
+<li>#minikube on Slack</li>
+<li>bi-weekly office-hours</li>
+<li>https://minikube.sigs.k8s.io/</li>
+<li>tstromberg@google.com</li>
+</ul>
+
 </main>
