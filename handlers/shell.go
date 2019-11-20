@@ -17,6 +17,7 @@ limitations under the License.
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -27,7 +28,6 @@ import (
 	"github.com/dgageot/demoit/files"
 	"github.com/dgageot/demoit/flags"
 	"github.com/gorilla/mux"
-	"github.com/pkg/errors"
 )
 
 // Shell redirects to the url of a shell running in the given folder.
@@ -76,23 +76,23 @@ func Shell(w http.ResponseWriter, r *http.Request) {
 }
 
 func getBashHistoryCopy() (string, error) {
-	if !files.Exists(".demoit", ".bash_history") {
-		return "", nil
+	history, err := files.Read(".demoit", ".bash_history")
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			// Ignore silently
+			return "", nil
+		}
+		return "", fmt.Errorf("Unable to read bash history: %w", err)
 	}
 
 	tmpFile, err := ioutil.TempFile("", "demoit")
 	if err != nil {
-		return "", errors.Wrap(err, "Unable to create temp file for bash history")
-	}
-
-	history, err := files.Read(".demoit", ".bash_history")
-	if err != nil {
-		return "", errors.Wrap(err, "Unable to read bash history")
+		return "", fmt.Errorf("Unable to create temp file for bash history: %w", err)
 	}
 
 	_, err = tmpFile.Write(history)
 	if err != nil {
-		return "", errors.Wrap(err, "Unable to write bash history")
+		return "", fmt.Errorf("Unable to write bash history: %w", err)
 	}
 
 	return tmpFile.Name(), nil
