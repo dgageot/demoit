@@ -43,23 +43,6 @@ Community: Excited for 2020!
 </main>
 
 ---
-
-<h1>Principles<i>📜</i></h1>
-<main>
-<p>Simple local Kubernetes, for day-to-day development &amp; learning.</p>
-
-<ul>
-    <li>Inclusive and community-driven</li>
-    <li>User-friendly</li>
-    <li>Support all Kubernetes features</li>
-    <li>Cross-platform</li>
-    <li>Reliable</li>
-    <li>High Performance</li>
-    <li>Developer Focused</li>
-</ul>
-</main>
-
----
 <h1>The Origin Story<i>✨</i></h1>
 
 <main>
@@ -87,7 +70,20 @@ The more modern type of reformer goes gaily up to it and says, "I don't see the 
 <!-- drawing: fence -->
 
 ---
-<h1>Who here was running Kubernetes v1.2.x?</h1>
+
+<h1>Why am I telling you all this?<i>👶</i></h1>
+
+<main>
+<ul>
+<li>The beginner mindset is hugely valuable</li>
+<li>We would love to make you one of our 400+ contributors</li>
+<li>We're happy to help you make your first commit to the Kubernetes org</li>
+<li>minikube is not rocket science</li>
+</ul>
+</main>
+
+---
+<h1>Who here was running Kubernetes v1.2.x?<i>☸️</i></h1>
 
 <main class="center">
 <img src="/images/genesis.png">
@@ -103,14 +99,39 @@ The more modern type of reformer goes gaily up to it and says, "I don't see the 
 
 ---
 
-<h1>Started by the community, maintained by the community</h1>
-
+<h1>Principles<i>📜</i></h1>
 <main>
+<p>Simple local Kubernetes, for day-to-day development &amp; learning.</p>
 
+<ul>
+    <li>Inclusive and community-driven</li>
+    <li>User-friendly</li>
+    <li>Support all Kubernetes features</li>
+    <li>Cross-platform</li>
+    <li>Reliable</li>
+    <li>High Performance</li>
+    <li>Developer Focused</li>
+</ul>
 </main>
 
+---
 
-<!-- drawing: declaration of independence -->
+<h1>New Users vs Accurate Simulation<i>👯</i></h1>
+<main class="center">
+Not a competing interest.
+
+<img src="/images/two-masters.png">
+
+PLoS
+</main>
+
+---
+
+<main class="center">
+<p style="text-align: center">It turns out, the combination can work pretty well.</p>
+
+<img src="/images/minikube-k8s-dev.png">
+</main>
 
 ---
 
@@ -160,9 +181,16 @@ The more modern type of reformer goes gaily up to it and says, "I don't see the 
     </ul>
 </main>
 ---
+
+<h1>http://minikube.sigs.k8s.io<i>🚀</i></h1>
+<main class="center">
+   <img src="/images/tutorials.png">
+</main>
+---
+
 <h1>minikube today<i>😀</i></h1>
 
-    <!--
+<!--
 # driver auto-select, lang, addons, deletion
 minikube config set memory 16384
 minikube start --kubernetes-version v1.17.0-beta.0 --addons helm-tiller -p kubecon --wait=false
@@ -200,6 +228,7 @@ minikube delete --all
     </div>
 </main>
 
+
 ---
 
 <h1>minikube pros<i>👍</i></h1>
@@ -210,7 +239,7 @@ minikube delete --all
         <li>Easily run different k8s versions, container runtimes, controllers</li>
         <li>Build images in-cluster with <code>minikube docker-env</code></li>
         <li>Developer-focused: LoadBalancer, addons, dashboard.</li>
-        <li>Always supports the latest k8s + 5 older releases</li>
+        <li>Supports last 6+ Kubernetes releases (v1.11 to v1.17)</li>
         <li>Ability to use tech that requires kernel module support</li>
         <li>Open-Source</li>
     </ul>
@@ -294,18 +323,6 @@ There is also <code>minikube logs --problems</code>, but it isn't great (yet!)
 </main>
 
 ---
-<h1>Confusing configuration persistence<i>😣</i></h1>
-
-<main>
-<ul>
-    <li>start flags are not persistent across restarts</li>
-    <li>For persistence, use `minikube config`</li>
-    <li>In v1.6, will become `--kubernetes-version` sticky across restarts</li>
-    <li>Addons enable/disable is still global and persistent</li>
-</ul>
-</main>
-
----
 
 <h1>Draft 2020 roadmap<i>🗺️</i></h1>
 
@@ -336,6 +353,19 @@ There is also <code>minikube logs --problems</code>, but it isn't great (yet!)
 
 ---
 
+<h1>Confusing configuration persistence<i>😣</i></h1>
+
+<main>
+<ul>
+    <li>Currently, start flags are not persistent across restarts</li>
+    <li>No separation of cluster creation and restart</li>
+    <li>For persistent config across profiles, use `minikube config`</li>
+    <li>In v1.6, will become `--kubernetes-version` sticky across restarts</li>
+    <li>Addons enable/disable is still global and persistent</li>
+</ul>
+
+In 2020, let's clean up the config UX.
+</main>
 
 ---
 
@@ -362,7 +392,7 @@ There is also <code>minikube logs --problems</code>, but it isn't great (yet!)
 
 ---
 
-<h1>Container deployments</h1>
+<h1>Container deployments (VM-free)</h1>
 
 <main>
 <ul>
@@ -375,7 +405,7 @@ There is also <code>minikube logs --problems</code>, but it isn't great (yet!)
 </main>
 
 ---
-<h1>VM-free shortcomings</h1>
+<h1>Container deployment shortcomings</h1>
 
 <main>
 <ul>
@@ -398,6 +428,7 @@ There is also <code>minikube logs --problems</code>, but it isn't great (yet!)
     </source-code>
 </split-view>
 
+---
 
 <h1>Help Wanted!<i>😍</i></h1>
 
@@ -408,6 +439,7 @@ There is also <code>minikube logs --problems</code>, but it isn't great (yet!)
 <li>1st principle is inclusive and community-driven</li>
 <li>We would love to help you learn and become into a Kubernetes contributor</li>
 <li>Docs are a great place to start. We would love more tutorials!</li>
+<li>Downloading a beta and open an issue!</li>
 <li>#minikube on Slack</li>
 <li>bi-weekly office-hours</li>
 <li>https://minikube.sigs.k8s.io/</li>
