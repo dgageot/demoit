@@ -20,7 +20,12 @@ html, body, #top {
     --color-text: rgb(61, 64, 67);
     --color-main: #345492;
 }
-
+a {
+    color: #39FF14;
+}
+a:visited {
+    color: #39FF14;
+}
 main {
     padding-left: 4vw;
     padding-right: 4vw;
@@ -184,7 +189,6 @@ cite {
 
 
 a, a:visited {
-    color: var(--color-main);
 	text-decoration: none;
 }
 

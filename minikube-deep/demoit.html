@@ -77,7 +77,7 @@ The more modern type of reformer goes gaily up to it and says, "I don't see the 
 <ul>
 <li>The beginner mindset is hugely valuable</li>
 <li>We would love to make you one of our 400+ contributors</li>
-<li>We're happy to help you make your first commit to the Kubernetes org</li>
+<li>We're happy to guide you on your journey to your first commit</li>
 <li>minikube is not rocket science</li>
 </ul>
 </main>
@@ -118,11 +118,8 @@ The more modern type of reformer goes gaily up to it and says, "I don't see the 
 
 <h1>New Users vs Accurate Simulation<i>👯</i></h1>
 <main class="center">
-Not a competing interest.
+Competing priorities? Not if you respect Principle of Least Surprise. <img src="/images/two-masters.png">
 
-<img src="/images/two-masters.png">
-
-PLoS
 </main>
 
 ---
@@ -133,6 +130,33 @@ PLoS
 <img src="/images/minikube-k8s-dev.png">
 </main>
 
+---
+
+<h1>Support Matrix <i>😱</i></h1>
+
+<main class="center">
+    <img src="/images/matrix.png" />
+</main>
+
+---
+<h1>Accomplishments in 2019<i>🚀</i></h1>
+<main>
+    <ul>
+        <li>Same-day cadence with Kubernetes major releases</li>
+        <li>Simplified installation</li>
+        <li>Multi-lingual: de, es, en-US, fr, ja, pl, zh-CN</li>
+        <li>Multi-cluster (<code>profiles</code>)</li>
+        <li>Loads more options: image mirrors, JSON output, profile list, --all</li>
+        <li>Environmental awareness: proxies, kubectl versions, networking</li>
+        <li>Reduced start latency</li>
+    </ul>
+</main>
+---
+
+<h1>http://minikube.sigs.k8s.io<i>🚀</i></h1>
+<main class="center">
+   <img src="/images/tutorials.png">
+</main>
 ---
 
 <h1>Architecture<i>🏛️</i></h1>
@@ -160,32 +184,6 @@ PLoS
 </section>
 
 </min>
----
-<h1>Support Matrix <i>😱</i></h1>
-
-<main class="center">
-    <img src="/images/matrix.png" />
-</main>
-
----
-<h1>Accomplishments in 2019<i>🚀</i></h1>
-<main>
-    <ul>
-        <li>Same-day cadence with Kubernetes major releases</li>
-        <li>Simplified installation</li>
-        <li>Multi-lingual: de, es, en-US, fr, ja, pl, zh-CN</li>
-        <li>Multi-cluster (<code>profiles</code>)</li>
-        <li>Loads more options: image mirrors, JSON output, profile list, --all</li>
-        <li>Environment checks: kubectl, proxies, networking</li>
-        <li>Reduced start latency</li>
-    </ul>
-</main>
----
-
-<h1>http://minikube.sigs.k8s.io<i>🚀</i></h1>
-<main class="center">
-   <img src="/images/tutorials.png">
-</main>
 ---
 
 <h1>minikube today<i>😀</i></h1>
@@ -240,8 +238,12 @@ minikube delete --all
         <li>Build images in-cluster with <code>minikube docker-env</code></li>
         <li>Developer-focused: LoadBalancer, addons, dashboard.</li>
         <li>Supports last 6+ Kubernetes releases (v1.11 to v1.17)</li>
-        <li>Ability to use tech that requires kernel module support</li>
-        <li>Open-Source</li>
+        <li>Ability to use technologies that requires kernel module support
+            <ul>
+                <li>gVisor</li>
+                <li>KATA</li>
+            </ul>
+        </li>
     </ul>
 </main>
 
@@ -251,10 +253,11 @@ minikube delete --all
 
 <main>
 <ul>
-    <li>Higher overhead - you'll want to stop it when not in use</li>
-    <li>Running within a VM makes Kubernetes performance slower</li>
+    <li>Higher overhead - you'll want to stop it when not in use*</li>
+    <li>Running within a VM makes Kubernetes performance slower*</li>
     <li>Hypervisors can be difficult to configure</li>
     <li>Incompatible with VPN's that block LAN IP's</li>
+    <li>Does not yet support multi-node* or IPv6</li>
 </ul>
 </main>
 
@@ -312,11 +315,11 @@ minikube delete --all
 <h1>Debugging common issues<i>🐛</i></h1>
 <main>
 <ul>
-    <li>Hypervisor failure: <code>--alsologtostderr</code></li>
+    <li>Hypervisor failure: <code>start --alsologtostderr</code></li>
     <li>kubelet failed: <code>kubelet</code> section of <code>minikube logs</code>
     <li>not scheduling: <code>kubectl describe node</code></li>
     <li>apiserver crashed: <code>minikube logs</code>, look for OOM in <code>dmesg</code></li>
-    <li>apiserver did to appear: <code>minikube logs</code>, see <code>kubelet</code> & <code>apiserver</code></li>
+    <li>apiserver did to appear: <code>minikube logs</code>, see <code>kubelet</code> &amp; <code>apiserver</code></li>
     <li>connectivity failure: <code>VPN, firewall</code> reboot?</li>
 </ul>
 There is also <code>minikube logs --problems</code>, but it isn't great (yet!)
@@ -381,7 +384,7 @@ In 2020, let's clean up the config UX.
 
 ---
 
-<h1>Docker deployment: Prototype<i>🐳</i></h1>
+<h1>Container deployment: Prototype<i>🐳</i></h1>
 
 <split-view>
     <web-term path="."></web-term>
@@ -396,11 +399,11 @@ In 2020, let's clean up the config UX.
 
 <main>
 <ul>
-    <li>Prototyped with Kind, but rewritten to be full-featured</li>
+    <li>Prototyped with Kind, but rewritten to match our feature-set</li>
     <li>Deployable using Docker or Podman</li>
     <li>Container runtimes: Docker, containerd, CRIO</li>
-    <li>Feature-parity with current minikube</li>
-    <li>Effectively deprecates the none driver</li>
+    <li>Effectively obsoletes the 'none' driver</li>
+    <li>I'm personally hoping for a Kind convergence story</li>
 </ul>
 </main>
 
@@ -411,7 +414,7 @@ In 2020, let's clean up the config UX.
 <ul>
     <li>Resource scheduling misbehaves if swap is enabled</li>
     <li>Unable to use tools that require kernel support, like gVisor</li>
-    <li>Network issues: No IP connectivity, LoadBalancer, Ingress</li>
+    <li>No direct IP connectivity on maCOS</li>
     <li>No performance advantage on non-Linux platforms</li>
 </ul>
 </main>
@@ -436,14 +439,16 @@ In 2020, let's clean up the config UX.
 <!-- insert help wanted art -->
 
 <ul>
-<li>1st principle is inclusive and community-driven</li>
-<li>We would love to help you learn and become into a Kubernetes contributor</li>
-<li>Docs are a great place to start. We would love more tutorials!</li>
-<li>Downloading a beta and open an issue!</li>
-<li>#minikube on Slack</li>
+<li>Beginners and experienced Kubernetes contributors needed!</li>
+<li>Tutorial and other doc contributions needed!</li>
+<li>Like problem solving user issues? Issue triagers needed!</li>
+<li>Need inspiration? <code>good first issue</code> & <code>help wanted</code> labels</li>
+</ul>
+<ul>
+<li><code>#minikube</code> on Kubernetes Slack</li>
 <li>bi-weekly office-hours</li>
-<li>https://minikube.sigs.k8s.io/</li>
-<li>tstromberg@google.com</li>
+<li><a href="https://minikube.sigs.k8s.io/">https://minikube.sigs.k8s.io/</a></li>
+<li><a href="mailto:tstromberg@google.com">tstromberg@google.com</a></li>
 </ul>
 
 </main>
