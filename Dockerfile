@@ -1,6 +1,6 @@
-FROM golang:1.11.5-alpine3.9
+FROM golang:1.13.4-alpine3.10
 
-WORKDIR /go/src/github.com/dgageot/demoit
+WORKDIR /app
 COPY . ./
 
-RUN go build
+RUN go build -mod=vendor
