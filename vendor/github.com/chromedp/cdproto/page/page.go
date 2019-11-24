@@ -663,10 +663,10 @@ type PrintToPDFParams struct {
 	Scale                   float64                `json:"scale,omitempty"`                   // Scale of the webpage rendering. Defaults to 1.
 	PaperWidth              float64                `json:"paperWidth,omitempty"`              // Paper width in inches. Defaults to 8.5 inches.
 	PaperHeight             float64                `json:"paperHeight,omitempty"`             // Paper height in inches. Defaults to 11 inches.
-	MarginTop               float64                `json:"marginTop,omitempty"`               // Top margin in inches. Defaults to 1cm (~0.4 inches).
-	MarginBottom            float64                `json:"marginBottom,omitempty"`            // Bottom margin in inches. Defaults to 1cm (~0.4 inches).
-	MarginLeft              float64                `json:"marginLeft,omitempty"`              // Left margin in inches. Defaults to 1cm (~0.4 inches).
-	MarginRight             float64                `json:"marginRight,omitempty"`             // Right margin in inches. Defaults to 1cm (~0.4 inches).
+	MarginTop               float64                `json:"marginTop"`                         // Top margin in inches. Defaults to 1cm (~0.4 inches).
+	MarginBottom            float64                `json:"marginBottom"`                      // Bottom margin in inches. Defaults to 1cm (~0.4 inches).
+	MarginLeft              float64                `json:"marginLeft"`                        // Left margin in inches. Defaults to 1cm (~0.4 inches).
+	MarginRight             float64                `json:"marginRight"`                       // Right margin in inches. Defaults to 1cm (~0.4 inches).
 	PageRanges              string                 `json:"pageRanges,omitempty"`              // Paper ranges to print, e.g., '1-5, 8, 11-13'. Defaults to the empty string, which means print all pages.
 	IgnoreInvalidPageRanges bool                   `json:"ignoreInvalidPageRanges,omitempty"` // Whether to silently ignore invalid but successfully parsed page ranges, such as '3-2'. Defaults to false.
 	HeaderTemplate          string                 `json:"headerTemplate,omitempty"`          // HTML template for the print header. Should be valid HTML markup with following classes used to inject printing values into them: - date: formatted print date - title: document title - url: document location - pageNumber: current page number - totalPages: total pages in the document  For example, <span class=title></span> would generate span containing the title.
