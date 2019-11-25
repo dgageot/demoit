@@ -19,7 +19,6 @@ package files
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -30,12 +29,7 @@ var Root = "."
 
 // Read reads a file in .demoit folder.
 func Read(path ...string) ([]byte, error) {
-	content, err := ioutil.ReadFile(fullpath(path...))
-	if err != nil {
-		return nil, fmt.Errorf("Unable to read %s: %w", fullpath(path...), err)
-	}
-
-	return content, nil
+	return ioutil.ReadFile(fullpath(path...))
 }
 
 // Exists tests if a file exists.

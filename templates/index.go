@@ -21,25 +21,25 @@ import "github.com/dgageot/demoit/files"
 // Index is the template for the index page.
 func Index(content []byte) string {
 	return `<!doctype html>
-    <html lang=en>
-      <head>
-        <meta charset="utf-8">
-        <title>Demo {{ .CurrentStep }}/{{ .StepCount }}</title>
-        <link rel="stylesheet" href="/style.css?hash=` + hash("style.css") + `">
-        <script>
-            const NextURL = '{{ .NextURL }}';
-            const PrevURL = '{{ .PrevURL }}';
-        </script>
-      </head>
-      <body>
-      <div id="top">` + string(content) + `
-      <nav-arrows previous="{{ .PrevURL }}" next="{{ .NextURL }}"></nav-arrows>
-      </div>
-      <div id="progression" style="width: calc(100vw * {{ .CurrentStep }} / {{ .StepCount }})"></div>
-      </body>
-      <script src="/js/demoit.js?hash=` + hash("js/demoit.js") + `"></script>
-      {{ if .DevMode }}<script src="http://localhost:35729/livereload.js"></script>{{ end }}
-    </html>`
+<html lang=en>
+	<head>
+		<meta charset="utf-8">
+		<title>Demo {{ .CurrentStep }}/{{ .StepCount }}</title>
+		<link rel="stylesheet" href="/style.css?hash=` + hash("style.css") + `">
+		<script>
+			const NextURL = '{{ .NextURL }}';
+			const PrevURL = '{{ .PrevURL }}';
+		</script>
+	</head>
+	<body>
+		<div id="top">` + string(content) + `
+		<nav-arrows previous="{{ .PrevURL }}" next="{{ .NextURL }}"></nav-arrows>
+		</div>
+		<div id="progression" style="width: calc(100vw * {{ .CurrentStep }} / {{ .StepCount }})"></div>
+	</body>
+	<script src="/js/demoit.js?hash=` + hash("js/demoit.js") + `"></script>
+	{{ if .DevMode }}<script src="http://localhost:35729/livereload.js"></script>{{ end }}
+</html>`
 }
 
 // Ignore errors and return empty string if an error occurs.

@@ -17,15 +17,12 @@ limitations under the License.
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 )
 
 // Ping does http HEAD on a url and return it's status.
 func Ping(w http.ResponseWriter, r *http.Request) {
 	url := r.FormValue("url")
-
-	fmt.Println("Ping", url)
 
 	resp, err := http.Head(url)
 	if err != nil {

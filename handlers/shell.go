@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/dgageot/demoit/files"
@@ -69,15 +70,18 @@ func commands(path string) ([]string, error) {
 	}
 	fmt.Println("Using shell", shell)
 
-	bashRc, err := copyFile(".bashrc")
+	// Source custom .bashrc
+	bashRc, err := filepath.Abs(filepath.Join(files.Root, ".demoit", ".bashrc"))
 	if err != nil {
 		return nil, err
 	}
-	if bashRc != "" {
+	if _, err := os.Stat(bashRc); err == nil {
 		fmt.Println("Using bashrc file", bashRc)
 		commands = append(commands, fmt.Sprintf("source %s", bashRc))
 	}
 
+	// Bash history needs to be copied because it's going to be
+	// modified by the shell.
 	bashHistory, err := copyFile(".bash_history")
 	if err != nil {
 		return nil, err
