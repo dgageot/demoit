@@ -489,3 +489,40 @@ class NavArrows extends BaseHTMLElement {
 }
 
 customElements.define('nav-arrows', NavArrows);
+
+// Communication between Main presentation window and Speaker notes window.
+// On page load, emit current state.
+// When Speaker notes window asks, emit current state.
+// When Speaker notes window forwards navigation, navigate.
+const channel = new BroadcastChannel("demoit_nav");
+function emitCurrentState() {
+    let notes = "";
+    const notesDiv = document.getElementById("speaker-notes");
+    if(notesDiv)
+        notes = notesDiv.innerHTML;
+
+    let title = "";
+    const h1s = document.getElementsByTagName("h1");
+    if(h1s && h1s[0])
+        title = h1s[0].innerHTML;
+
+    channel.postMessage({
+        currentSlideId: CurrentStep,
+        stepCount: StepCount,
+        currentSlideTitle: title,
+        speakerNotes: notes
+    });
+}
+emitCurrentState();
+channel.onmessage = function(e) {
+    if(e.data === "ask") {
+        emitCurrentState();
+        return;
+    }
+
+    if(e.data.hasOwnProperty("destinationSlideId") ) {
+        // The Speaker notes window received a slide change event, and forwards it to
+        // the Main presentation window.
+        window.location.href = "/" + e.data.destinationSlideId;
+    }
+}

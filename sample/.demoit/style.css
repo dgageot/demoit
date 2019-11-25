@@ -114,3 +114,53 @@ em {
     width: 15vw;
     height: auto;
 }
+
+#speaker-notes {
+    /* Hidden by default. Toggled by /speakernotes. */
+    display: none;
+
+    position: fixed;
+    width: 80%;
+    height: 80%;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    background-color: #EEEE;
+    margin: 10%;
+    border: 4px solid #CCC;
+    border-radius: 2rem;
+    padding: 2vw;
+    justify-content: center;
+    align-items: center;
+}
+
+#speaker-notes-contents {
+    display: table-cell;
+    vertical-align: middle;
+    line-height: normal;
+}
+
+#speaker-notes-progress {
+    position: fixed;
+    height: 3.5vw;
+    top: 1vw;
+    left: 1vw;
+    padding: 0.5vw;
+    background-color: #7CF;
+    font-size: 3vw;
+    font-weight: bold;
+    text-align: center;
+}
+
+#current-slide-title {
+    position: fixed;
+    height: 3.5vw;
+    top: 1vw;
+    left: 12vw;
+    padding: 0.5vw;
+    background-color: black;
+    color: #DDD;
+    font-size: 3vw;
+    font-weight: bold;
+    text-align: center;
+}
