@@ -382,6 +382,7 @@ class WebTerm extends BaseHTMLElement {
     render() {
         this.path = this.getAttribute('path');
         this.command = this.getAttribute('command');
+        this.window = window;
 
         return '';
     }
@@ -392,16 +393,16 @@ class WebTerm extends BaseHTMLElement {
     }
 
     addTab() {
-        let args = '';
+        let url = new URL(`/shell/${this.path}`, this.window.location);
         if (this.command) {
-            args = `?userCommand=${this.command}`
+            url.searchParams.set('userCommand', this.command);
         }
 
         const div = document.createElement('div');
         div.innerHTML = `
         <fake-window title="bash ~ ${this.path}">
             <a slot="bar" class="newtab" href="#">+</a>
-            <iframe scrolling="no" src="/shell/${this.path}${args}"></iframe>
+            <iframe scrolling="no" src="${url}"></iframe>
         </fake-window>`;
 
         const window = this.shadowRoot.appendChild(div.lastChild);

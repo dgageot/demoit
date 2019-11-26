@@ -45,7 +45,8 @@ func Shell(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	args, err := args(path, r.Form["userCommand"])
+	userCommand := r.FormValue("userCommand")
+	args, err := args(path, userCommand)
 	if err != nil {
 		fmt.Println(err)
 		http.Error(w, err.Error(), 500)
@@ -66,7 +67,7 @@ func Shell(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, url, 303)
 }
 
-func args(path string, userCommands []string) ([]string, error) {
+func args(path, userCommand string) ([]string, error) {
 	args := []string{"cd " + path}
 
 	shell, found := os.LookupEnv("SHELL")
@@ -85,8 +86,8 @@ func args(path string, userCommands []string) ([]string, error) {
 		args = append(args, fmt.Sprintf("source %s", bashRc))
 	}
 
-	for _, userCommand := range userCommands {
-		args = append(args, fmt.Sprintf("%s -c '%s'", shell, userCommand))
+	if userCommand != "" {
+		args = append(args, fmt.Sprintf("PS4=\"$ \" %s -cx '%s'", shell, userCommand))
 	}
 
 	// Bash history needs to be copied because it's going to be
