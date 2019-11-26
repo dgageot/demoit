@@ -27,15 +27,16 @@ func SpeakerNotes(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, speakerNotesPage)
 }
 
+// This is a static page.
+// By having it in the Go source code, we don't need to ship it in every
+// presentation's .demoit folder.
 const speakerNotesPage = `
+<!doctype html>
 <head>
+	<meta charset="utf-8">
+	<title>Notes</title>
 	<link rel="stylesheet" href="/style.css">
 </head>
-<style>
-	#speaker-notes {
-		display: table;
-	}
-</style>
 <div id="speaker-notes-progress"></div>
 <div id="current-slide-title"></div>
 <div id="speaker-notes">

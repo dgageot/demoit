@@ -115,9 +115,9 @@ em {
     height: auto;
 }
 
+/* Speaker Notes window. */
 #speaker-notes {
-    /* Hidden by default. Toggled by /speakernotes. */
-    display: none;
+	display: table;
 
     position: fixed;
     width: 80%;

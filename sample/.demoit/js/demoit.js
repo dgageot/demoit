@@ -490,16 +490,22 @@ class NavArrows extends BaseHTMLElement {
 
 customElements.define('nav-arrows', NavArrows);
 
+// Tag <speaker-notes> renders nothing on the Main presentation screen.
+// Its content is dynamically extracted and sent to the Speaker notes window.
+customElements.define('speaker-notes', BaseHTMLElement);
+
 // Communication between Main presentation window and Speaker notes window.
 // On page load, emit current state.
 // When Speaker notes window asks, emit current state.
 // When Speaker notes window forwards navigation, navigate.
+// Messages must be sent and received even when a slide doesn't have speaker notes,
+// in order to keep the two windows in sync.
 const channel = new BroadcastChannel("demoit_nav");
 function emitCurrentState() {
     let notes = "";
-    const notesDiv = document.getElementById("speaker-notes");
-    if(notesDiv)
-        notes = notesDiv.innerHTML;
+    const notesDiv = document.getElementsByTagName("speaker-notes");
+    if(notesDiv && notesDiv[0])
+        notes = notesDiv[0].innerHTML;
 
     let title = "";
     const h1s = document.getElementsByTagName("h1");
@@ -523,6 +529,7 @@ channel.onmessage = function(e) {
     if(e.data.hasOwnProperty("destinationSlideId") ) {
         // The Speaker notes window received a slide change event, and forwards it to
         // the Main presentation window.
+        // The Main presentation window advances to the new current slide.
         window.location.href = "/" + e.data.destinationSlideId;
     }
 }
