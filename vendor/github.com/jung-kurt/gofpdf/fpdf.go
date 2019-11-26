@@ -46,6 +46,7 @@ var gl struct {
 	catalogSort  bool
 	noCompress   bool // Initial zero value indicates compression
 	creationDate time.Time
+	modDate      time.Time
 }
 
 type fmtBuffer struct {
@@ -205,6 +206,7 @@ func fpdfNew(orientationStr, unitStr, sizeStr, fontDirStr string, size SizeType)
 	f.layerInit()
 	f.catalogSort = gl.catalogSort
 	f.creationDate = gl.creationDate
+	f.modDate = gl.modDate
 	f.userUnderlineThickness = 1
 	return
 }
@@ -2707,6 +2709,10 @@ func (f *Fpdf) MultiCell(w, h float64, txtStr, borderStr, alignStr string, fill 
 			ls = l
 			ns++
 		}
+		if int(c) >= len(cw) {
+			f.err = fmt.Errorf("character outside the supported range: %s", string(c))
+			return
+		}
 		if cw[int(c)] == 0 { //Marker width 0 used for missing symbols
 			l += f.currentFont.Desc.MissingWidth
 		} else if cw[int(c)] != 65535 { //Marker width 65535 used for zero width symbols
@@ -3810,12 +3816,25 @@ func SetDefaultCreationDate(tm time.Time) {
 	gl.creationDate = tm
 }
 
+// SetDefaultModificationDate sets the default value of the document modification date
+// that will be used when initializing a new Fpdf instance. See
+// SetCreationDate() for more details.
+func SetDefaultModificationDate(tm time.Time) {
+	gl.modDate = tm
+}
+
 // SetCreationDate fixes the document's internal CreationDate value. By
 // default, the time when the document is generated is used for this value.
 // This method is typically only used for testing purposes to facilitate PDF
 // comparison. Specify a zero-value time to revert to the default behavior.
 func (f *Fpdf) SetCreationDate(tm time.Time) {
 	f.creationDate = tm
+}
+
+// SetModificationDate fixes the document's internal ModDate value.
+// See `SetCreationDate` for more details.
+func (f *Fpdf) SetModificationDate(tm time.Time) {
+	f.modDate = tm
 }
 
 // SetJavascript adds Adobe JavaScript to the document.
@@ -4595,8 +4614,15 @@ func (f *Fpdf) putresources() {
 	return
 }
 
+// returns Now() if tm is zero
+func timeOrNow(tm time.Time) time.Time {
+	if tm.IsZero() {
+		return time.Now()
+	}
+	return tm
+}
+
 func (f *Fpdf) putinfo() {
-	var tm time.Time
 	if len(f.producer) > 0 {
 		f.outf("/Producer %s", f.textstring(f.producer))
 	}
@@ -4615,12 +4641,10 @@ func (f *Fpdf) putinfo() {
 	if len(f.creator) > 0 {
 		f.outf("/Creator %s", f.textstring(f.creator))
 	}
-	if f.creationDate.IsZero() {
-		tm = time.Now()
-	} else {
-		tm = f.creationDate
-	}
-	f.outf("/CreationDate %s", f.textstring("D:"+tm.Format("20060102150405")))
+	creation := timeOrNow(f.creationDate)
+	f.outf("/CreationDate %s", f.textstring("D:"+creation.Format("20060102150405")))
+	mod := timeOrNow(f.modDate)
+	f.outf("/ModDate %s", f.textstring("D:"+mod.Format("20060102150405")))
 }
 
 func (f *Fpdf) putcatalog() {

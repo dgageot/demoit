@@ -21,7 +21,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/chromedp/cdproto/emulation"
 	"github.com/chromedp/cdproto/page"
@@ -45,24 +44,16 @@ type image struct {
 
 // ExportToPDF generates a pdf that contains one page per slide.
 func ExportToPDF(w http.ResponseWriter, r *http.Request) {
-	start := time.Now()
-
 	if err := exportPagesToPdf(r.Context(), w); err != nil {
 		http.Error(w, fmt.Sprintf("Unable export to pdf: %v", err), http.StatusInternalServerError)
 		return
 	}
-
-	fmt.Println(time.Since(start))
 }
 
 func exportPagesToPdf(ctx context.Context, w http.ResponseWriter) error {
 	pageCount, err := readPageCount()
 	if err != nil {
 		return err
-	}
-
-	if true {
-		// pageCount = 4
 	}
 
 	var images [](chan image)

@@ -2010,7 +2010,7 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoPage24(out *jwriter.Writer, i
 		}
 		out.Float64(float64(in.PaperHeight))
 	}
-	if in.MarginTop != 0 {
+	{
 		const prefix string = ",\"marginTop\":"
 		if first {
 			first = false
@@ -2020,94 +2020,49 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoPage24(out *jwriter.Writer, i
 		}
 		out.Float64(float64(in.MarginTop))
 	}
-	if in.MarginBottom != 0 {
+	{
 		const prefix string = ",\"marginBottom\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Float64(float64(in.MarginBottom))
 	}
-	if in.MarginLeft != 0 {
+	{
 		const prefix string = ",\"marginLeft\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Float64(float64(in.MarginLeft))
 	}
-	if in.MarginRight != 0 {
+	{
 		const prefix string = ",\"marginRight\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Float64(float64(in.MarginRight))
 	}
 	if in.PageRanges != "" {
 		const prefix string = ",\"pageRanges\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.PageRanges))
 	}
 	if in.IgnoreInvalidPageRanges {
 		const prefix string = ",\"ignoreInvalidPageRanges\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Bool(bool(in.IgnoreInvalidPageRanges))
 	}
 	if in.HeaderTemplate != "" {
 		const prefix string = ",\"headerTemplate\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.HeaderTemplate))
 	}
 	if in.FooterTemplate != "" {
 		const prefix string = ",\"footerTemplate\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.FooterTemplate))
 	}
 	if in.PreferCSSPageSize {
 		const prefix string = ",\"preferCSSPageSize\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Bool(bool(in.PreferCSSPageSize))
 	}
 	if in.TransferMode != "" {
 		const prefix string = ",\"transferMode\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		(in.TransferMode).MarshalEasyJSON(out)
 	}
 	out.RawByte('}')

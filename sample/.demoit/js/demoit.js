@@ -140,7 +140,7 @@ class SourceCode extends BaseHTMLElement {
         #container {
             height: calc(100% - 42px);
             overflow-y: scroll;
-            overflow-x: hidden;
+            overflow-x: auto;
         }
 
         .chroma {
