@@ -34,13 +34,18 @@ import (
 // Shell redirects to the url of a shell running in the given folder.
 func Shell(w http.ResponseWriter, r *http.Request) {
 	folder := mux.Vars(r)["folder"]
-
 	path := files.Root
 	if folder != "." {
 		path += "/" + folder
 	}
 
-	commands, err := commands(path)
+	if err := r.ParseForm(); err != nil {
+		fmt.Println(err)
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	args, err := args(path, r.Form["userCommand"])
 	if err != nil {
 		fmt.Println(err)
 		http.Error(w, err.Error(), 500)
@@ -55,14 +60,14 @@ func Shell(w http.ResponseWriter, r *http.Request) {
 	}
 
 	parameters := url.Values{}
-	parameters.Set("arg", strings.Join(commands, ";"))
+	parameters.Set("arg", strings.Join(args, ";"))
 	url := fmt.Sprintf("http://%s:%d/?%s", domain, *flags.ShellPort, parameters.Encode())
 
 	http.Redirect(w, r, url, 303)
 }
 
-func commands(path string) ([]string, error) {
-	commands := []string{"cd " + path}
+func args(path string, userCommands []string) ([]string, error) {
+	args := []string{"cd " + path}
 
 	shell, found := os.LookupEnv("SHELL")
 	if !found {
@@ -77,7 +82,11 @@ func commands(path string) ([]string, error) {
 	}
 	if _, err := os.Stat(bashRc); err == nil {
 		fmt.Println("Using bashrc file", bashRc)
-		commands = append(commands, fmt.Sprintf("source %s", bashRc))
+		args = append(args, fmt.Sprintf("source %s", bashRc))
+	}
+
+	for _, userCommand := range userCommands {
+		args = append(args, fmt.Sprintf("%s -c '%s'", shell, userCommand))
 	}
 
 	// Bash history needs to be copied because it's going to be
@@ -88,12 +97,12 @@ func commands(path string) ([]string, error) {
 	}
 	if bashHistory != "" {
 		fmt.Println("Using history", bashHistory)
-		commands = append(commands, fmt.Sprintf("HISTFILE=%s exec %s", bashHistory, shell))
+		args = append(args, fmt.Sprintf("HISTFILE=%s exec %s", bashHistory, shell))
 	} else {
-		commands = append(commands, fmt.Sprintf("exec %s", shell))
+		args = append(args, fmt.Sprintf("exec %s", shell))
 	}
 
-	return commands, nil
+	return args, nil
 }
 
 func copyFile(file string) (string, error) {
