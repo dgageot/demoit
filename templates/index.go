@@ -27,6 +27,8 @@ func Index(content []byte) string {
 		<title>Demo {{ .CurrentStep }}/{{ .StepCount }}</title>
 		<link rel="stylesheet" href="/style.css?hash=` + hash("style.css") + `">
 		<script>
+      const CurrentStep = {{ .CurrentStep }};
+      const StepCount = {{ .StepCount }};
 			const NextURL = '{{ .NextURL }}';
 			const PrevURL = '{{ .PrevURL }}';
 		</script>
