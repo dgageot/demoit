@@ -118,7 +118,6 @@ em {
 /* Speaker Notes window. */
 #speaker-notes {
 	display: table;
-
     position: fixed;
     width: 80%;
     height: 80%;

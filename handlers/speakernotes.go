@@ -19,31 +19,36 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/dgageot/demoit/files"
 )
 
 // SpeakerNotes provides the presenter view, which depends on the main window to
 // be able to display the "current" slide with notes.
 func SpeakerNotes(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
 	fmt.Fprint(w, speakerNotesPage)
 }
 
 // This is a static page.
 // By having it in the Go source code, we don't need to ship it in every
 // presentation's .demoit folder.
-const speakerNotesPage = `
+var speakerNotesPage = `
 <!doctype html>
 <head>
 	<meta charset="utf-8">
 	<title>Notes</title>
-	<link rel="stylesheet" href="/style.css">
+	<link rel="stylesheet" href="/style.css?hash=` + hash("style.css") + `">
 </head>
-<div id="speaker-notes-progress"></div>
-<div id="current-slide-title"></div>
-<div id="speaker-notes">
-	<div id="speaker-notes-contents">
-		No <a href="/" target="_blank">presentation window</a> is currently shown.
-	</div>
-<div>
+<body>
+	<div id="speaker-notes-progress"></div>
+	<div id="current-slide-title"></div>
+	<div id="speaker-notes">
+		<div id="speaker-notes-contents">
+			No <a href="/" target="_blank">presentation window</a> is currently shown.
+		</div>
+	<div>
+</body>
 <script>
 	const viewer = document.getElementById("speaker-notes-contents");
 	const progress = document.getElementById("speaker-notes-progress");
@@ -123,3 +128,12 @@ const speakerNotesPage = `
 	}
 </script>
 `
+
+// Ignore errors and return empty string if an error occurs.
+func hash(path string) string {
+	h, err := files.Sha256(path)
+	if err != nil {
+		return ""
+	}
+	return h[:10]
+}
