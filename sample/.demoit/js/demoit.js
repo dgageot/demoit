@@ -152,25 +152,25 @@ class SourceCode extends BaseHTMLElement {
             font-size: var(--source-code-font-size, 16px);
             font-family: 'Roboto Mono', monospace;
         }
-        
+
         pre.chroma {
             tab-size: var(--source-code-tab-size, 4);
         }
-        
+
         .nt {
             color: blue;
         }
-        
+
         #tabs {
             background-color: rgb(243, 243, 243);
             border-bottom: 1.5px solid rgb(236, 236, 236);
-            overflow: hidden; 
+            overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             text-align: left;
             height: 42px;
         }
-        
+
         #tabs a {
             display: inline-block;
             line-height: 42px;
@@ -181,17 +181,17 @@ class SourceCode extends BaseHTMLElement {
             font-size: 0.9em;
             font-family: sans-serif;
         }
-        
+
         #tabs a .close {
             visibility: hidden;
             margin-left: 10px;
             font-weight: bold;
         }
-        
+
         #tabs a.selected .close {
             visibility: visible;
         }
-        
+
         #tabs a.selected {
             background: white;
         }
@@ -199,7 +199,7 @@ class SourceCode extends BaseHTMLElement {
         #source {
             --default-color-selection: rgb(191, 214, 255);
         }
-        
+
         .hl {
             background-color: var(--color-selection, var(--default-color-selection)) !important;
         }`;
@@ -207,6 +207,10 @@ class SourceCode extends BaseHTMLElement {
 
     render() {
         this.folder = this.getAttribute('folder');
+        this.code_style = this.getAttribute('code_style');
+        if (this.code_style === null) {
+            this.code_style = 'vs';
+        }
         this.files = this.getAttribute('files').split(' ').filter(n => n.trim() !== '');
         this.startLines = this.getAttribute('start-lines').split(';');
         this.endLines = this.getAttribute('end-lines').split(';');
@@ -234,7 +238,7 @@ class SourceCode extends BaseHTMLElement {
         const file = this.files[current];
         const startLines = this.startLines[current];
         const endLines = this.endLines[current];
-        const url = `/sourceCode/${this.folder}/${file}?style=vs&startLine=${startLines}&endLine=${endLines}`;
+        const url = `/sourceCode/${this.folder}/${file}?style=${this.code_style}&startLine=${startLines}&endLine=${endLines}`;
 
         const response = await fetch(url);
         this.$('#source').innerHTML = await response.text();
@@ -258,25 +262,25 @@ class WebBrowser extends BaseHTMLElement {
             margin: 0.1em;
             padding: 0 0.4em;
         }
-        
+
         #refresh img {
             height: 0.8em;
             margin-bottom: 3px;
             padding: 3px;
             cursor: default;
         }
-        
+
         #chrome img {
             height: 1em;
             margin-bottom: 3px;
             padding: 3px;
         }
-        
+
         #refresh img:hover, #chrome img:hover {
             background-color: lightgray;
             border-radius: 4px;
         }
-        
+
         iframe {
             width: 100%;
             height: calc(100% + 1px);
@@ -367,7 +371,7 @@ class WebTerm extends BaseHTMLElement {
             border: none;
             background-color: rgb(10,39,50);
         }
-        
+
         .newtab {
             position: absolute;
             top: 6px;
