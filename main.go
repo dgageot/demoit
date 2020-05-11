@@ -56,6 +56,7 @@ func main() {
 	r.HandleFunc("/pdf", handlers.ExportToPDF).Methods("GET")
 	r.HandleFunc("/speakernotes", handlers.SpeakerNotes).Methods("GET")
 	r.HandleFunc("/grid", handlers.Grid).Methods("GET")
+	r.HandleFunc("/vscode/{folder}", handlers.VSCode).Methods("GET")
 
 	// Fail fast, in case we're not in a cromulent directory
 	if err := handlers.VerifyStepsFile(); err != nil {

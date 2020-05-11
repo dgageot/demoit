@@ -537,3 +537,25 @@ channel.onmessage = function(e) {
         window.location.href = "/" + e.data.destinationSlideId;
     }
 }
+
+class VSCode extends BaseHTMLElement {
+    static get styles() {
+        return `
+        iframe {
+            width: 100%;
+            height: calc(100% + 1px);
+            border: none;
+        }`;
+    }
+
+    render() {
+        this.path = this.getAttribute('path');
+
+        return `
+        <fake-window title="code ~ ${this.path}">
+            <iframe id="site" class="site" src="/vscode/${this.path}"></iframe>
+        </fake-window>`;
+    }
+}
+
+customElements.define('vs-code', VSCode);

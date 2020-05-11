@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -47,16 +46,9 @@ func Shell(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	domain := "localhost"
-	if referer := r.Header.Get("Referer"); referer != "" {
-		if refererURL, err := url.Parse(referer); err == nil {
-			domain = strings.Split(refererURL.Host, ":")[0]
-		}
-	}
-
-	parameters := url.Values{}
-	parameters.Set("arg", strings.Join(commands, ";"))
-	url := fmt.Sprintf("http://%s:%d/?%s", domain, *flags.ShellPort, parameters.Encode())
+	url := localURL(r, *flags.ShellPort, map[string]string{
+		"arg": strings.Join(commands, ";"),
+	})
 
 	http.Redirect(w, r, url, 303)
 }
