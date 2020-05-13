@@ -18,6 +18,7 @@ package handlers
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -51,43 +52,10 @@ func Code(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		repo, err := git.PlainOpen(repoPath)
-		if err != nil {
-			http.Error(w, "Unable to open repo "+repoPath, 500)
-			return
-		}
+		contents, err = readFileFromRepo(repoPath, hash, insidePath)
 
-		h, err := repo.ResolveRevision(plumbing.Revision(hash))
 		if err != nil {
-			http.Error(w, "Unable to resolve revision "+hash, 500)
-			return
-		}
-		if h == nil {
-			http.Error(w, "Resolved nil hash "+hash, 500)
-		}
-
-		obj, err := repo.Object(plumbing.AnyObject, *h)
-		if err != nil {
-			http.Error(w, "Unable to create an object for "+hash, 500)
-			return
-		}
-
-		blob, err := resolve(obj, insidePath)
-		if err != nil {
-			http.Error(w, "Unable to resolve "+insidePath, 500)
-			return
-		}
-
-		r, err := blob.Reader()
-		if err != nil {
-			http.Error(w, "Unable to create a reader for "+insidePath, 500)
-			return
-		}
-		defer r.Close()
-
-		contents, err = ioutil.ReadAll(r)
-		if err != nil {
-			http.Error(w, "Unable to read "+filename, 500)
+			http.Error(w, "Unable to read file "+insidePath+" for hash "+hash+" in repo "+repoPath, 500)
 			return
 		}
 
@@ -251,4 +219,38 @@ func resolve(obj object.Object, path string) (*object.Blob, error) {
 	default:
 		return nil, object.ErrUnsupportedObject
 	}
+}
+
+func readFileFromRepo(repoPath string, hash string, file string) ([]byte, error) {
+	repo, err := git.PlainOpen(repoPath)
+	if err != nil {
+		return nil, err
+	}
+
+	h, err := repo.ResolveRevision(plumbing.Revision(hash))
+	if err != nil {
+		return nil, err
+	}
+	if h == nil {
+		err = errors.New("Resolved nil hash " + hash)
+		return nil, err
+	}
+
+	obj, err := repo.Object(plumbing.AnyObject, *h)
+	if err != nil {
+		return nil, err
+	}
+
+	blob, err := resolve(obj, file)
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := blob.Reader()
+	if err != nil {
+		return nil, err
+	}
+	defer r.Close()
+
+	return ioutil.ReadAll(r)
 }
