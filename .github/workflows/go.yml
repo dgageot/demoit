@@ -15,4 +15,4 @@ jobs:
       uses: actions/checkout@v1
 
     - name: Build
-      run: go build -mod=vendor .
+      run: go build
