@@ -62,9 +62,9 @@ func startVsCodeServer(ctx context.Context) error {
 	_ = client.ContainerRemove(ctx, "demoit-vscode", types.ContainerRemoveOptions{Force: true})
 
 	body, err := client.ContainerCreate(ctx, &containertypes.Config{
-		Image: "codercom/code-server",
+		Image: "codercom/code-server:3.4.1",
 		User:  fmt.Sprintf("%s:%s", user.Uid, user.Gid),
-		Cmd:   []string{"--auth=none", "--disable-updates", "--disable-telemetry"},
+		Cmd:   []string{"--auth=none", "--disable-telemetry"},
 		ExposedPorts: nat.PortSet{
 			nat.Port("8080/tcp"): struct{}{},
 		},
