@@ -7,7 +7,7 @@ github.com/Microsoft/go-winio/pkg/guid
 # github.com/NYTimes/gziphandler v1.1.1
 ## explicit
 github.com/NYTimes/gziphandler
-# github.com/alecthomas/chroma v0.7.0 => github.com/dgageot/chroma v0.4.1-0.20190326114921-11eec8e9afad
+# github.com/alecthomas/chroma v0.7.3 => github.com/dgageot/chroma v0.4.1-0.20190326114921-11eec8e9afad
 ## explicit
 github.com/alecthomas/chroma
 github.com/alecthomas/chroma/formatters/html
@@ -41,7 +41,9 @@ github.com/alecthomas/chroma/lexers/y
 github.com/alecthomas/chroma/styles
 # github.com/alecthomas/colour v0.1.0
 ## explicit
-# github.com/alecthomas/repr v0.0.0-20181024024818-d37bc2a10ba1
+# github.com/alecthomas/repr v0.0.0-20200325044227-4184120f674c
+## explicit
+# github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be
 ## explicit
 # github.com/boombuler/barcode v1.0.0
 ## explicit
@@ -95,12 +97,12 @@ github.com/chromedp/cdproto/tethering
 github.com/chromedp/cdproto/tracing
 github.com/chromedp/cdproto/webaudio
 github.com/chromedp/cdproto/webauthn
-# github.com/chromedp/chromedp v0.5.1
+# github.com/chromedp/chromedp v0.5.3
 ## explicit
 github.com/chromedp/chromedp
 github.com/chromedp/chromedp/device
 github.com/chromedp/chromedp/kb
-# github.com/creack/pty v1.1.9
+# github.com/creack/pty v1.1.11
 ## explicit
 github.com/creack/pty
 # github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964
@@ -152,7 +154,9 @@ github.com/emirpasic/gods/lists/arraylist
 github.com/emirpasic/gods/trees
 github.com/emirpasic/gods/trees/binaryheap
 github.com/emirpasic/gods/utils
-# github.com/fsnotify/fsnotify v1.4.7
+# github.com/fsnotify/fsnotify v1.4.9
+## explicit
+# github.com/gliderlabs/ssh v0.3.0
 ## explicit
 # github.com/gobwas/httphead v0.0.0-20180130184737-2c6c146eadee
 github.com/gobwas/httphead
@@ -161,24 +165,28 @@ github.com/gobwas/pool
 github.com/gobwas/pool/internal/pmath
 github.com/gobwas/pool/pbufio
 github.com/gobwas/pool/pbytes
-# github.com/gobwas/ws v1.0.2
+# github.com/gobwas/ws v1.0.3
+## explicit
 github.com/gobwas/ws
 github.com/gobwas/ws/wsutil
 # github.com/gogo/protobuf v1.3.1
 ## explicit
 github.com/gogo/protobuf/proto
-# github.com/golang/protobuf v1.3.3
+# github.com/golang/protobuf v1.4.2
+## explicit
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
-# github.com/gopherjs/gopherjs v0.0.0-20191106031601-ce3c9ade29de
+# github.com/google/go-cmp v0.4.1
 ## explicit
-# github.com/gorilla/mux v1.7.3
+# github.com/gopherjs/gopherjs v0.0.0-20200217142428-fce0ec30dd00
+## explicit
+# github.com/gorilla/mux v1.7.4
 ## explicit
 github.com/gorilla/mux
-# github.com/gorilla/websocket v1.4.1
+# github.com/gorilla/websocket v1.4.2
 ## explicit
 github.com/gorilla/websocket
 # github.com/jaschaephraim/lrserver v0.0.0-20171129202958-50d19f603f71
@@ -197,35 +205,42 @@ github.com/knq/sysutil
 github.com/konsorten/go-windows-terminal-sequences
 # github.com/kr/pty v1.1.8
 github.com/kr/pty
-# github.com/mailru/easyjson v0.7.0
+# github.com/kr/text v0.2.0
+## explicit
+# github.com/mailru/easyjson v0.7.1
+## explicit
 github.com/mailru/easyjson
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
-# github.com/mattn/go-isatty v0.0.10
+# github.com/mattn/go-isatty v0.0.12
 ## explicit
 # github.com/mitchellh/go-homedir v1.1.0
 github.com/mitchellh/go-homedir
 # github.com/morikuni/aec v1.0.0
 ## explicit
-# github.com/opencontainers/go-digest v1.0.0-rc1
+# github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e
+## explicit
+# github.com/opencontainers/go-digest v1.0.0
 ## explicit
 github.com/opencontainers/go-digest
 # github.com/opencontainers/image-spec v1.0.1
 ## explicit
 github.com/opencontainers/image-spec/specs-go
 github.com/opencontainers/image-spec/specs-go/v1
-# github.com/pkg/errors v0.8.1
+# github.com/pkg/errors v0.9.1
+## explicit
 github.com/pkg/errors
 # github.com/radovskyb/watcher v1.0.7
 ## explicit
 github.com/radovskyb/watcher
-# github.com/sergi/go-diff v1.0.0
+# github.com/sergi/go-diff v1.1.0
+## explicit
 github.com/sergi/go-diff/diffmatchpatch
 # github.com/sirupsen/logrus v1.6.0
 ## explicit
 github.com/sirupsen/logrus
-# github.com/smartystreets/assertions v1.0.1
+# github.com/smartystreets/assertions v1.1.0
 ## explicit
 # github.com/smartystreets/goconvey v1.6.4
 ## explicit
@@ -234,7 +249,7 @@ github.com/src-d/gcfg
 github.com/src-d/gcfg/scanner
 github.com/src-d/gcfg/token
 github.com/src-d/gcfg/types
-# github.com/stretchr/testify v1.4.0
+# github.com/stretchr/testify v1.6.1
 ## explicit
 # github.com/xanzy/ssh-agent v0.2.1
 github.com/xanzy/ssh-agent
@@ -245,12 +260,14 @@ github.com/yudai/gotty/pkg/homedir
 github.com/yudai/gotty/pkg/randomstring
 github.com/yudai/gotty/server
 github.com/yudai/gotty/webtty
-# golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
+# golang.org/x/crypto v0.0.0-20200604202706-70a84ac30bf9
+## explicit
+golang.org/x/crypto/blowfish
 golang.org/x/crypto/cast5
+golang.org/x/crypto/chacha20
 golang.org/x/crypto/curve25519
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/ed25519/internal/edwards25519
-golang.org/x/crypto/internal/chacha20
 golang.org/x/crypto/internal/subtle
 golang.org/x/crypto/openpgp
 golang.org/x/crypto/openpgp/armor
@@ -261,26 +278,61 @@ golang.org/x/crypto/openpgp/s2k
 golang.org/x/crypto/poly1305
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/agent
+golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 golang.org/x/crypto/ssh/knownhosts
-# golang.org/x/net v0.0.0-20190724013045-ca1201d0de80
+# golang.org/x/net v0.0.0-20200602114024-627f9648deb9
+## explicit
 golang.org/x/net/context
 golang.org/x/net/internal/socks
 golang.org/x/net/proxy
-# golang.org/x/sys v0.0.0-20191120155948-bd437916bb0e
+# golang.org/x/sys v0.0.0-20200602225109-6fdc65e7d980
 ## explicit
 golang.org/x/sys/cpu
+golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 # golang.org/x/time v0.0.0-20200416051211-89c76fbcd5d1
 ## explicit
-# google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55
+# google.golang.org/genproto v0.0.0-20200605102947-12044bf5ea91
+## explicit
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.29.1
 ## explicit
 google.golang.org/grpc/codes
 google.golang.org/grpc/internal/status
 google.golang.org/grpc/status
-# gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
+# google.golang.org/protobuf v1.24.0
+google.golang.org/protobuf/encoding/prototext
+google.golang.org/protobuf/encoding/protowire
+google.golang.org/protobuf/internal/descfmt
+google.golang.org/protobuf/internal/descopts
+google.golang.org/protobuf/internal/detrand
+google.golang.org/protobuf/internal/encoding/defval
+google.golang.org/protobuf/internal/encoding/messageset
+google.golang.org/protobuf/internal/encoding/tag
+google.golang.org/protobuf/internal/encoding/text
+google.golang.org/protobuf/internal/errors
+google.golang.org/protobuf/internal/fieldnum
+google.golang.org/protobuf/internal/fieldsort
+google.golang.org/protobuf/internal/filedesc
+google.golang.org/protobuf/internal/filetype
+google.golang.org/protobuf/internal/flags
+google.golang.org/protobuf/internal/genname
+google.golang.org/protobuf/internal/impl
+google.golang.org/protobuf/internal/mapsort
+google.golang.org/protobuf/internal/pragma
+google.golang.org/protobuf/internal/set
+google.golang.org/protobuf/internal/strs
+google.golang.org/protobuf/internal/version
+google.golang.org/protobuf/proto
+google.golang.org/protobuf/reflect/protoreflect
+google.golang.org/protobuf/reflect/protoregistry
+google.golang.org/protobuf/runtime/protoiface
+google.golang.org/protobuf/runtime/protoimpl
+google.golang.org/protobuf/types/known/anypb
+google.golang.org/protobuf/types/known/durationpb
+google.golang.org/protobuf/types/known/timestamppb
+# gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f
 ## explicit
 # gopkg.in/fsnotify.v1 v1.4.7
 ## explicit
@@ -335,7 +387,7 @@ gopkg.in/src-d/go-git.v4/utils/merkletrie/internal/frame
 gopkg.in/src-d/go-git.v4/utils/merkletrie/noder
 # gopkg.in/warnings.v0 v0.1.2
 gopkg.in/warnings.v0
-# gopkg.in/yaml.v2 v2.2.7
+# gopkg.in/yaml.v3 v3.0.0-20200603094226-e3079894b1e8
 ## explicit
 # gotest.tools v2.2.0+incompatible
 ## explicit

@@ -226,7 +226,11 @@ func (s *Selector) waitReady(check func(context.Context, *cdp.Node) error) func(
 			errc := make(chan error, 1)
 			for _, n := range nodes {
 				go func(n *cdp.Node) {
-					errc <- check(ctx, n)
+					select {
+					case <-ctx.Done():
+						errc <- ctx.Err()
+					case errc <- check(ctx, n):
+					}
 				}(n)
 			}
 
@@ -1107,7 +1111,7 @@ func Reset(sel interface{}, opts ...QueryOption) QueryAction {
 
 // ComputedStyle is an element query action that retrieves the computed style of the
 // first element node matching the selector.
-func ComputedStyle(sel interface{}, style *[]*css.ComputedProperty, opts ...QueryOption) QueryAction {
+func ComputedStyle(sel interface{}, style *[]*css.ComputedStyleProperty, opts ...QueryOption) QueryAction {
 	if style == nil {
 		panic("style cannot be nil")
 	}

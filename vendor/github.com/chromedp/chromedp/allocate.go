@@ -1,14 +1,17 @@
 package chromedp
 
 import (
+	"bufio"
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"sync"
+	"time"
 )
 
 // An Allocator is responsible for creating and managing a number of browsers.
@@ -148,7 +151,9 @@ func (a *ExecAllocator) Allocate(ctx context.Context, opts ...BrowserOption) (*B
 		// default, unless the user set Flag("no-sandbox", false).
 		args = append(args, "--no-sandbox")
 	}
-	args = append(args, "--remote-debugging-port=0")
+	if _, ok := a.initFlags["remote-debugging-port"]; !ok {
+		args = append(args, "--remote-debugging-port=0")
+	}
 
 	// Force the first page to be blank, instead of the welcome page;
 	// --no-first-run doesn't enforce that.
@@ -207,7 +212,22 @@ func (a *ExecAllocator) Allocate(ctx context.Context, opts ...BrowserOption) (*B
 		close(c.allocated)
 	}()
 
-	wsURL, err := readOutput(stdout, a.combinedOutputWriter, a.wg.Done)
+	// Chrome will sometimes fail to print the websocket, or run for a long
+	// time, without properly exiting. To avoid blocking forever in those
+	// cases, give up after ten seconds.
+	const wsURLReadTimeout = 20 * time.Second
+
+	var wsURL string
+	wsURLChan := make(chan struct{}, 1)
+	go func() {
+		wsURL, err = readOutput(stdout, a.combinedOutputWriter, a.wg.Done)
+		wsURLChan <- struct{}{}
+	}()
+	select {
+	case <-wsURLChan:
+	case <-time.After(wsURLReadTimeout):
+		err = errors.New("websocket url timeout reached")
+	}
 	if err != nil {
 		if a.combinedOutputWriter != nil {
 			// There's no io.Copy goroutine to call the done func.
@@ -223,9 +243,10 @@ func (a *ExecAllocator) Allocate(ctx context.Context, opts ...BrowserOption) (*B
 	}
 	go func() {
 		// If the browser loses connection, kill the entire process and
-		// handler at once.
+		// handler at once. Don't use Cancel, as that will attempt to
+		// gracefully close the browser, which will hang.
 		<-browser.LostConnection
-		Cancel(ctx)
+		c.cancel()
 	}()
 	browser.process = cmd.Process
 	browser.userDataDir = dataDir
@@ -238,31 +259,28 @@ func (a *ExecAllocator) Allocate(ctx context.Context, opts ...BrowserOption) (*B
 func readOutput(rc io.ReadCloser, forward io.Writer, done func()) (wsURL string, _ error) {
 	prefix := []byte("DevTools listening on")
 	var accumulated bytes.Buffer
-	var p [256]byte
+	bufr := bufio.NewReader(rc)
 readLoop:
 	for {
-		n, err := rc.Read(p[:])
+		line, err := bufr.ReadBytes('\n')
 		if err != nil {
 			return "", fmt.Errorf("chrome failed to start:\n%s",
 				accumulated.Bytes())
 		}
 		if forward != nil {
-			if _, err := forward.Write(p[:n]); err != nil {
+			if _, err := forward.Write(line); err != nil {
 				return "", err
 			}
 		}
 
-		lines := bytes.Split(p[:n], []byte("\n"))
-		for _, line := range lines {
-			if bytes.HasPrefix(line, prefix) {
-				line = line[len(prefix):]
-				// use TrimSpace, to also remove \r on Windows
-				line = bytes.TrimSpace(line)
-				wsURL = string(line)
-				break readLoop
-			}
+		if bytes.HasPrefix(line, prefix) {
+			line = line[len(prefix):]
+			// use TrimSpace, to also remove \r on Windows
+			line = bytes.TrimSpace(line)
+			wsURL = string(line)
+			break readLoop
 		}
-		accumulated.Write(p[:n])
+		accumulated.Write(line)
 	}
 	if forward == nil {
 		// We don't need the process's output anymore.
@@ -271,7 +289,7 @@ readLoop:
 		// Copy the rest of the output in a separate goroutine, as we
 		// need to return with the websocket URL.
 		go func() {
-			io.Copy(forward, rc)
+			io.Copy(forward, bufr)
 			done()
 		}()
 	}
@@ -319,9 +337,10 @@ func findExecPath() string {
 		"chrome",
 		"chrome.exe", // in case PATHEXT is misconfigured
 		`C:\Program Files (x86)\Google\Chrome\Application\chrome.exe`,
+		`C:\Program Files\Google\Chrome\Application\chrome.exe`,
 
 		// Mac
-		`/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`,
+		"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
 	} {
 		found, err := exec.LookPath(path)
 		if err == nil {

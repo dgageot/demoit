@@ -15,6 +15,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/chromedp/cdproto/browser"
 	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/css"
 	"github.com/chromedp/cdproto/dom"
@@ -89,6 +90,9 @@ type Context struct {
 // Cancelling the returned context will close a tab or an entire browser,
 // depending on the logic described above. To cancel a context while checking
 // for errors, see Cancel.
+//
+// Note that NewContext doesn't allocate nor start a browser; that happens the
+// first time Run is used on the context.
 func NewContext(parent context.Context, opts ...ContextOption) (context.Context, context.CancelFunc) {
 	ctx, cancel := context.WithCancel(parent)
 
@@ -178,16 +182,25 @@ func FromContext(ctx context.Context) *Context {
 // Cancel cancels a chromedp context, waits for its resources to be cleaned up,
 // and returns any error encountered during that process.
 //
-// Usually a "defer cancel()" will be enough for most use cases. This API is
-// useful if you want to catch underlying cancel errors, such as when a
-// temporary directory cannot be deleted.
+// If the context allocated a browser, the browser will be closed gracefully by
+// Cancel.
+//
+// Usually a "defer cancel()" will be enough for most use cases. However, Cancel
+// is the better option if one wants to gracefully close a browser, or catch
+// underlying errors happening during cancellation.
 func Cancel(ctx context.Context) error {
 	c := FromContext(ctx)
 	if c == nil {
 		return ErrInvalidContext
 	}
-	c.cancel()
-	c.closedTarget.Wait()
+	if c.first && c.Browser != nil {
+		if err := c.Browser.execute(ctx, browser.CommandClose, nil, nil); err != nil {
+			return err
+		}
+	} else {
+		c.cancel()
+		c.closedTarget.Wait()
+	}
 	// If we allocated, wait for the browser to stop.
 	if c.allocated != nil {
 		<-c.allocated
@@ -197,6 +210,10 @@ func Cancel(ctx context.Context) error {
 
 // Run runs an action against context. The provided context must be a valid
 // chromedp context, typically created via NewContext.
+//
+// Note that the first time Run is called on a context, a browser will be
+// allocated via Allocator. Thus, it's generally a bad idea to use a context
+// timeout on the first Run call, as it will stop the entire browser.
 func Run(ctx context.Context, actions ...Action) error {
 	c := FromContext(ctx)
 	// If c is nil, it's not a chromedp context.
@@ -261,7 +278,10 @@ func (c *Context) newTarget(ctx context.Context) error {
 			return
 		}
 		if info.Type == "page" && info.URL == "about:blank" {
-			ch <- info.TargetID
+			select {
+			case <-lctx.Done():
+			case ch <- info.TargetID:
+			}
 			cancel()
 		}
 	})
@@ -271,7 +291,11 @@ func (c *Context) newTarget(ctx context.Context) error {
 	if err := action.Do(cdp.WithExecutor(ctx, c.Browser)); err != nil {
 		return err
 	}
-	c.targetID = <-ch
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case c.targetID = <-ch:
+	}
 	return c.attachTarget(ctx, c.targetID)
 }
 
@@ -476,7 +500,10 @@ func WaitNewTarget(ctx context.Context, fn func(*target.Info) bool) <-chan targe
 			return // already attached; not a new target
 		}
 		if fn(info) {
-			ch <- info.TargetID
+			select {
+			case <-lctx.Done():
+			case ch <- info.TargetID:
+			}
 			close(ch)
 			cancel()
 		}
