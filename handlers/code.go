@@ -18,8 +18,12 @@ package handlers
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -28,27 +32,51 @@ import (
 	"github.com/alecthomas/chroma/lexers"
 	"github.com/alecthomas/chroma/styles"
 	"github.com/dgageot/demoit/files"
+	"gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/plumbing"
+	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
 // Code returns the content of a source file.
 func Code(w http.ResponseWriter, r *http.Request) {
 	filename := strings.TrimPrefix(r.URL.Path, "/sourceCode/")
+	hash := r.FormValue("hash")
 
-	if !files.Exists(filename) {
-		http.NotFound(w, r)
-		return
+	var contents []byte
+
+	if len(hash) > 0 {
+
+		repoPath, insidePath, err := findRepositoryOfFile(filename)
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+
+		contents, err = readFileFromRepo(repoPath, hash, insidePath)
+
+		if err != nil {
+			http.Error(w, "Unable to read file "+insidePath+" for hash "+hash+" in repo "+repoPath, 500)
+			return
+		}
+
+	} else {
+		if !files.Exists(filename) {
+			http.NotFound(w, r)
+			return
+		}
+		var err error
+		contents, err = files.Read(filename)
+		if err != nil {
+			http.Error(w, "Unable to read "+filename, 500)
+			return
+		}
+
 	}
 
 	lexer := lexer(filename)
 	style := style(r.FormValue("style"))
 	lines := highligtedLines(r)
 	formatter := html.New(html.Standalone(), html.WithLineNumbers(), html.HighlightLines(lines), html.WithClasses())
-
-	contents, err := files.Read(filename)
-	if err != nil {
-		http.Error(w, "Unable to read "+filename, 500)
-		return
-	}
 
 	iterator, err := lexer.Tokenise(nil, string(contents))
 	if err != nil {
@@ -140,4 +168,89 @@ func highligtedLines(r *http.Request) [][2]int {
 	}
 
 	return lines
+}
+
+// findRepositoryOfFile finds the git repository containing file
+// and returns the path of the repository and the path of the file inside the repository
+func findRepositoryOfFile(file string) (repoPath string, filePath string, err error) {
+	dir, filename := filepath.Split(file)
+	dirParts := strings.Split(filepath.Clean(dir), string(os.PathSeparator))
+	if dirParts[0] != "." {
+		dirParts = append([]string{"."}, dirParts...)
+	}
+
+	var i int
+	for i = range dirParts {
+		repoPath = filepath.Join(dirParts[:len(dirParts)-i]...)
+		_, err = os.Stat(filepath.Join(repoPath, git.GitDirName))
+		if err == nil {
+			break
+		}
+	}
+	if err != nil {
+		return
+	}
+	filePath = filepath.Join(append(dirParts[len(dirParts)-i:], filename)...)
+	return
+}
+
+func resolve(obj object.Object, path string) (*object.Blob, error) {
+	switch o := obj.(type) {
+	case *object.Commit:
+		t, err := o.Tree()
+		if err != nil {
+			return nil, err
+		}
+		return resolve(t, path)
+	case *object.Tag:
+		target, err := o.Object()
+		if err != nil {
+			return nil, err
+		}
+		return resolve(target, path)
+	case *object.Tree:
+		file, err := o.File(path)
+		if err != nil {
+			return nil, err
+		}
+		return &file.Blob, nil
+	case *object.Blob:
+		return o, nil
+	default:
+		return nil, object.ErrUnsupportedObject
+	}
+}
+
+func readFileFromRepo(repoPath string, hash string, file string) ([]byte, error) {
+	repo, err := git.PlainOpen(repoPath)
+	if err != nil {
+		return nil, err
+	}
+
+	h, err := repo.ResolveRevision(plumbing.Revision(hash))
+	if err != nil {
+		return nil, err
+	}
+	if h == nil {
+		err = errors.New("Resolved nil hash " + hash)
+		return nil, err
+	}
+
+	obj, err := repo.Object(plumbing.AnyObject, *h)
+	if err != nil {
+		return nil, err
+	}
+
+	blob, err := resolve(obj, file)
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := blob.Reader()
+	if err != nil {
+		return nil, err
+	}
+	defer r.Close()
+
+	return ioutil.ReadAll(r)
 }

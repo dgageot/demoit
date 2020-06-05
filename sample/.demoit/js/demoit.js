@@ -211,6 +211,10 @@ class SourceCode extends BaseHTMLElement {
         if (this.code_style === null) {
             this.code_style = 'vs';
         }
+        this.hash = this.getAttribute('hash');
+        if (this.hash === null) {
+            this.hash = '';
+        }
         this.files = this.getAttribute('files').split(' ').filter(n => n.trim() !== '');
         this.startLines = this.getAttribute('start-lines').split(';');
         this.endLines = this.getAttribute('end-lines').split(';');
@@ -238,7 +242,7 @@ class SourceCode extends BaseHTMLElement {
         const file = this.files[current];
         const startLines = this.startLines[current];
         const endLines = this.endLines[current];
-        const url = `/sourceCode/${this.folder}/${file}?style=${this.code_style}&startLine=${startLines}&endLine=${endLines}`;
+        const url = `/sourceCode/${this.folder}/${file}?hash=${this.hash}&style=${this.code_style}&startLine=${startLines}&endLine=${endLines}`;
 
         const response = await fetch(url);
         this.$('#source').innerHTML = await response.text();
