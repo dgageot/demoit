@@ -278,66 +278,30 @@ func GetScriptSource(scriptID runtime.ScriptID) *GetScriptSourceParams {
 
 // GetScriptSourceReturns return values.
 type GetScriptSourceReturns struct {
-	ScriptSource string `json:"scriptSource,omitempty"` // Script source.
+	ScriptSource string `json:"scriptSource,omitempty"` // Script source (empty in case of Wasm bytecode).
+	Bytecode     string `json:"bytecode,omitempty"`     // Wasm bytecode.
 }
 
 // Do executes Debugger.getScriptSource against the provided context.
 //
 // returns:
-//   scriptSource - Script source.
-func (p *GetScriptSourceParams) Do(ctx context.Context) (scriptSource string, err error) {
+//   scriptSource - Script source (empty in case of Wasm bytecode).
+//   bytecode - Wasm bytecode.
+func (p *GetScriptSourceParams) Do(ctx context.Context) (scriptSource string, bytecode []byte, err error) {
 	// execute
 	var res GetScriptSourceReturns
 	err = cdp.Execute(ctx, CommandGetScriptSource, p, &res)
 	if err != nil {
-		return "", err
-	}
-
-	return res.ScriptSource, nil
-}
-
-// GetWasmBytecodeParams returns bytecode for the WebAssembly script with
-// given id.
-type GetWasmBytecodeParams struct {
-	ScriptID runtime.ScriptID `json:"scriptId"` // Id of the Wasm script to get source for.
-}
-
-// GetWasmBytecode returns bytecode for the WebAssembly script with given id.
-//
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-getWasmBytecode
-//
-// parameters:
-//   scriptID - Id of the Wasm script to get source for.
-func GetWasmBytecode(scriptID runtime.ScriptID) *GetWasmBytecodeParams {
-	return &GetWasmBytecodeParams{
-		ScriptID: scriptID,
-	}
-}
-
-// GetWasmBytecodeReturns return values.
-type GetWasmBytecodeReturns struct {
-	Bytecode string `json:"bytecode,omitempty"` // Script source.
-}
-
-// Do executes Debugger.getWasmBytecode against the provided context.
-//
-// returns:
-//   bytecode - Script source.
-func (p *GetWasmBytecodeParams) Do(ctx context.Context) (bytecode []byte, err error) {
-	// execute
-	var res GetWasmBytecodeReturns
-	err = cdp.Execute(ctx, CommandGetWasmBytecode, p, &res)
-	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
 
 	// decode
 	var dec []byte
 	dec, err = base64.StdEncoding.DecodeString(res.Bytecode)
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
-	return dec, nil
+	return res.ScriptSource, dec, nil
 }
 
 // GetStackTraceParams returns stack trace with given stackTraceId.
@@ -456,18 +420,32 @@ func (p *RestartFrameParams) Do(ctx context.Context) (callFrames []*CallFrame, a
 }
 
 // ResumeParams resumes JavaScript execution.
-type ResumeParams struct{}
+type ResumeParams struct {
+	TerminateOnResume bool `json:"terminateOnResume,omitempty"` // Set to true to terminate execution upon resuming execution. In contrast to Runtime.terminateExecution, this will allows to execute further JavaScript (i.e. via evaluation) until execution of the paused code is actually resumed, at which point termination is triggered. If execution is currently not paused, this parameter has no effect.
+}
 
 // Resume resumes JavaScript execution.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-resume
+//
+// parameters:
 func Resume() *ResumeParams {
 	return &ResumeParams{}
 }
 
+// WithTerminateOnResume set to true to terminate execution upon resuming
+// execution. In contrast to Runtime.terminateExecution, this will allows to
+// execute further JavaScript (i.e. via evaluation) until execution of the
+// paused code is actually resumed, at which point termination is triggered. If
+// execution is currently not paused, this parameter has no effect.
+func (p ResumeParams) WithTerminateOnResume(terminateOnResume bool) *ResumeParams {
+	p.TerminateOnResume = terminateOnResume
+	return &p
+}
+
 // Do executes Debugger.resume against the provided context.
 func (p *ResumeParams) Do(ctx context.Context) (err error) {
-	return cdp.Execute(ctx, CommandResume, nil, nil)
+	return cdp.Execute(ctx, CommandResume, p, nil)
 }
 
 // SearchInContentParams searches for given string in script content.
@@ -1078,7 +1056,6 @@ const (
 	CommandEvaluateOnCallFrame          = "Debugger.evaluateOnCallFrame"
 	CommandGetPossibleBreakpoints       = "Debugger.getPossibleBreakpoints"
 	CommandGetScriptSource              = "Debugger.getScriptSource"
-	CommandGetWasmBytecode              = "Debugger.getWasmBytecode"
 	CommandGetStackTrace                = "Debugger.getStackTrace"
 	CommandPause                        = "Debugger.pause"
 	CommandRemoveBreakpoint             = "Debugger.removeBreakpoint"

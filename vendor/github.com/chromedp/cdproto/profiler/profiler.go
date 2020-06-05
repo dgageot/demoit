@@ -117,8 +117,9 @@ func (p *StartParams) Do(ctx context.Context) (err error) {
 // JavaScript executed before enabling precise code coverage may be incomplete.
 // Enabling prevents running optimized code and resets execution counters.
 type StartPreciseCoverageParams struct {
-	CallCount bool `json:"callCount,omitempty"` // Collect accurate call counts beyond simple 'covered' or 'not covered'.
-	Detailed  bool `json:"detailed,omitempty"`  // Collect block-based coverage.
+	CallCount             bool `json:"callCount,omitempty"`             // Collect accurate call counts beyond simple 'covered' or 'not covered'.
+	Detailed              bool `json:"detailed,omitempty"`              // Collect block-based coverage.
+	AllowTriggeredUpdates bool `json:"allowTriggeredUpdates,omitempty"` // Allow the backend to send updates on its own initiative
 }
 
 // StartPreciseCoverage enable precise code coverage. Coverage data for
@@ -145,9 +146,31 @@ func (p StartPreciseCoverageParams) WithDetailed(detailed bool) *StartPreciseCov
 	return &p
 }
 
+// WithAllowTriggeredUpdates allow the backend to send updates on its own
+// initiative.
+func (p StartPreciseCoverageParams) WithAllowTriggeredUpdates(allowTriggeredUpdates bool) *StartPreciseCoverageParams {
+	p.AllowTriggeredUpdates = allowTriggeredUpdates
+	return &p
+}
+
+// StartPreciseCoverageReturns return values.
+type StartPreciseCoverageReturns struct {
+	Timestamp float64 `json:"timestamp,omitempty"` // Monotonically increasing time (in seconds) when the coverage update was taken in the backend.
+}
+
 // Do executes Profiler.startPreciseCoverage against the provided context.
-func (p *StartPreciseCoverageParams) Do(ctx context.Context) (err error) {
-	return cdp.Execute(ctx, CommandStartPreciseCoverage, p, nil)
+//
+// returns:
+//   timestamp - Monotonically increasing time (in seconds) when the coverage update was taken in the backend.
+func (p *StartPreciseCoverageParams) Do(ctx context.Context) (timestamp float64, err error) {
+	// execute
+	var res StartPreciseCoverageReturns
+	err = cdp.Execute(ctx, CommandStartPreciseCoverage, p, &res)
+	if err != nil {
+		return 0, err
+	}
+
+	return res.Timestamp, nil
 }
 
 // StartTypeProfileParams enable type profile.
@@ -244,22 +267,24 @@ func TakePreciseCoverage() *TakePreciseCoverageParams {
 
 // TakePreciseCoverageReturns return values.
 type TakePreciseCoverageReturns struct {
-	Result []*ScriptCoverage `json:"result,omitempty"` // Coverage data for the current isolate.
+	Result    []*ScriptCoverage `json:"result,omitempty"`    // Coverage data for the current isolate.
+	Timestamp float64           `json:"timestamp,omitempty"` // Monotonically increasing time (in seconds) when the coverage update was taken in the backend.
 }
 
 // Do executes Profiler.takePreciseCoverage against the provided context.
 //
 // returns:
 //   result - Coverage data for the current isolate.
-func (p *TakePreciseCoverageParams) Do(ctx context.Context) (result []*ScriptCoverage, err error) {
+//   timestamp - Monotonically increasing time (in seconds) when the coverage update was taken in the backend.
+func (p *TakePreciseCoverageParams) Do(ctx context.Context) (result []*ScriptCoverage, timestamp float64, err error) {
 	// execute
 	var res TakePreciseCoverageReturns
 	err = cdp.Execute(ctx, CommandTakePreciseCoverage, nil, &res)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return res.Result, nil
+	return res.Result, res.Timestamp, nil
 }
 
 // TakeTypeProfileParams collect type profile.

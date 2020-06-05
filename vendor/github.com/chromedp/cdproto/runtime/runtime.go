@@ -305,7 +305,7 @@ type EvaluateParams struct {
 	ThrowOnSideEffect     bool               `json:"throwOnSideEffect,omitempty"`     // Whether to throw an exception if side effect cannot be ruled out during evaluation. This implies disableBreaks below.
 	Timeout               TimeDelta          `json:"timeout,omitempty"`               // Terminate execution after timing out (number of milliseconds).
 	DisableBreaks         bool               `json:"disableBreaks,omitempty"`         // Disable breakpoints during execution.
-	ReplMode              bool               `json:"replMode,omitempty"`              // Reserved flag for future REPL mode support. Setting this flag has currently no effect.
+	ReplMode              bool               `json:"replMode,omitempty"`              // Setting this flag to true enables let re-declaration and top-level await. Note that let variables can only be re-declared if they originate from replMode themselves.
 }
 
 // Evaluate evaluates expression on global object.
@@ -395,8 +395,9 @@ func (p EvaluateParams) WithDisableBreaks(disableBreaks bool) *EvaluateParams {
 	return &p
 }
 
-// WithReplMode reserved flag for future REPL mode support. Setting this flag
-// has currently no effect.
+// WithReplMode setting this flag to true enables let re-declaration and
+// top-level await. Note that let variables can only be re-declared if they
+// originate from replMode themselves.
 func (p EvaluateParams) WithReplMode(replMode bool) *EvaluateParams {
 	p.ReplMode = replMode
 	return &p

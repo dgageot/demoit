@@ -187,6 +187,58 @@ func (p *DescribeNodeParams) Do(ctx context.Context) (node *cdp.Node, err error)
 	return res.Node, nil
 }
 
+// ScrollIntoViewIfNeededParams scrolls the specified rect of the given node
+// into view if not already visible. Note: exactly one between nodeId,
+// backendNodeId and objectId should be passed to identify the node.
+type ScrollIntoViewIfNeededParams struct {
+	NodeID        cdp.NodeID             `json:"nodeId,omitempty"`        // Identifier of the node.
+	BackendNodeID cdp.BackendNodeID      `json:"backendNodeId,omitempty"` // Identifier of the backend node.
+	ObjectID      runtime.RemoteObjectID `json:"objectId,omitempty"`      // JavaScript object id of the node wrapper.
+	Rect          *Rect                  `json:"rect,omitempty"`          // The rect to be scrolled into view, relative to the node's border box, in CSS pixels. When omitted, center of the node will be used, similar to Element.scrollIntoView.
+}
+
+// ScrollIntoViewIfNeeded scrolls the specified rect of the given node into
+// view if not already visible. Note: exactly one between nodeId, backendNodeId
+// and objectId should be passed to identify the node.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-scrollIntoViewIfNeeded
+//
+// parameters:
+func ScrollIntoViewIfNeeded() *ScrollIntoViewIfNeededParams {
+	return &ScrollIntoViewIfNeededParams{}
+}
+
+// WithNodeID identifier of the node.
+func (p ScrollIntoViewIfNeededParams) WithNodeID(nodeID cdp.NodeID) *ScrollIntoViewIfNeededParams {
+	p.NodeID = nodeID
+	return &p
+}
+
+// WithBackendNodeID identifier of the backend node.
+func (p ScrollIntoViewIfNeededParams) WithBackendNodeID(backendNodeID cdp.BackendNodeID) *ScrollIntoViewIfNeededParams {
+	p.BackendNodeID = backendNodeID
+	return &p
+}
+
+// WithObjectID JavaScript object id of the node wrapper.
+func (p ScrollIntoViewIfNeededParams) WithObjectID(objectID runtime.RemoteObjectID) *ScrollIntoViewIfNeededParams {
+	p.ObjectID = objectID
+	return &p
+}
+
+// WithRect the rect to be scrolled into view, relative to the node's border
+// box, in CSS pixels. When omitted, center of the node will be used, similar to
+// Element.scrollIntoView.
+func (p ScrollIntoViewIfNeededParams) WithRect(rect *Rect) *ScrollIntoViewIfNeededParams {
+	p.Rect = rect
+	return &p
+}
+
+// Do executes DOM.scrollIntoViewIfNeeded against the provided context.
+func (p *ScrollIntoViewIfNeededParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandScrollIntoViewIfNeeded, p, nil)
+}
+
 // DisableParams disables DOM agent for the given page.
 type DisableParams struct{}
 
@@ -1602,6 +1654,7 @@ const (
 	CommandCollectClassNamesFromSubtree    = "DOM.collectClassNamesFromSubtree"
 	CommandCopyTo                          = "DOM.copyTo"
 	CommandDescribeNode                    = "DOM.describeNode"
+	CommandScrollIntoViewIfNeeded          = "DOM.scrollIntoViewIfNeeded"
 	CommandDisable                         = "DOM.disable"
 	CommandDiscardSearchResults            = "DOM.discardSearchResults"
 	CommandEnable                          = "DOM.enable"

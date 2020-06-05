@@ -378,6 +378,28 @@ func (p *SetEmulatedMediaParams) Do(ctx context.Context) (err error) {
 	return cdp.Execute(ctx, CommandSetEmulatedMedia, p, nil)
 }
 
+// SetEmulatedVisionDeficiencyParams emulates the given vision deficiency.
+type SetEmulatedVisionDeficiencyParams struct {
+	Type SetEmulatedVisionDeficiencyType `json:"type"` // Vision deficiency to emulate.
+}
+
+// SetEmulatedVisionDeficiency emulates the given vision deficiency.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-setEmulatedVisionDeficiency
+//
+// parameters:
+//   type - Vision deficiency to emulate.
+func SetEmulatedVisionDeficiency(typeVal SetEmulatedVisionDeficiencyType) *SetEmulatedVisionDeficiencyParams {
+	return &SetEmulatedVisionDeficiencyParams{
+		Type: typeVal,
+	}
+}
+
+// Do executes Emulation.setEmulatedVisionDeficiency against the provided context.
+func (p *SetEmulatedVisionDeficiencyParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandSetEmulatedVisionDeficiency, p, nil)
+}
+
 // SetGeolocationOverrideParams overrides the Geolocation Position or Error.
 // Omitting any of the parameters emulates position unavailable.
 type SetGeolocationOverrideParams struct {
@@ -569,6 +591,34 @@ func (p *SetVirtualTimePolicyParams) Do(ctx context.Context) (virtualTimeTicksBa
 	return res.VirtualTimeTicksBase, nil
 }
 
+// SetLocaleOverrideParams overrides default host system locale with the
+// specified one.
+type SetLocaleOverrideParams struct {
+	Locale string `json:"locale,omitempty"` // ICU style C locale (e.g. "en_US"). If not specified or empty, disables the override and restores default host system locale.
+}
+
+// SetLocaleOverride overrides default host system locale with the specified
+// one.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-setLocaleOverride
+//
+// parameters:
+func SetLocaleOverride() *SetLocaleOverrideParams {
+	return &SetLocaleOverrideParams{}
+}
+
+// WithLocale iCU style C locale (e.g. "en_US"). If not specified or empty,
+// disables the override and restores default host system locale.
+func (p SetLocaleOverrideParams) WithLocale(locale string) *SetLocaleOverrideParams {
+	p.Locale = locale
+	return &p
+}
+
+// Do executes Emulation.setLocaleOverride against the provided context.
+func (p *SetLocaleOverrideParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandSetLocaleOverride, p, nil)
+}
+
 // SetTimezoneOverrideParams overrides default host system timezone with the
 // specified one.
 type SetTimezoneOverrideParams struct {
@@ -644,11 +694,13 @@ const (
 	CommandSetDocumentCookieDisabled         = "Emulation.setDocumentCookieDisabled"
 	CommandSetEmitTouchEventsForMouse        = "Emulation.setEmitTouchEventsForMouse"
 	CommandSetEmulatedMedia                  = "Emulation.setEmulatedMedia"
+	CommandSetEmulatedVisionDeficiency       = "Emulation.setEmulatedVisionDeficiency"
 	CommandSetGeolocationOverride            = "Emulation.setGeolocationOverride"
 	CommandSetPageScaleFactor                = "Emulation.setPageScaleFactor"
 	CommandSetScriptExecutionDisabled        = "Emulation.setScriptExecutionDisabled"
 	CommandSetTouchEmulationEnabled          = "Emulation.setTouchEmulationEnabled"
 	CommandSetVirtualTimePolicy              = "Emulation.setVirtualTimePolicy"
+	CommandSetLocaleOverride                 = "Emulation.setLocaleOverride"
 	CommandSetTimezoneOverride               = "Emulation.setTimezoneOverride"
 	CommandSetUserAgentOverride              = "Emulation.setUserAgentOverride"
 )

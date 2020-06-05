@@ -91,9 +91,53 @@ type BreakLocation struct {
 	Type         BreakLocationType `json:"type,omitempty"`
 }
 
+// ScriptLanguage enum of possible script languages.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#type-ScriptLanguage
+type ScriptLanguage string
+
+// String returns the ScriptLanguage as string value.
+func (t ScriptLanguage) String() string {
+	return string(t)
+}
+
+// ScriptLanguage values.
+const (
+	ScriptLanguageJavaScript  ScriptLanguage = "JavaScript"
+	ScriptLanguageWebAssembly ScriptLanguage = "WebAssembly"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t ScriptLanguage) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t ScriptLanguage) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *ScriptLanguage) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch ScriptLanguage(in.String()) {
+	case ScriptLanguageJavaScript:
+		*t = ScriptLanguageJavaScript
+	case ScriptLanguageWebAssembly:
+		*t = ScriptLanguageWebAssembly
+
+	default:
+		in.AddError(errors.New("unknown ScriptLanguage value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *ScriptLanguage) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
 // ScopeType scope type.
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#type-type
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#type-Scope
 type ScopeType string
 
 // String returns the ScopeType as string value.
@@ -103,15 +147,16 @@ func (t ScopeType) String() string {
 
 // ScopeType values.
 const (
-	ScopeTypeGlobal  ScopeType = "global"
-	ScopeTypeLocal   ScopeType = "local"
-	ScopeTypeWith    ScopeType = "with"
-	ScopeTypeClosure ScopeType = "closure"
-	ScopeTypeCatch   ScopeType = "catch"
-	ScopeTypeBlock   ScopeType = "block"
-	ScopeTypeScript  ScopeType = "script"
-	ScopeTypeEval    ScopeType = "eval"
-	ScopeTypeModule  ScopeType = "module"
+	ScopeTypeGlobal              ScopeType = "global"
+	ScopeTypeLocal               ScopeType = "local"
+	ScopeTypeWith                ScopeType = "with"
+	ScopeTypeClosure             ScopeType = "closure"
+	ScopeTypeCatch               ScopeType = "catch"
+	ScopeTypeBlock               ScopeType = "block"
+	ScopeTypeScript              ScopeType = "script"
+	ScopeTypeEval                ScopeType = "eval"
+	ScopeTypeModule              ScopeType = "module"
+	ScopeTypeWasmExpressionStack ScopeType = "wasm-expression-stack"
 )
 
 // MarshalEasyJSON satisfies easyjson.Marshaler.
@@ -145,6 +190,8 @@ func (t *ScopeType) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = ScopeTypeEval
 	case ScopeTypeModule:
 		*t = ScopeTypeModule
+	case ScopeTypeWasmExpressionStack:
+		*t = ScopeTypeWasmExpressionStack
 
 	default:
 		in.AddError(errors.New("unknown ScopeType value"))
@@ -158,7 +205,7 @@ func (t *ScopeType) UnmarshalJSON(buf []byte) error {
 
 // BreakLocationType [no description].
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#type-type
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#type-BreakLocation
 type BreakLocationType string
 
 // String returns the BreakLocationType as string value.
@@ -205,7 +252,7 @@ func (t *BreakLocationType) UnmarshalJSON(buf []byte) error {
 
 // PausedReason pause reason.
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#type-reason
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#event-paused
 type PausedReason string
 
 // String returns the PausedReason as string value.
@@ -276,7 +323,7 @@ func (t *PausedReason) UnmarshalJSON(buf []byte) error {
 
 // ContinueToLocationTargetCallFrames [no description].
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#type-targetCallFrames
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-continueToLocation
 type ContinueToLocationTargetCallFrames string
 
 // String returns the ContinueToLocationTargetCallFrames as string value.
@@ -320,7 +367,7 @@ func (t *ContinueToLocationTargetCallFrames) UnmarshalJSON(buf []byte) error {
 
 // SetInstrumentationBreakpointInstrumentation instrumentation name.
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#type-instrumentation
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-setInstrumentationBreakpoint
 type SetInstrumentationBreakpointInstrumentation string
 
 // String returns the SetInstrumentationBreakpointInstrumentation as string value.
@@ -364,7 +411,7 @@ func (t *SetInstrumentationBreakpointInstrumentation) UnmarshalJSON(buf []byte) 
 
 // ExceptionsState pause on exceptions mode.
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#type-state
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-setPauseOnExceptions
 type ExceptionsState string
 
 // String returns the ExceptionsState as string value.

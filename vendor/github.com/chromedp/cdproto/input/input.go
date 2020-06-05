@@ -167,7 +167,7 @@ type DispatchMouseEventParams struct {
 	Y           float64                       `json:"y"`                     // Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
 	Modifiers   Modifier                      `json:"modifiers"`             // Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
 	Timestamp   *TimeSinceEpoch               `json:"timestamp,omitempty"`   // Time at which the event occurred.
-	Button      ButtonType                    `json:"button,omitempty"`      // Mouse button (default: "none").
+	Button      MouseButton                   `json:"button,omitempty"`      // Mouse button (default: "none").
 	Buttons     int64                         `json:"buttons,omitempty"`     // A number indicating which buttons are pressed on the mouse when a mouse event is triggered. Left=1, Right=2, Middle=4, Back=8, Forward=16, None=0.
 	ClickCount  int64                         `json:"clickCount,omitempty"`  // Number of times the mouse button was clicked (default: 0).
 	DeltaX      float64                       `json:"deltaX,omitempty"`      // X delta in CSS pixels for mouse wheel event (default: 0).
@@ -205,7 +205,7 @@ func (p DispatchMouseEventParams) WithTimestamp(timestamp *TimeSinceEpoch) *Disp
 }
 
 // WithButton mouse button (default: "none").
-func (p DispatchMouseEventParams) WithButton(button ButtonType) *DispatchMouseEventParams {
+func (p DispatchMouseEventParams) WithButton(button MouseButton) *DispatchMouseEventParams {
 	p.Button = button
 	return &p
 }
@@ -293,7 +293,7 @@ type EmulateTouchFromMouseEventParams struct {
 	Type       MouseType       `json:"type"`                 // Type of the mouse event.
 	X          int64           `json:"x"`                    // X coordinate of the mouse pointer in DIP.
 	Y          int64           `json:"y"`                    // Y coordinate of the mouse pointer in DIP.
-	Button     ButtonType      `json:"button"`               // Mouse button.
+	Button     MouseButton     `json:"button"`               // Mouse button. Only "none", "left", "right" are supported.
 	Timestamp  *TimeSinceEpoch `json:"timestamp,omitempty"`  // Time at which the event occurred (default: current time).
 	DeltaX     float64         `json:"deltaX,omitempty"`     // X delta in DIP for mouse wheel event (default: 0).
 	DeltaY     float64         `json:"deltaY,omitempty"`     // Y delta in DIP for mouse wheel event (default: 0).
@@ -310,8 +310,8 @@ type EmulateTouchFromMouseEventParams struct {
 //   type - Type of the mouse event.
 //   x - X coordinate of the mouse pointer in DIP.
 //   y - Y coordinate of the mouse pointer in DIP.
-//   button - Mouse button.
-func EmulateTouchFromMouseEvent(typeVal MouseType, x int64, y int64, button ButtonType) *EmulateTouchFromMouseEventParams {
+//   button - Mouse button. Only "none", "left", "right" are supported.
+func EmulateTouchFromMouseEvent(typeVal MouseType, x int64, y int64, button MouseButton) *EmulateTouchFromMouseEventParams {
 	return &EmulateTouchFromMouseEventParams{
 		Type:   typeVal,
 		X:      x,
@@ -382,11 +382,11 @@ func (p *SetIgnoreInputEventsParams) Do(ctx context.Context) (err error) {
 // SynthesizePinchGestureParams synthesizes a pinch gesture over a time
 // period by issuing appropriate touch events.
 type SynthesizePinchGestureParams struct {
-	X                 float64     `json:"x"`                           // X coordinate of the start of the gesture in CSS pixels.
-	Y                 float64     `json:"y"`                           // Y coordinate of the start of the gesture in CSS pixels.
-	ScaleFactor       float64     `json:"scaleFactor"`                 // Relative scale factor after zooming (>1.0 zooms in, <1.0 zooms out).
-	RelativeSpeed     int64       `json:"relativeSpeed,omitempty"`     // Relative pointer speed in pixels per second (default: 800).
-	GestureSourceType GestureType `json:"gestureSourceType,omitempty"` // Which type of input events to be generated (default: 'default', which queries the platform for the preferred input type).
+	X                 float64           `json:"x"`                           // X coordinate of the start of the gesture in CSS pixels.
+	Y                 float64           `json:"y"`                           // Y coordinate of the start of the gesture in CSS pixels.
+	ScaleFactor       float64           `json:"scaleFactor"`                 // Relative scale factor after zooming (>1.0 zooms in, <1.0 zooms out).
+	RelativeSpeed     int64             `json:"relativeSpeed,omitempty"`     // Relative pointer speed in pixels per second (default: 800).
+	GestureSourceType GestureSourceType `json:"gestureSourceType,omitempty"` // Which type of input events to be generated (default: 'default', which queries the platform for the preferred input type).
 }
 
 // SynthesizePinchGesture synthesizes a pinch gesture over a time period by
@@ -415,7 +415,7 @@ func (p SynthesizePinchGestureParams) WithRelativeSpeed(relativeSpeed int64) *Sy
 
 // WithGestureSourceType which type of input events to be generated (default:
 // 'default', which queries the platform for the preferred input type).
-func (p SynthesizePinchGestureParams) WithGestureSourceType(gestureSourceType GestureType) *SynthesizePinchGestureParams {
+func (p SynthesizePinchGestureParams) WithGestureSourceType(gestureSourceType GestureSourceType) *SynthesizePinchGestureParams {
 	p.GestureSourceType = gestureSourceType
 	return &p
 }
@@ -428,18 +428,18 @@ func (p *SynthesizePinchGestureParams) Do(ctx context.Context) (err error) {
 // SynthesizeScrollGestureParams synthesizes a scroll gesture over a time
 // period by issuing appropriate touch events.
 type SynthesizeScrollGestureParams struct {
-	X                     float64     `json:"x"`                               // X coordinate of the start of the gesture in CSS pixels.
-	Y                     float64     `json:"y"`                               // Y coordinate of the start of the gesture in CSS pixels.
-	XDistance             float64     `json:"xDistance,omitempty"`             // The distance to scroll along the X axis (positive to scroll left).
-	YDistance             float64     `json:"yDistance,omitempty"`             // The distance to scroll along the Y axis (positive to scroll up).
-	XOverscroll           float64     `json:"xOverscroll,omitempty"`           // The number of additional pixels to scroll back along the X axis, in addition to the given distance.
-	YOverscroll           float64     `json:"yOverscroll,omitempty"`           // The number of additional pixels to scroll back along the Y axis, in addition to the given distance.
-	PreventFling          bool        `json:"preventFling,omitempty"`          // Prevent fling (default: true).
-	Speed                 int64       `json:"speed,omitempty"`                 // Swipe speed in pixels per second (default: 800).
-	GestureSourceType     GestureType `json:"gestureSourceType,omitempty"`     // Which type of input events to be generated (default: 'default', which queries the platform for the preferred input type).
-	RepeatCount           int64       `json:"repeatCount,omitempty"`           // The number of times to repeat the gesture (default: 0).
-	RepeatDelayMs         int64       `json:"repeatDelayMs,omitempty"`         // The number of milliseconds delay between each repeat. (default: 250).
-	InteractionMarkerName string      `json:"interactionMarkerName,omitempty"` // The name of the interaction markers to generate, if not empty (default: "").
+	X                     float64           `json:"x"`                               // X coordinate of the start of the gesture in CSS pixels.
+	Y                     float64           `json:"y"`                               // Y coordinate of the start of the gesture in CSS pixels.
+	XDistance             float64           `json:"xDistance,omitempty"`             // The distance to scroll along the X axis (positive to scroll left).
+	YDistance             float64           `json:"yDistance,omitempty"`             // The distance to scroll along the Y axis (positive to scroll up).
+	XOverscroll           float64           `json:"xOverscroll,omitempty"`           // The number of additional pixels to scroll back along the X axis, in addition to the given distance.
+	YOverscroll           float64           `json:"yOverscroll,omitempty"`           // The number of additional pixels to scroll back along the Y axis, in addition to the given distance.
+	PreventFling          bool              `json:"preventFling,omitempty"`          // Prevent fling (default: true).
+	Speed                 int64             `json:"speed,omitempty"`                 // Swipe speed in pixels per second (default: 800).
+	GestureSourceType     GestureSourceType `json:"gestureSourceType,omitempty"`     // Which type of input events to be generated (default: 'default', which queries the platform for the preferred input type).
+	RepeatCount           int64             `json:"repeatCount,omitempty"`           // The number of times to repeat the gesture (default: 0).
+	RepeatDelayMs         int64             `json:"repeatDelayMs,omitempty"`         // The number of milliseconds delay between each repeat. (default: 250).
+	InteractionMarkerName string            `json:"interactionMarkerName,omitempty"` // The name of the interaction markers to generate, if not empty (default: "").
 }
 
 // SynthesizeScrollGesture synthesizes a scroll gesture over a time period by
@@ -499,7 +499,7 @@ func (p SynthesizeScrollGestureParams) WithSpeed(speed int64) *SynthesizeScrollG
 
 // WithGestureSourceType which type of input events to be generated (default:
 // 'default', which queries the platform for the preferred input type).
-func (p SynthesizeScrollGestureParams) WithGestureSourceType(gestureSourceType GestureType) *SynthesizeScrollGestureParams {
+func (p SynthesizeScrollGestureParams) WithGestureSourceType(gestureSourceType GestureSourceType) *SynthesizeScrollGestureParams {
 	p.GestureSourceType = gestureSourceType
 	return &p
 }
@@ -532,11 +532,11 @@ func (p *SynthesizeScrollGestureParams) Do(ctx context.Context) (err error) {
 // SynthesizeTapGestureParams synthesizes a tap gesture over a time period by
 // issuing appropriate touch events.
 type SynthesizeTapGestureParams struct {
-	X                 float64     `json:"x"`                           // X coordinate of the start of the gesture in CSS pixels.
-	Y                 float64     `json:"y"`                           // Y coordinate of the start of the gesture in CSS pixels.
-	Duration          int64       `json:"duration,omitempty"`          // Duration between touchdown and touchup events in ms (default: 50).
-	TapCount          int64       `json:"tapCount,omitempty"`          // Number of times to perform the tap (e.g. 2 for double tap, default: 1).
-	GestureSourceType GestureType `json:"gestureSourceType,omitempty"` // Which type of input events to be generated (default: 'default', which queries the platform for the preferred input type).
+	X                 float64           `json:"x"`                           // X coordinate of the start of the gesture in CSS pixels.
+	Y                 float64           `json:"y"`                           // Y coordinate of the start of the gesture in CSS pixels.
+	Duration          int64             `json:"duration,omitempty"`          // Duration between touchdown and touchup events in ms (default: 50).
+	TapCount          int64             `json:"tapCount,omitempty"`          // Number of times to perform the tap (e.g. 2 for double tap, default: 1).
+	GestureSourceType GestureSourceType `json:"gestureSourceType,omitempty"` // Which type of input events to be generated (default: 'default', which queries the platform for the preferred input type).
 }
 
 // SynthesizeTapGesture synthesizes a tap gesture over a time period by
@@ -570,7 +570,7 @@ func (p SynthesizeTapGestureParams) WithTapCount(tapCount int64) *SynthesizeTapG
 
 // WithGestureSourceType which type of input events to be generated (default:
 // 'default', which queries the platform for the preferred input type).
-func (p SynthesizeTapGestureParams) WithGestureSourceType(gestureSourceType GestureType) *SynthesizeTapGestureParams {
+func (p SynthesizeTapGestureParams) WithGestureSourceType(gestureSourceType GestureSourceType) *SynthesizeTapGestureParams {
 	p.GestureSourceType = gestureSourceType
 	return &p
 }

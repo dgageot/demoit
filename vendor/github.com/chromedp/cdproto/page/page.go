@@ -289,9 +289,10 @@ func GetAppManifest() *GetAppManifestParams {
 
 // GetAppManifestReturns return values.
 type GetAppManifestReturns struct {
-	URL    string              `json:"url,omitempty"` // Manifest location.
-	Errors []*AppManifestError `json:"errors,omitempty"`
-	Data   string              `json:"data,omitempty"` // Manifest content.
+	URL    string                       `json:"url,omitempty"` // Manifest location.
+	Errors []*AppManifestError          `json:"errors,omitempty"`
+	Data   string                       `json:"data,omitempty"`   // Manifest content.
+	Parsed *AppManifestParsedProperties `json:"parsed,omitempty"` // Parsed manifest properties
 }
 
 // Do executes Page.getAppManifest against the provided context.
@@ -300,15 +301,16 @@ type GetAppManifestReturns struct {
 //   url - Manifest location.
 //   errors
 //   data - Manifest content.
-func (p *GetAppManifestParams) Do(ctx context.Context) (url string, errors []*AppManifestError, data string, err error) {
+//   parsed - Parsed manifest properties
+func (p *GetAppManifestParams) Do(ctx context.Context) (url string, errors []*AppManifestError, data string, parsed *AppManifestParsedProperties, err error) {
 	// execute
 	var res GetAppManifestReturns
 	err = cdp.Execute(ctx, CommandGetAppManifest, nil, &res)
 	if err != nil {
-		return "", nil, "", err
+		return "", nil, "", nil, err
 	}
 
-	return res.URL, res.Errors, res.Data, nil
+	return res.URL, res.Errors, res.Data, res.Parsed, nil
 }
 
 // GetInstallabilityErrorsParams [no description].
@@ -323,14 +325,14 @@ func GetInstallabilityErrors() *GetInstallabilityErrorsParams {
 
 // GetInstallabilityErrorsReturns return values.
 type GetInstallabilityErrorsReturns struct {
-	Errors []string `json:"errors,omitempty"`
+	InstallabilityErrors []*InstallabilityError `json:"installabilityErrors,omitempty"`
 }
 
 // Do executes Page.getInstallabilityErrors against the provided context.
 //
 // returns:
-//   errors
-func (p *GetInstallabilityErrorsParams) Do(ctx context.Context) (errors []string, err error) {
+//   installabilityErrors
+func (p *GetInstallabilityErrorsParams) Do(ctx context.Context) (installabilityErrors []*InstallabilityError, err error) {
 	// execute
 	var res GetInstallabilityErrorsReturns
 	err = cdp.Execute(ctx, CommandGetInstallabilityErrors, nil, &res)
@@ -338,7 +340,43 @@ func (p *GetInstallabilityErrorsParams) Do(ctx context.Context) (errors []string
 		return nil, err
 	}
 
-	return res.Errors, nil
+	return res.InstallabilityErrors, nil
+}
+
+// GetManifestIconsParams [no description].
+type GetManifestIconsParams struct{}
+
+// GetManifestIcons [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#method-getManifestIcons
+func GetManifestIcons() *GetManifestIconsParams {
+	return &GetManifestIconsParams{}
+}
+
+// GetManifestIconsReturns return values.
+type GetManifestIconsReturns struct {
+	PrimaryIcon string `json:"primaryIcon,omitempty"`
+}
+
+// Do executes Page.getManifestIcons against the provided context.
+//
+// returns:
+//   primaryIcon
+func (p *GetManifestIconsParams) Do(ctx context.Context) (primaryIcon []byte, err error) {
+	// execute
+	var res GetManifestIconsReturns
+	err = cdp.Execute(ctx, CommandGetManifestIcons, nil, &res)
+	if err != nil {
+		return nil, err
+	}
+
+	// decode
+	var dec []byte
+	dec, err = base64.StdEncoding.DecodeString(res.PrimaryIcon)
+	if err != nil {
+		return nil, err
+	}
+	return dec, nil
 }
 
 // GetFrameTreeParams returns present frame tree structure.
@@ -575,6 +613,7 @@ type NavigateParams struct {
 	Referrer       string         `json:"referrer,omitempty"`       // Referrer URL.
 	TransitionType TransitionType `json:"transitionType,omitempty"` // Intended transition type.
 	FrameID        cdp.FrameID    `json:"frameId,omitempty"`        // Frame id to navigate, if not specified navigates the top frame.
+	ReferrerPolicy ReferrerPolicy `json:"referrerPolicy,omitempty"` // Referrer-policy used for the navigation.
 }
 
 // Navigate navigates current page to the given URL.
@@ -605,6 +644,12 @@ func (p NavigateParams) WithTransitionType(transitionType TransitionType) *Navig
 // frame.
 func (p NavigateParams) WithFrameID(frameID cdp.FrameID) *NavigateParams {
 	p.FrameID = frameID
+	return &p
+}
+
+// WithReferrerPolicy referrer-policy used for the navigation.
+func (p NavigateParams) WithReferrerPolicy(referrerPolicy ReferrerPolicy) *NavigateParams {
+	p.ReferrerPolicy = referrerPolicy
 	return &p
 }
 
@@ -1071,36 +1116,6 @@ func (p *SetDocumentContentParams) Do(ctx context.Context) (err error) {
 	return cdp.Execute(ctx, CommandSetDocumentContent, p, nil)
 }
 
-// SetDownloadBehaviorParams set the behavior when downloading a file.
-type SetDownloadBehaviorParams struct {
-	Behavior     SetDownloadBehaviorBehavior `json:"behavior"`               // Whether to allow all or deny all download requests, or use default Chrome behavior if available (otherwise deny).
-	DownloadPath string                      `json:"downloadPath,omitempty"` // The default path to save downloaded files to. This is required if behavior is set to 'allow'
-}
-
-// SetDownloadBehavior set the behavior when downloading a file.
-//
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#method-setDownloadBehavior
-//
-// parameters:
-//   behavior - Whether to allow all or deny all download requests, or use default Chrome behavior if available (otherwise deny).
-func SetDownloadBehavior(behavior SetDownloadBehaviorBehavior) *SetDownloadBehaviorParams {
-	return &SetDownloadBehaviorParams{
-		Behavior: behavior,
-	}
-}
-
-// WithDownloadPath the default path to save downloaded files to. This is
-// required if behavior is set to 'allow'.
-func (p SetDownloadBehaviorParams) WithDownloadPath(downloadPath string) *SetDownloadBehaviorParams {
-	p.DownloadPath = downloadPath
-	return &p
-}
-
-// Do executes Page.setDownloadBehavior against the provided context.
-func (p *SetDownloadBehaviorParams) Do(ctx context.Context) (err error) {
-	return cdp.Execute(ctx, CommandSetDownloadBehavior, p, nil)
-}
-
 // SetLifecycleEventsEnabledParams controls whether page will emit lifecycle
 // events.
 type SetLifecycleEventsEnabledParams struct {
@@ -1382,8 +1397,7 @@ func (p *WaitForDebuggerParams) Do(ctx context.Context) (err error) {
 // SetInterceptFileChooserDialogParams intercept file chooser requests and
 // transfer control to protocol clients. When file chooser interception is
 // enabled, native file chooser dialog is not shown. Instead, a protocol event
-// Page.fileChooserOpened is emitted. File chooser can be handled with
-// page.handleFileChooser command.
+// Page.fileChooserOpened is emitted.
 type SetInterceptFileChooserDialogParams struct {
 	Enabled bool `json:"enabled"`
 }
@@ -1391,8 +1405,7 @@ type SetInterceptFileChooserDialogParams struct {
 // SetInterceptFileChooserDialog intercept file chooser requests and transfer
 // control to protocol clients. When file chooser interception is enabled,
 // native file chooser dialog is not shown. Instead, a protocol event
-// Page.fileChooserOpened is emitted. File chooser can be handled with
-// page.handleFileChooser command.
+// Page.fileChooserOpened is emitted.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Page#method-setInterceptFileChooserDialog
 //
@@ -1409,37 +1422,6 @@ func (p *SetInterceptFileChooserDialogParams) Do(ctx context.Context) (err error
 	return cdp.Execute(ctx, CommandSetInterceptFileChooserDialog, p, nil)
 }
 
-// HandleFileChooserParams accepts or cancels an intercepted file chooser
-// dialog.
-type HandleFileChooserParams struct {
-	Action HandleFileChooserAction `json:"action"`
-	Files  []string                `json:"files,omitempty"` // Array of absolute file paths to set, only respected with accept action.
-}
-
-// HandleFileChooser accepts or cancels an intercepted file chooser dialog.
-//
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#method-handleFileChooser
-//
-// parameters:
-//   action
-func HandleFileChooser(action HandleFileChooserAction) *HandleFileChooserParams {
-	return &HandleFileChooserParams{
-		Action: action,
-	}
-}
-
-// WithFiles array of absolute file paths to set, only respected with accept
-// action.
-func (p HandleFileChooserParams) WithFiles(files []string) *HandleFileChooserParams {
-	p.Files = files
-	return &p
-}
-
-// Do executes Page.handleFileChooser against the provided context.
-func (p *HandleFileChooserParams) Do(ctx context.Context) (err error) {
-	return cdp.Execute(ctx, CommandHandleFileChooser, p, nil)
-}
-
 // Command names.
 const (
 	CommandAddScriptToEvaluateOnNewDocument    = "Page.addScriptToEvaluateOnNewDocument"
@@ -1451,6 +1433,7 @@ const (
 	CommandEnable                              = "Page.enable"
 	CommandGetAppManifest                      = "Page.getAppManifest"
 	CommandGetInstallabilityErrors             = "Page.getInstallabilityErrors"
+	CommandGetManifestIcons                    = "Page.getManifestIcons"
 	CommandGetFrameTree                        = "Page.getFrameTree"
 	CommandGetLayoutMetrics                    = "Page.getLayoutMetrics"
 	CommandGetNavigationHistory                = "Page.getNavigationHistory"
@@ -1470,7 +1453,6 @@ const (
 	CommandSetFontFamilies                     = "Page.setFontFamilies"
 	CommandSetFontSizes                        = "Page.setFontSizes"
 	CommandSetDocumentContent                  = "Page.setDocumentContent"
-	CommandSetDownloadBehavior                 = "Page.setDownloadBehavior"
 	CommandSetLifecycleEventsEnabled           = "Page.setLifecycleEventsEnabled"
 	CommandStartScreencast                     = "Page.startScreencast"
 	CommandStopLoading                         = "Page.stopLoading"
@@ -1484,5 +1466,4 @@ const (
 	CommandGenerateTestReport                  = "Page.generateTestReport"
 	CommandWaitForDebugger                     = "Page.waitForDebugger"
 	CommandSetInterceptFileChooserDialog       = "Page.setInterceptFileChooserDialog"
-	CommandHandleFileChooser                   = "Page.handleFileChooser"
 )

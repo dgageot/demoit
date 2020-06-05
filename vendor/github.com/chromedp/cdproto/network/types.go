@@ -318,6 +318,54 @@ func (t *CookieSameSite) UnmarshalJSON(buf []byte) error {
 	return easyjson.Unmarshal(buf, t)
 }
 
+// CookiePriority represents the cookie's 'Priority' status:
+// https://tools.ietf.org/html/draft-west-cookie-priority-00.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-CookiePriority
+type CookiePriority string
+
+// String returns the CookiePriority as string value.
+func (t CookiePriority) String() string {
+	return string(t)
+}
+
+// CookiePriority values.
+const (
+	CookiePriorityLow    CookiePriority = "Low"
+	CookiePriorityMedium CookiePriority = "Medium"
+	CookiePriorityHigh   CookiePriority = "High"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t CookiePriority) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t CookiePriority) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *CookiePriority) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch CookiePriority(in.String()) {
+	case CookiePriorityLow:
+		*t = CookiePriorityLow
+	case CookiePriorityMedium:
+		*t = CookiePriorityMedium
+	case CookiePriorityHigh:
+		*t = CookiePriorityHigh
+
+	default:
+		in.AddError(errors.New("unknown CookiePriority value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *CookiePriority) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
 // ResourceTiming timing information for the request.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-ResourceTiming
@@ -503,14 +551,19 @@ func (t BlockedReason) String() string {
 
 // BlockedReason values.
 const (
-	BlockedReasonOther             BlockedReason = "other"
-	BlockedReasonCsp               BlockedReason = "csp"
-	BlockedReasonMixedContent      BlockedReason = "mixed-content"
-	BlockedReasonOrigin            BlockedReason = "origin"
-	BlockedReasonInspector         BlockedReason = "inspector"
-	BlockedReasonSubresourceFilter BlockedReason = "subresource-filter"
-	BlockedReasonContentType       BlockedReason = "content-type"
-	BlockedReasonCollapsedByClient BlockedReason = "collapsed-by-client"
+	BlockedReasonOther                                             BlockedReason = "other"
+	BlockedReasonCsp                                               BlockedReason = "csp"
+	BlockedReasonMixedContent                                      BlockedReason = "mixed-content"
+	BlockedReasonOrigin                                            BlockedReason = "origin"
+	BlockedReasonInspector                                         BlockedReason = "inspector"
+	BlockedReasonSubresourceFilter                                 BlockedReason = "subresource-filter"
+	BlockedReasonContentType                                       BlockedReason = "content-type"
+	BlockedReasonCollapsedByClient                                 BlockedReason = "collapsed-by-client"
+	BlockedReasonCoepFrameResourceNeedsCoepHeader                  BlockedReason = "coep-frame-resource-needs-coep-header"
+	BlockedReasonCoopSandboxedIframeCannotNavigateToCoopPage       BlockedReason = "coop-sandboxed-iframe-cannot-navigate-to-coop-page"
+	BlockedReasonCorpNotSameOrigin                                 BlockedReason = "corp-not-same-origin"
+	BlockedReasonCorpNotSameOriginAfterDefaultedToSameOriginByCoep BlockedReason = "corp-not-same-origin-after-defaulted-to-same-origin-by-coep"
+	BlockedReasonCorpNotSameSite                                   BlockedReason = "corp-not-same-site"
 )
 
 // MarshalEasyJSON satisfies easyjson.Marshaler.
@@ -542,6 +595,16 @@ func (t *BlockedReason) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = BlockedReasonContentType
 	case BlockedReasonCollapsedByClient:
 		*t = BlockedReasonCollapsedByClient
+	case BlockedReasonCoepFrameResourceNeedsCoepHeader:
+		*t = BlockedReasonCoepFrameResourceNeedsCoepHeader
+	case BlockedReasonCoopSandboxedIframeCannotNavigateToCoopPage:
+		*t = BlockedReasonCoopSandboxedIframeCannotNavigateToCoopPage
+	case BlockedReasonCorpNotSameOrigin:
+		*t = BlockedReasonCorpNotSameOrigin
+	case BlockedReasonCorpNotSameOriginAfterDefaultedToSameOriginByCoep:
+		*t = BlockedReasonCorpNotSameOriginAfterDefaultedToSameOriginByCoep
+	case BlockedReasonCorpNotSameSite:
+		*t = BlockedReasonCorpNotSameSite
 
 	default:
 		in.AddError(errors.New("unknown BlockedReason value"))
@@ -642,6 +705,7 @@ type Cookie struct {
 	Secure   bool           `json:"secure"`             // True if cookie is secure.
 	Session  bool           `json:"session"`            // True in case of session cookie.
 	SameSite CookieSameSite `json:"sameSite,omitempty"` // Cookie SameSite type.
+	Priority CookiePriority `json:"priority"`           // Cookie Priority
 }
 
 // SetCookieBlockedReason types of reasons why a cookie may not be stored
@@ -817,6 +881,7 @@ type CookieParam struct {
 	HTTPOnly bool                `json:"httpOnly,omitempty"` // True if cookie is http-only.
 	SameSite CookieSameSite      `json:"sameSite,omitempty"` // Cookie SameSite type.
 	Expires  *cdp.TimeSinceEpoch `json:"expires,omitempty"`  // Cookie expiration date, session cookie if not set
+	Priority CookiePriority      `json:"priority,omitempty"` // Cookie Priority.
 }
 
 // AuthChallenge authorization challenge for HTTP status code 401 or 407.
@@ -999,7 +1064,7 @@ type SignedExchangeInfo struct {
 // ReferrerPolicy the referrer policy of the request, as defined in
 // https://www.w3.org/TR/referrer-policy/.
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-referrerPolicy
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-Request
 type ReferrerPolicy string
 
 // String returns the ReferrerPolicy as string value.
@@ -1061,7 +1126,7 @@ func (t *ReferrerPolicy) UnmarshalJSON(buf []byte) error {
 
 // InitiatorType type of this initiator.
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-type
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-Initiator
 type InitiatorType string
 
 // String returns the InitiatorType as string value.
@@ -1114,7 +1179,7 @@ func (t *InitiatorType) UnmarshalJSON(buf []byte) error {
 
 // AuthChallengeSource source of the authentication challenge.
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-source
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-AuthChallenge
 type AuthChallengeSource string
 
 // String returns the AuthChallengeSource as string value.
@@ -1161,7 +1226,7 @@ func (t *AuthChallengeSource) UnmarshalJSON(buf []byte) error {
 // of the net stack, which will likely either the Cancel authentication or
 // display a popup dialog box.
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-response
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-AuthChallengeResponse
 type AuthChallengeResponseResponse string
 
 // String returns the AuthChallengeResponseResponse as string value.

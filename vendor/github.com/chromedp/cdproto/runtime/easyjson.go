@@ -1481,6 +1481,26 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoRuntime16(in *jlexer.Lexer, o
 				}
 				(*out.Value).UnmarshalEasyJSON(in)
 			}
+		case "get":
+			if in.IsNull() {
+				in.Skip()
+				out.Get = nil
+			} else {
+				if out.Get == nil {
+					out.Get = new(RemoteObject)
+				}
+				(*out.Get).UnmarshalEasyJSON(in)
+			}
+		case "set":
+			if in.IsNull() {
+				in.Skip()
+				out.Set = nil
+			} else {
+				if out.Set == nil {
+					out.Set = new(RemoteObject)
+				}
+				(*out.Set).UnmarshalEasyJSON(in)
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -1500,14 +1520,20 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoRuntime16(out *jwriter.Writer
 		out.RawString(prefix[1:])
 		out.String(string(in.Name))
 	}
-	{
+	if in.Value != nil {
 		const prefix string = ",\"value\":"
 		out.RawString(prefix)
-		if in.Value == nil {
-			out.RawString("null")
-		} else {
-			(*in.Value).MarshalEasyJSON(out)
-		}
+		(*in.Value).MarshalEasyJSON(out)
+	}
+	if in.Get != nil {
+		const prefix string = ",\"get\":"
+		out.RawString(prefix)
+		(*in.Get).MarshalEasyJSON(out)
+	}
+	if in.Set != nil {
+		const prefix string = ",\"set\":"
+		out.RawString(prefix)
+		(*in.Set).MarshalEasyJSON(out)
 	}
 	out.RawByte('}')
 }

@@ -4,6 +4,7 @@ package target
 
 import (
 	json "encoding/json"
+	cdp "github.com/chromedp/cdproto/cdp"
 	easyjson "github.com/mailru/easyjson"
 	jlexer "github.com/mailru/easyjson/jlexer"
 	jwriter "github.com/mailru/easyjson/jwriter"
@@ -218,8 +219,6 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoTarget2(in *jlexer.Lexer, out
 			out.WaitForDebuggerOnStart = bool(in.Bool())
 		case "flatten":
 			out.Flatten = bool(in.Bool())
-		case "windowOpen":
-			out.WindowOpen = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -248,11 +247,6 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoTarget2(out *jwriter.Writer, 
 		const prefix string = ",\"flatten\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.Flatten))
-	}
-	if in.WindowOpen {
-		const prefix string = ",\"windowOpen\":"
-		out.RawString(prefix)
-		out.Bool(bool(in.WindowOpen))
 	}
 	out.RawByte('}')
 }
@@ -385,7 +379,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoTarget4(in *jlexer.Lexer, out
 		case "openerId":
 			out.OpenerID = ID(in.String())
 		case "browserContextId":
-			out.BrowserContextID = BrowserContextID(in.String())
+			out.BrowserContextID = cdp.BrowserContextID(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -798,16 +792,16 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoTarget9(in *jlexer.Lexer, out
 				in.Delim('[')
 				if out.BrowserContextIds == nil {
 					if !in.IsDelim(']') {
-						out.BrowserContextIds = make([]BrowserContextID, 0, 4)
+						out.BrowserContextIds = make([]cdp.BrowserContextID, 0, 4)
 					} else {
-						out.BrowserContextIds = []BrowserContextID{}
+						out.BrowserContextIds = []cdp.BrowserContextID{}
 					}
 				} else {
 					out.BrowserContextIds = (out.BrowserContextIds)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v7 BrowserContextID
-					v7 = BrowserContextID(in.String())
+					var v7 cdp.BrowserContextID
+					v7 = cdp.BrowserContextID(in.String())
 					out.BrowserContextIds = append(out.BrowserContextIds, v7)
 					in.WantComma()
 				}
@@ -1553,7 +1547,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoTarget19(in *jlexer.Lexer, ou
 		}
 		switch key {
 		case "browserContextId":
-			out.BrowserContextID = BrowserContextID(in.String())
+			out.BrowserContextID = cdp.BrowserContextID(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -1759,7 +1753,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoTarget22(in *jlexer.Lexer, ou
 		case "height":
 			out.Height = int64(in.Int64())
 		case "browserContextId":
-			out.BrowserContextID = BrowserContextID(in.String())
+			out.BrowserContextID = cdp.BrowserContextID(in.String())
 		case "enableBeginFrameControl":
 			out.EnableBeginFrameControl = bool(in.Bool())
 		case "newWindow":
@@ -1861,7 +1855,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoTarget23(in *jlexer.Lexer, ou
 		}
 		switch key {
 		case "browserContextId":
-			out.BrowserContextID = BrowserContextID(in.String())
+			out.BrowserContextID = cdp.BrowserContextID(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -1927,6 +1921,8 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoTarget24(in *jlexer.Lexer, ou
 			continue
 		}
 		switch key {
+		case "disposeOnDetach":
+			out.DisposeOnDetach = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -1941,6 +1937,12 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoTarget24(out *jwriter.Writer,
 	out.RawByte('{')
 	first := true
 	_ = first
+	if in.DisposeOnDetach {
+		const prefix string = ",\"disposeOnDetach\":"
+		first = false
+		out.RawString(prefix[1:])
+		out.Bool(bool(in.DisposeOnDetach))
+	}
 	out.RawByte('}')
 }
 

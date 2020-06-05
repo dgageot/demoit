@@ -75,6 +75,16 @@ func (err ErrUnknownCommandOrEvent) Error() string {
 	return fmt.Sprintf("unknown command or event %q", string(err))
 }
 
+// BrowserContextID [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Browser#type-BrowserContextID
+type BrowserContextID string
+
+// String returns the BrowserContextID as string value.
+func (t BrowserContextID) String() string {
+	return string(t)
+}
+
 // NodeID unique DOM node identifier.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#type-NodeId
@@ -161,6 +171,7 @@ const (
 	PseudoTypeFirstLetter         PseudoType = "first-letter"
 	PseudoTypeBefore              PseudoType = "before"
 	PseudoTypeAfter               PseudoType = "after"
+	PseudoTypeMarker              PseudoType = "marker"
 	PseudoTypeBackdrop            PseudoType = "backdrop"
 	PseudoTypeSelection           PseudoType = "selection"
 	PseudoTypeFirstLineInherited  PseudoType = "first-line-inherited"
@@ -195,6 +206,8 @@ func (t *PseudoType) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = PseudoTypeBefore
 	case PseudoTypeAfter:
 		*t = PseudoTypeAfter
+	case PseudoTypeMarker:
+		*t = PseudoTypeMarker
 	case PseudoTypeBackdrop:
 		*t = PseudoTypeBackdrop
 	case PseudoTypeSelection:

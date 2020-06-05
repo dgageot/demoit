@@ -8,7 +8,7 @@ require (
 	github.com/alecthomas/colour v0.1.0 // indirect
 	github.com/alecthomas/repr v0.0.0-20181024024818-d37bc2a10ba1 // indirect
 	github.com/boombuler/barcode v1.0.0
-	github.com/chromedp/cdproto v0.0.0-20191114225735-6626966fbae4
+	github.com/chromedp/cdproto v0.0.0-20200424080200-0de008e41fa0
 	github.com/chromedp/chromedp v0.5.1
 	github.com/creack/pty v1.1.9 // indirect
 	github.com/dlclark/regexp2 v1.2.0 // indirect
@@ -46,4 +46,4 @@ require (
 
 replace github.com/alecthomas/chroma => github.com/dgageot/chroma v0.4.1-0.20190326114921-11eec8e9afad
 
-go 1.13
+go 1.14

@@ -148,6 +148,8 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoCss1(in *jlexer.Lexer, out *T
 				}
 				in.Delim(']')
 			}
+		case "timestamp":
+			out.Timestamp = float64(in.Float64())
 		default:
 			in.SkipRecursive()
 		}
@@ -180,6 +182,16 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoCss1(out *jwriter.Writer, in 
 			}
 			out.RawByte(']')
 		}
+	}
+	if in.Timestamp != 0 {
+		const prefix string = ",\"timestamp\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Float64(float64(in.Timestamp))
 	}
 	out.RawByte('}')
 }
@@ -4647,21 +4659,21 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoCss45(in *jlexer.Lexer, out *
 				in.Delim('[')
 				if out.ComputedStyle == nil {
 					if !in.IsDelim(']') {
-						out.ComputedStyle = make([]*ComputedProperty, 0, 8)
+						out.ComputedStyle = make([]*ComputedStyleProperty, 0, 8)
 					} else {
-						out.ComputedStyle = []*ComputedProperty{}
+						out.ComputedStyle = []*ComputedStyleProperty{}
 					}
 				} else {
 					out.ComputedStyle = (out.ComputedStyle)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v61 *ComputedProperty
+					var v61 *ComputedStyleProperty
 					if in.IsNull() {
 						in.Skip()
 						v61 = nil
 					} else {
 						if v61 == nil {
-							v61 = new(ComputedProperty)
+							v61 = new(ComputedStyleProperty)
 						}
 						(*v61).UnmarshalEasyJSON(in)
 					}
@@ -5797,7 +5809,7 @@ func (v *CreateStyleSheetParams) UnmarshalJSON(data []byte) error {
 func (v *CreateStyleSheetParams) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjsonC5a4559bDecodeGithubComChromedpCdprotoCss59(l, v)
 }
-func easyjsonC5a4559bDecodeGithubComChromedpCdprotoCss60(in *jlexer.Lexer, out *ComputedProperty) {
+func easyjsonC5a4559bDecodeGithubComChromedpCdprotoCss60(in *jlexer.Lexer, out *ComputedStyleProperty) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -5830,7 +5842,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoCss60(in *jlexer.Lexer, out *
 		in.Consumed()
 	}
 }
-func easyjsonC5a4559bEncodeGithubComChromedpCdprotoCss60(out *jwriter.Writer, in ComputedProperty) {
+func easyjsonC5a4559bEncodeGithubComChromedpCdprotoCss60(out *jwriter.Writer, in ComputedStyleProperty) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -5848,26 +5860,26 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoCss60(out *jwriter.Writer, in
 }
 
 // MarshalJSON supports json.Marshaler interface
-func (v ComputedProperty) MarshalJSON() ([]byte, error) {
+func (v ComputedStyleProperty) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
 	easyjsonC5a4559bEncodeGithubComChromedpCdprotoCss60(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
-func (v ComputedProperty) MarshalEasyJSON(w *jwriter.Writer) {
+func (v ComputedStyleProperty) MarshalEasyJSON(w *jwriter.Writer) {
 	easyjsonC5a4559bEncodeGithubComChromedpCdprotoCss60(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
-func (v *ComputedProperty) UnmarshalJSON(data []byte) error {
+func (v *ComputedStyleProperty) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
 	easyjsonC5a4559bDecodeGithubComChromedpCdprotoCss60(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *ComputedProperty) UnmarshalEasyJSON(l *jlexer.Lexer) {
+func (v *ComputedStyleProperty) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjsonC5a4559bDecodeGithubComChromedpCdprotoCss60(l, v)
 }
 func easyjsonC5a4559bDecodeGithubComChromedpCdprotoCss61(in *jlexer.Lexer, out *CollectClassNamesReturns) {

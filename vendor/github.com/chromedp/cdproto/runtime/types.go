@@ -49,7 +49,7 @@ func (t UnserializableValue) String() string {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#type-RemoteObject
 type RemoteObject struct {
 	Type                Type                `json:"type"`                          // Object type.
-	Subtype             Subtype             `json:"subtype,omitempty"`             // Object subtype hint. Specified for object type values only.
+	Subtype             Subtype             `json:"subtype,omitempty"`             // Object subtype hint. Specified for object or wasm type values only.
 	ClassName           string              `json:"className,omitempty"`           // Object class (constructor) name. Specified for object type values only.
 	Value               easyjson.RawMessage `json:"value,omitempty"`               // Remote object value in case of primitive values or JSON values (if it was requested).
 	UnserializableValue UnserializableValue `json:"unserializableValue,omitempty"` // Primitive value which can not be JSON-stringified does not have value, but gets this property.
@@ -127,8 +127,10 @@ type InternalPropertyDescriptor struct {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#type-PrivatePropertyDescriptor
 type PrivatePropertyDescriptor struct {
-	Name  string        `json:"name"`  // Private property name.
-	Value *RemoteObject `json:"value"` // The value associated with the private property.
+	Name  string        `json:"name"`            // Private property name.
+	Value *RemoteObject `json:"value,omitempty"` // The value associated with the private property.
+	Get   *RemoteObject `json:"get,omitempty"`   // A function which serves as a getter for the private property, or undefined if there is no getter (accessor descriptors only).
+	Set   *RemoteObject `json:"set,omitempty"`   // A function which serves as a setter for the private property, or undefined if there is no setter (accessor descriptors only).
 }
 
 // CallArgument represents function call argument. Either remote object id
@@ -271,7 +273,7 @@ type StackTraceID struct {
 
 // Type object type.
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#type-type
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#type-RemoteObject
 type Type string
 
 // String returns the Type as string value.
@@ -289,6 +291,7 @@ const (
 	TypeBoolean   Type = "boolean"
 	TypeSymbol    Type = "symbol"
 	TypeBigint    Type = "bigint"
+	TypeWasm      Type = "wasm"
 	TypeAccessor  Type = "accessor"
 )
 
@@ -321,6 +324,8 @@ func (t *Type) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = TypeSymbol
 	case TypeBigint:
 		*t = TypeBigint
+	case TypeWasm:
+		*t = TypeWasm
 	case TypeAccessor:
 		*t = TypeAccessor
 
@@ -334,9 +339,10 @@ func (t *Type) UnmarshalJSON(buf []byte) error {
 	return easyjson.Unmarshal(buf, t)
 }
 
-// Subtype object subtype hint. Specified for object type values only.
+// Subtype object subtype hint. Specified for object or wasm type values
+// only.
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#type-subtype
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#type-RemoteObject
 type Subtype string
 
 // String returns the Subtype as string value.
@@ -363,6 +369,12 @@ const (
 	SubtypeTypedarray  Subtype = "typedarray"
 	SubtypeArraybuffer Subtype = "arraybuffer"
 	SubtypeDataview    Subtype = "dataview"
+	SubtypeI32         Subtype = "i32"
+	SubtypeI64         Subtype = "i64"
+	SubtypeF32         Subtype = "f32"
+	SubtypeF64         Subtype = "f64"
+	SubtypeV128        Subtype = "v128"
+	SubtypeAnyref      Subtype = "anyref"
 )
 
 // MarshalEasyJSON satisfies easyjson.Marshaler.
@@ -412,6 +424,18 @@ func (t *Subtype) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = SubtypeArraybuffer
 	case SubtypeDataview:
 		*t = SubtypeDataview
+	case SubtypeI32:
+		*t = SubtypeI32
+	case SubtypeI64:
+		*t = SubtypeI64
+	case SubtypeF32:
+		*t = SubtypeF32
+	case SubtypeF64:
+		*t = SubtypeF64
+	case SubtypeV128:
+		*t = SubtypeV128
+	case SubtypeAnyref:
+		*t = SubtypeAnyref
 
 	default:
 		in.AddError(errors.New("unknown Subtype value"))
@@ -425,7 +449,7 @@ func (t *Subtype) UnmarshalJSON(buf []byte) error {
 
 // APIType type of the call.
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#type-type
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#event-consoleAPICalled
 type APIType string
 
 // String returns the APIType as string value.

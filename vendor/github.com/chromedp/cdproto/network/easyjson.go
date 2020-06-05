@@ -1645,6 +1645,8 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoNetwork14(in *jlexer.Lexer, o
 				}
 				(*out.Expires).UnmarshalEasyJSON(in)
 			}
+		case "priority":
+			(out.Priority).UnmarshalEasyJSON(in)
 		default:
 			in.SkipRecursive()
 		}
@@ -1703,6 +1705,11 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoNetwork14(out *jwriter.Writer
 		const prefix string = ",\"expires\":"
 		out.RawString(prefix)
 		(*in.Expires).MarshalEasyJSON(out)
+	}
+	if in.Priority != "" {
+		const prefix string = ",\"priority\":"
+		out.RawString(prefix)
+		(in.Priority).MarshalEasyJSON(out)
 	}
 	out.RawByte('}')
 }
@@ -6669,6 +6676,8 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoNetwork61(in *jlexer.Lexer, o
 				}
 				(*out.Expires).UnmarshalEasyJSON(in)
 			}
+		case "priority":
+			(out.Priority).UnmarshalEasyJSON(in)
 		default:
 			in.SkipRecursive()
 		}
@@ -6727,6 +6736,11 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoNetwork61(out *jwriter.Writer
 		const prefix string = ",\"expires\":"
 		out.RawString(prefix)
 		(*in.Expires).MarshalEasyJSON(out)
+	}
+	if in.Priority != "" {
+		const prefix string = ",\"priority\":"
+		out.RawString(prefix)
+		(in.Priority).MarshalEasyJSON(out)
 	}
 	out.RawByte('}')
 }
@@ -6793,6 +6807,8 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoNetwork62(in *jlexer.Lexer, o
 			out.Session = bool(in.Bool())
 		case "sameSite":
 			(out.SameSite).UnmarshalEasyJSON(in)
+		case "priority":
+			(out.Priority).UnmarshalEasyJSON(in)
 		default:
 			in.SkipRecursive()
 		}
@@ -6856,6 +6872,11 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoNetwork62(out *jwriter.Writer
 		const prefix string = ",\"sameSite\":"
 		out.RawString(prefix)
 		(in.SameSite).MarshalEasyJSON(out)
+	}
+	{
+		const prefix string = ",\"priority\":"
+		out.RawString(prefix)
+		(in.Priority).MarshalEasyJSON(out)
 	}
 	out.RawByte('}')
 }

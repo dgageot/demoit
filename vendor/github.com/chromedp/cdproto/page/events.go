@@ -19,7 +19,9 @@ type EventDomContentEventFired struct {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Page#event-fileChooserOpened
 type EventFileChooserOpened struct {
-	Mode FileChooserOpenedMode `json:"mode"`
+	FrameID       cdp.FrameID           `json:"frameId"`       // Id of the frame containing input node.
+	BackendNodeID cdp.BackendNodeID     `json:"backendNodeId"` // Input node id.
+	Mode          FileChooserOpenedMode `json:"mode"`          // Input mode.
 }
 
 // EventFrameAttached fired when frame has been attached to its parent.
@@ -80,7 +82,19 @@ type EventFrameStoppedLoading struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Page#event-downloadWillBegin
 type EventDownloadWillBegin struct {
 	FrameID cdp.FrameID `json:"frameId"` // Id of the frame that caused download to begin.
+	GUID    string      `json:"guid"`    // Global unique identifier of the download.
 	URL     string      `json:"url"`     // URL of the resource being downloaded.
+}
+
+// EventDownloadProgress fired when download makes progress. Last call has
+// |done| == true.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#event-downloadProgress
+type EventDownloadProgress struct {
+	GUID          string                `json:"guid"`          // Global unique identifier of the download.
+	TotalBytes    float64               `json:"totalBytes"`    // Total expected bytes to download.
+	ReceivedBytes float64               `json:"receivedBytes"` // Total bytes received.
+	State         DownloadProgressState `json:"state"`         // Download status.
 }
 
 // EventInterstitialHidden fired when interstitial page was hidden.

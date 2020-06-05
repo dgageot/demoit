@@ -97,8 +97,8 @@ const (
 	PermissionTypeAudioCapture             PermissionType = "audioCapture"
 	PermissionTypeBackgroundSync           PermissionType = "backgroundSync"
 	PermissionTypeBackgroundFetch          PermissionType = "backgroundFetch"
-	PermissionTypeClipboardRead            PermissionType = "clipboardRead"
-	PermissionTypeClipboardWrite           PermissionType = "clipboardWrite"
+	PermissionTypeClipboardReadWrite       PermissionType = "clipboardReadWrite"
+	PermissionTypeClipboardSanitizedWrite  PermissionType = "clipboardSanitizedWrite"
 	PermissionTypeDurableStorage           PermissionType = "durableStorage"
 	PermissionTypeFlash                    PermissionType = "flash"
 	PermissionTypeGeolocation              PermissionType = "geolocation"
@@ -137,10 +137,10 @@ func (t *PermissionType) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = PermissionTypeBackgroundSync
 	case PermissionTypeBackgroundFetch:
 		*t = PermissionTypeBackgroundFetch
-	case PermissionTypeClipboardRead:
-		*t = PermissionTypeClipboardRead
-	case PermissionTypeClipboardWrite:
-		*t = PermissionTypeClipboardWrite
+	case PermissionTypeClipboardReadWrite:
+		*t = PermissionTypeClipboardReadWrite
+	case PermissionTypeClipboardSanitizedWrite:
+		*t = PermissionTypeClipboardSanitizedWrite
 	case PermissionTypeDurableStorage:
 		*t = PermissionTypeDurableStorage
 	case PermissionTypeFlash:
@@ -235,10 +235,11 @@ func (t *PermissionSetting) UnmarshalJSON(buf []byte) error {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Browser#type-PermissionDescriptor
 type PermissionDescriptor struct {
-	Name            string `json:"name"`                      // Name of permission. See https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/permissions/permission_descriptor.idl for valid permission names.
-	Sysex           bool   `json:"sysex,omitempty"`           // For "midi" permission, may also specify sysex control.
-	UserVisibleOnly bool   `json:"userVisibleOnly,omitempty"` // For "push" permission, may specify userVisibleOnly. Note that userVisibleOnly = true is the only currently supported type.
-	Type            string `json:"type,omitempty"`            // For "wake-lock" permission, must specify type as either "screen" or "system".
+	Name                     string `json:"name"`                               // Name of permission. See https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/permissions/permission_descriptor.idl for valid permission names.
+	Sysex                    bool   `json:"sysex,omitempty"`                    // For "midi" permission, may also specify sysex control.
+	UserVisibleOnly          bool   `json:"userVisibleOnly,omitempty"`          // For "push" permission, may specify userVisibleOnly. Note that userVisibleOnly = true is the only currently supported type.
+	Type                     string `json:"type,omitempty"`                     // For "wake-lock" permission, must specify type as either "screen" or "system".
+	AllowWithoutSanitization bool   `json:"allowWithoutSanitization,omitempty"` // For "clipboard" permission, may specify allowWithoutSanitization.
 }
 
 // Bucket chrome histogram bucket.
@@ -258,4 +259,57 @@ type Histogram struct {
 	Sum     int64     `json:"sum"`     // Sum of sample values.
 	Count   int64     `json:"count"`   // Total number of samples.
 	Buckets []*Bucket `json:"buckets"` // Buckets.
+}
+
+// SetDownloadBehaviorBehavior whether to allow all or deny all download
+// requests, or use default Chrome behavior if available (otherwise deny).
+// |allowAndName| allows download and names files according to their dowmload
+// guids.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Browser#method-setDownloadBehavior
+type SetDownloadBehaviorBehavior string
+
+// String returns the SetDownloadBehaviorBehavior as string value.
+func (t SetDownloadBehaviorBehavior) String() string {
+	return string(t)
+}
+
+// SetDownloadBehaviorBehavior values.
+const (
+	SetDownloadBehaviorBehaviorDeny         SetDownloadBehaviorBehavior = "deny"
+	SetDownloadBehaviorBehaviorAllow        SetDownloadBehaviorBehavior = "allow"
+	SetDownloadBehaviorBehaviorAllowAndName SetDownloadBehaviorBehavior = "allowAndName"
+	SetDownloadBehaviorBehaviorDefault      SetDownloadBehaviorBehavior = "default"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t SetDownloadBehaviorBehavior) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t SetDownloadBehaviorBehavior) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *SetDownloadBehaviorBehavior) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch SetDownloadBehaviorBehavior(in.String()) {
+	case SetDownloadBehaviorBehaviorDeny:
+		*t = SetDownloadBehaviorBehaviorDeny
+	case SetDownloadBehaviorBehaviorAllow:
+		*t = SetDownloadBehaviorBehaviorAllow
+	case SetDownloadBehaviorBehaviorAllowAndName:
+		*t = SetDownloadBehaviorBehaviorAllowAndName
+	case SetDownloadBehaviorBehaviorDefault:
+		*t = SetDownloadBehaviorBehaviorDefault
+
+	default:
+		in.AddError(errors.New("unknown SetDownloadBehaviorBehavior value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *SetDownloadBehaviorBehavior) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
 }

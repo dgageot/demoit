@@ -61,7 +61,7 @@ type KeyframeStyle struct {
 
 // Type animation type of Animation.
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Animation#type-type
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Animation#type-Animation
 type Type string
 
 // String returns the Type as string value.

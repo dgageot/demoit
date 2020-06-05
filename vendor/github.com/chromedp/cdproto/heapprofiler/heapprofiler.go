@@ -277,7 +277,8 @@ func (p *StopSamplingParams) Do(ctx context.Context) (profile *SamplingHeapProfi
 
 // StopTrackingHeapObjectsParams [no description].
 type StopTrackingHeapObjectsParams struct {
-	ReportProgress bool `json:"reportProgress,omitempty"` // If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken when the tracking is stopped.
+	ReportProgress            bool `json:"reportProgress,omitempty"` // If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken when the tracking is stopped.
+	TreatGlobalObjectsAsRoots bool `json:"treatGlobalObjectsAsRoots,omitempty"`
 }
 
 // StopTrackingHeapObjects [no description].
@@ -296,6 +297,12 @@ func (p StopTrackingHeapObjectsParams) WithReportProgress(reportProgress bool) *
 	return &p
 }
 
+// WithTreatGlobalObjectsAsRoots [no description].
+func (p StopTrackingHeapObjectsParams) WithTreatGlobalObjectsAsRoots(treatGlobalObjectsAsRoots bool) *StopTrackingHeapObjectsParams {
+	p.TreatGlobalObjectsAsRoots = treatGlobalObjectsAsRoots
+	return &p
+}
+
 // Do executes HeapProfiler.stopTrackingHeapObjects against the provided context.
 func (p *StopTrackingHeapObjectsParams) Do(ctx context.Context) (err error) {
 	return cdp.Execute(ctx, CommandStopTrackingHeapObjects, p, nil)
@@ -303,7 +310,8 @@ func (p *StopTrackingHeapObjectsParams) Do(ctx context.Context) (err error) {
 
 // TakeHeapSnapshotParams [no description].
 type TakeHeapSnapshotParams struct {
-	ReportProgress bool `json:"reportProgress,omitempty"` // If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken.
+	ReportProgress            bool `json:"reportProgress,omitempty"`            // If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken.
+	TreatGlobalObjectsAsRoots bool `json:"treatGlobalObjectsAsRoots,omitempty"` // If true, a raw snapshot without artificial roots will be generated
 }
 
 // TakeHeapSnapshot [no description].
@@ -319,6 +327,13 @@ func TakeHeapSnapshot() *TakeHeapSnapshotParams {
 // generated while snapshot is being taken.
 func (p TakeHeapSnapshotParams) WithReportProgress(reportProgress bool) *TakeHeapSnapshotParams {
 	p.ReportProgress = reportProgress
+	return &p
+}
+
+// WithTreatGlobalObjectsAsRoots if true, a raw snapshot without artificial
+// roots will be generated.
+func (p TakeHeapSnapshotParams) WithTreatGlobalObjectsAsRoots(treatGlobalObjectsAsRoots bool) *TakeHeapSnapshotParams {
+	p.TreatGlobalObjectsAsRoots = treatGlobalObjectsAsRoots
 	return &p
 }
 

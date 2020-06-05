@@ -176,10 +176,10 @@ type ShorthandEntry struct {
 	Important bool   `json:"important,omitempty"` // Whether the property has "!important" annotation (implies false if absent).
 }
 
-// ComputedProperty [no description].
+// ComputedStyleProperty [no description].
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#type-CSSComputedStyleProperty
-type ComputedProperty struct {
+type ComputedStyleProperty struct {
 	Name  string `json:"name"`  // Computed style property name.
 	Value string `json:"value"` // Computed style property value.
 }
@@ -299,7 +299,7 @@ type StyleDeclarationEdit struct {
 // "inlineSheet" if specified by a "media" attribute in an inline stylesheet's
 // STYLE tag.
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#type-source
+// See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#type-CSSMedia
 type MediaSource string
 
 // String returns the MediaSource as string value.

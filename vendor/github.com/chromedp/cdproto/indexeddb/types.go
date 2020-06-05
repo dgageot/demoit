@@ -81,7 +81,7 @@ type KeyPath struct {
 
 // KeyType key type.
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/IndexedDB#type-type
+// See: https://chromedevtools.github.io/devtools-protocol/tot/IndexedDB#type-Key
 type KeyType string
 
 // String returns the KeyType as string value.
@@ -131,7 +131,7 @@ func (t *KeyType) UnmarshalJSON(buf []byte) error {
 
 // KeyPathType key path type.
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/IndexedDB#type-type
+// See: https://chromedevtools.github.io/devtools-protocol/tot/IndexedDB#type-KeyPath
 type KeyPathType string
 
 // String returns the KeyPathType as string value.

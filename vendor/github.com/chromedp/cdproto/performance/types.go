@@ -18,46 +18,47 @@ type Metric struct {
 	Value float64 `json:"value"` // Metric value.
 }
 
-// SetTimeDomainTimeDomain time domain.
+// EnableTimeDomain time domain to use for collecting and reporting duration
+// metrics.
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Performance#type-timeDomain
-type SetTimeDomainTimeDomain string
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Performance#method-enable
+type EnableTimeDomain string
 
-// String returns the SetTimeDomainTimeDomain as string value.
-func (t SetTimeDomainTimeDomain) String() string {
+// String returns the EnableTimeDomain as string value.
+func (t EnableTimeDomain) String() string {
 	return string(t)
 }
 
-// SetTimeDomainTimeDomain values.
+// EnableTimeDomain values.
 const (
-	SetTimeDomainTimeDomainTimeTicks   SetTimeDomainTimeDomain = "timeTicks"
-	SetTimeDomainTimeDomainThreadTicks SetTimeDomainTimeDomain = "threadTicks"
+	EnableTimeDomainTimeTicks   EnableTimeDomain = "timeTicks"
+	EnableTimeDomainThreadTicks EnableTimeDomain = "threadTicks"
 )
 
 // MarshalEasyJSON satisfies easyjson.Marshaler.
-func (t SetTimeDomainTimeDomain) MarshalEasyJSON(out *jwriter.Writer) {
+func (t EnableTimeDomain) MarshalEasyJSON(out *jwriter.Writer) {
 	out.String(string(t))
 }
 
 // MarshalJSON satisfies json.Marshaler.
-func (t SetTimeDomainTimeDomain) MarshalJSON() ([]byte, error) {
+func (t EnableTimeDomain) MarshalJSON() ([]byte, error) {
 	return easyjson.Marshal(t)
 }
 
 // UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
-func (t *SetTimeDomainTimeDomain) UnmarshalEasyJSON(in *jlexer.Lexer) {
-	switch SetTimeDomainTimeDomain(in.String()) {
-	case SetTimeDomainTimeDomainTimeTicks:
-		*t = SetTimeDomainTimeDomainTimeTicks
-	case SetTimeDomainTimeDomainThreadTicks:
-		*t = SetTimeDomainTimeDomainThreadTicks
+func (t *EnableTimeDomain) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch EnableTimeDomain(in.String()) {
+	case EnableTimeDomainTimeTicks:
+		*t = EnableTimeDomainTimeTicks
+	case EnableTimeDomainThreadTicks:
+		*t = EnableTimeDomainThreadTicks
 
 	default:
-		in.AddError(errors.New("unknown SetTimeDomainTimeDomain value"))
+		in.AddError(errors.New("unknown EnableTimeDomain value"))
 	}
 }
 
 // UnmarshalJSON satisfies json.Unmarshaler.
-func (t *SetTimeDomainTimeDomain) UnmarshalJSON(buf []byte) error {
+func (t *EnableTimeDomain) UnmarshalJSON(buf []byte) error {
 	return easyjson.Unmarshal(buf, t)
 }

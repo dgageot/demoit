@@ -84,7 +84,43 @@ func (p *GetEncodedResponseParams) Do(ctx context.Context) (body []byte, origina
 	return dec, res.OriginalSize, res.EncodedSize, nil
 }
 
+// DisableParams disables issues domain, prevents further issues from being
+// reported to the client.
+type DisableParams struct{}
+
+// Disable disables issues domain, prevents further issues from being
+// reported to the client.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Audits#method-disable
+func Disable() *DisableParams {
+	return &DisableParams{}
+}
+
+// Do executes Audits.disable against the provided context.
+func (p *DisableParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandDisable, nil, nil)
+}
+
+// EnableParams enables issues domain, sends the issues collected so far to
+// the client by means of the issueAdded event.
+type EnableParams struct{}
+
+// Enable enables issues domain, sends the issues collected so far to the
+// client by means of the issueAdded event.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Audits#method-enable
+func Enable() *EnableParams {
+	return &EnableParams{}
+}
+
+// Do executes Audits.enable against the provided context.
+func (p *EnableParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandEnable, nil, nil)
+}
+
 // Command names.
 const (
 	CommandGetEncodedResponse = "Audits.getEncodedResponse"
+	CommandDisable            = "Audits.disable"
+	CommandEnable             = "Audits.enable"
 )

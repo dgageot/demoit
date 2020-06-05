@@ -265,14 +265,14 @@ func GetComputedStyleForNode(nodeID cdp.NodeID) *GetComputedStyleForNodeParams {
 
 // GetComputedStyleForNodeReturns return values.
 type GetComputedStyleForNodeReturns struct {
-	ComputedStyle []*ComputedProperty `json:"computedStyle,omitempty"` // Computed style for the specified DOM node.
+	ComputedStyle []*ComputedStyleProperty `json:"computedStyle,omitempty"` // Computed style for the specified DOM node.
 }
 
 // Do executes CSS.getComputedStyleForNode against the provided context.
 //
 // returns:
 //   computedStyle - Computed style for the specified DOM node.
-func (p *GetComputedStyleForNodeParams) Do(ctx context.Context) (computedStyle []*ComputedProperty, err error) {
+func (p *GetComputedStyleForNodeParams) Do(ctx context.Context) (computedStyle []*ComputedStyleProperty, err error) {
 	// execute
 	var res GetComputedStyleForNodeReturns
 	err = cdp.Execute(ctx, CommandGetComputedStyleForNode, p, &res)
@@ -784,22 +784,24 @@ func TakeCoverageDelta() *TakeCoverageDeltaParams {
 
 // TakeCoverageDeltaReturns return values.
 type TakeCoverageDeltaReturns struct {
-	Coverage []*RuleUsage `json:"coverage,omitempty"`
+	Coverage  []*RuleUsage `json:"coverage,omitempty"`
+	Timestamp float64      `json:"timestamp,omitempty"` // Monotonically increasing time, in seconds.
 }
 
 // Do executes CSS.takeCoverageDelta against the provided context.
 //
 // returns:
 //   coverage
-func (p *TakeCoverageDeltaParams) Do(ctx context.Context) (coverage []*RuleUsage, err error) {
+//   timestamp - Monotonically increasing time, in seconds.
+func (p *TakeCoverageDeltaParams) Do(ctx context.Context) (coverage []*RuleUsage, timestamp float64, err error) {
 	// execute
 	var res TakeCoverageDeltaReturns
 	err = cdp.Execute(ctx, CommandTakeCoverageDelta, nil, &res)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return res.Coverage, nil
+	return res.Coverage, res.Timestamp, nil
 }
 
 // Command names.

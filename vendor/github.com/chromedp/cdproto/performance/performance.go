@@ -28,46 +28,29 @@ func (p *DisableParams) Do(ctx context.Context) (err error) {
 }
 
 // EnableParams enable collecting and reporting metrics.
-type EnableParams struct{}
+type EnableParams struct {
+	TimeDomain EnableTimeDomain `json:"timeDomain,omitempty"` // Time domain to use for collecting and reporting duration metrics.
+}
 
 // Enable enable collecting and reporting metrics.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Performance#method-enable
+//
+// parameters:
 func Enable() *EnableParams {
 	return &EnableParams{}
 }
 
+// WithTimeDomain time domain to use for collecting and reporting duration
+// metrics.
+func (p EnableParams) WithTimeDomain(timeDomain EnableTimeDomain) *EnableParams {
+	p.TimeDomain = timeDomain
+	return &p
+}
+
 // Do executes Performance.enable against the provided context.
 func (p *EnableParams) Do(ctx context.Context) (err error) {
-	return cdp.Execute(ctx, CommandEnable, nil, nil)
-}
-
-// SetTimeDomainParams sets time domain to use for collecting and reporting
-// duration metrics. Note that this must be called before enabling metrics
-// collection. Calling this method while metrics collection is enabled returns
-// an error.
-type SetTimeDomainParams struct {
-	TimeDomain SetTimeDomainTimeDomain `json:"timeDomain"` // Time domain
-}
-
-// SetTimeDomain sets time domain to use for collecting and reporting
-// duration metrics. Note that this must be called before enabling metrics
-// collection. Calling this method while metrics collection is enabled returns
-// an error.
-//
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Performance#method-setTimeDomain
-//
-// parameters:
-//   timeDomain - Time domain
-func SetTimeDomain(timeDomain SetTimeDomainTimeDomain) *SetTimeDomainParams {
-	return &SetTimeDomainParams{
-		TimeDomain: timeDomain,
-	}
-}
-
-// Do executes Performance.setTimeDomain against the provided context.
-func (p *SetTimeDomainParams) Do(ctx context.Context) (err error) {
-	return cdp.Execute(ctx, CommandSetTimeDomain, p, nil)
+	return cdp.Execute(ctx, CommandEnable, p, nil)
 }
 
 // GetMetricsParams retrieve current values of run-time metrics.
@@ -102,8 +85,7 @@ func (p *GetMetricsParams) Do(ctx context.Context) (metrics []*Metric, err error
 
 // Command names.
 const (
-	CommandDisable       = "Performance.disable"
-	CommandEnable        = "Performance.enable"
-	CommandSetTimeDomain = "Performance.setTimeDomain"
-	CommandGetMetrics    = "Performance.getMetrics"
+	CommandDisable    = "Performance.disable"
+	CommandEnable     = "Performance.enable"
+	CommandGetMetrics = "Performance.getMetrics"
 )

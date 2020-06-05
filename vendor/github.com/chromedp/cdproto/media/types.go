@@ -50,9 +50,9 @@ func (t PlayerEventType) String() string {
 
 // PlayerEventType values.
 const (
-	PlayerEventTypePlaybackEvent PlayerEventType = "playbackEvent"
-	PlayerEventTypeSystemEvent   PlayerEventType = "systemEvent"
-	PlayerEventTypeMessageEvent  PlayerEventType = "messageEvent"
+	PlayerEventTypeErrorEvent     PlayerEventType = "errorEvent"
+	PlayerEventTypeTriggeredEvent PlayerEventType = "triggeredEvent"
+	PlayerEventTypeMessageEvent   PlayerEventType = "messageEvent"
 )
 
 // MarshalEasyJSON satisfies easyjson.Marshaler.
@@ -68,10 +68,10 @@ func (t PlayerEventType) MarshalJSON() ([]byte, error) {
 // UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
 func (t *PlayerEventType) UnmarshalEasyJSON(in *jlexer.Lexer) {
 	switch PlayerEventType(in.String()) {
-	case PlayerEventTypePlaybackEvent:
-		*t = PlayerEventTypePlaybackEvent
-	case PlayerEventTypeSystemEvent:
-		*t = PlayerEventTypeSystemEvent
+	case PlayerEventTypeErrorEvent:
+		*t = PlayerEventTypeErrorEvent
+	case PlayerEventTypeTriggeredEvent:
+		*t = PlayerEventTypeTriggeredEvent
 	case PlayerEventTypeMessageEvent:
 		*t = PlayerEventTypeMessageEvent
 

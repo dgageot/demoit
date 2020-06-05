@@ -653,6 +653,7 @@ type SetCookieParams struct {
 	HTTPOnly bool                `json:"httpOnly,omitempty"` // True if cookie is http-only.
 	SameSite CookieSameSite      `json:"sameSite,omitempty"` // Cookie SameSite type.
 	Expires  *cdp.TimeSinceEpoch `json:"expires,omitempty"`  // Cookie expiration date, session cookie if not set
+	Priority CookiePriority      `json:"priority,omitempty"` // Cookie Priority type.
 }
 
 // SetCookie sets a cookie with the given cookie data; may overwrite
@@ -710,6 +711,12 @@ func (p SetCookieParams) WithSameSite(sameSite CookieSameSite) *SetCookieParams 
 // WithExpires cookie expiration date, session cookie if not set.
 func (p SetCookieParams) WithExpires(expires *cdp.TimeSinceEpoch) *SetCookieParams {
 	p.Expires = expires
+	return &p
+}
+
+// WithPriority cookie Priority type.
+func (p SetCookieParams) WithPriority(priority CookiePriority) *SetCookieParams {
+	p.Priority = priority
 	return &p
 }
 

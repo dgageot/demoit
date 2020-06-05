@@ -161,7 +161,7 @@ type ContinueRequestParams struct {
 	URL       string         `json:"url,omitempty"`      // If set, the request url will be modified in a way that's not observable by page.
 	Method    string         `json:"method,omitempty"`   // If set, the request method is overridden.
 	PostData  string         `json:"postData,omitempty"` // If set, overrides the post data in the request.
-	Headers   []*HeaderEntry `json:"headers,omitempty"`  // If set, overrides the request headrts.
+	Headers   []*HeaderEntry `json:"headers,omitempty"`  // If set, overrides the request headers.
 }
 
 // ContinueRequest continues the request, optionally modifying some of its
@@ -196,7 +196,7 @@ func (p ContinueRequestParams) WithPostData(postData string) *ContinueRequestPar
 	return &p
 }
 
-// WithHeaders if set, overrides the request headrts.
+// WithHeaders if set, overrides the request headers.
 func (p ContinueRequestParams) WithHeaders(headers []*HeaderEntry) *ContinueRequestParams {
 	p.Headers = headers
 	return &p

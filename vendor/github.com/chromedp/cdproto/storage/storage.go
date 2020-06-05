@@ -10,6 +10,7 @@ import (
 	"context"
 
 	"github.com/chromedp/cdproto/cdp"
+	"github.com/chromedp/cdproto/network"
 )
 
 // ClearDataForOriginParams clears storage for origin.
@@ -35,6 +36,103 @@ func ClearDataForOrigin(origin string, storageTypes string) *ClearDataForOriginP
 // Do executes Storage.clearDataForOrigin against the provided context.
 func (p *ClearDataForOriginParams) Do(ctx context.Context) (err error) {
 	return cdp.Execute(ctx, CommandClearDataForOrigin, p, nil)
+}
+
+// GetCookiesParams returns all browser cookies.
+type GetCookiesParams struct {
+	BrowserContextID cdp.BrowserContextID `json:"browserContextId,omitempty"` // Browser context to use when called on the browser endpoint.
+}
+
+// GetCookies returns all browser cookies.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-getCookies
+//
+// parameters:
+func GetCookies() *GetCookiesParams {
+	return &GetCookiesParams{}
+}
+
+// WithBrowserContextID browser context to use when called on the browser
+// endpoint.
+func (p GetCookiesParams) WithBrowserContextID(browserContextID cdp.BrowserContextID) *GetCookiesParams {
+	p.BrowserContextID = browserContextID
+	return &p
+}
+
+// GetCookiesReturns return values.
+type GetCookiesReturns struct {
+	Cookies []*network.Cookie `json:"cookies,omitempty"` // Array of cookie objects.
+}
+
+// Do executes Storage.getCookies against the provided context.
+//
+// returns:
+//   cookies - Array of cookie objects.
+func (p *GetCookiesParams) Do(ctx context.Context) (cookies []*network.Cookie, err error) {
+	// execute
+	var res GetCookiesReturns
+	err = cdp.Execute(ctx, CommandGetCookies, p, &res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res.Cookies, nil
+}
+
+// SetCookiesParams sets given cookies.
+type SetCookiesParams struct {
+	Cookies          []*network.CookieParam `json:"cookies"`                    // Cookies to be set.
+	BrowserContextID cdp.BrowserContextID   `json:"browserContextId,omitempty"` // Browser context to use when called on the browser endpoint.
+}
+
+// SetCookies sets given cookies.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-setCookies
+//
+// parameters:
+//   cookies - Cookies to be set.
+func SetCookies(cookies []*network.CookieParam) *SetCookiesParams {
+	return &SetCookiesParams{
+		Cookies: cookies,
+	}
+}
+
+// WithBrowserContextID browser context to use when called on the browser
+// endpoint.
+func (p SetCookiesParams) WithBrowserContextID(browserContextID cdp.BrowserContextID) *SetCookiesParams {
+	p.BrowserContextID = browserContextID
+	return &p
+}
+
+// Do executes Storage.setCookies against the provided context.
+func (p *SetCookiesParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandSetCookies, p, nil)
+}
+
+// ClearCookiesParams clears cookies.
+type ClearCookiesParams struct {
+	BrowserContextID cdp.BrowserContextID `json:"browserContextId,omitempty"` // Browser context to use when called on the browser endpoint.
+}
+
+// ClearCookies clears cookies.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-clearCookies
+//
+// parameters:
+func ClearCookies() *ClearCookiesParams {
+	return &ClearCookiesParams{}
+}
+
+// WithBrowserContextID browser context to use when called on the browser
+// endpoint.
+func (p ClearCookiesParams) WithBrowserContextID(browserContextID cdp.BrowserContextID) *ClearCookiesParams {
+	p.BrowserContextID = browserContextID
+	return &p
+}
+
+// Do executes Storage.clearCookies against the provided context.
+func (p *ClearCookiesParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandClearCookies, p, nil)
 }
 
 // GetUsageAndQuotaParams returns usage and quota in bytes.
@@ -177,6 +275,9 @@ func (p *UntrackIndexedDBForOriginParams) Do(ctx context.Context) (err error) {
 // Command names.
 const (
 	CommandClearDataForOrigin           = "Storage.clearDataForOrigin"
+	CommandGetCookies                   = "Storage.getCookies"
+	CommandSetCookies                   = "Storage.setCookies"
+	CommandClearCookies                 = "Storage.clearCookies"
 	CommandGetUsageAndQuota             = "Storage.getUsageAndQuota"
 	CommandTrackCacheStorageForOrigin   = "Storage.trackCacheStorageForOrigin"
 	CommandTrackIndexedDBForOrigin      = "Storage.trackIndexedDBForOrigin"

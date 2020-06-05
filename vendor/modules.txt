@@ -1,9 +1,14 @@
+# github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78
+## explicit
 # github.com/Microsoft/go-winio v0.4.14
+## explicit
 github.com/Microsoft/go-winio
 github.com/Microsoft/go-winio/pkg/guid
 # github.com/NYTimes/gziphandler v1.1.1
+## explicit
 github.com/NYTimes/gziphandler
 # github.com/alecthomas/chroma v0.7.0 => github.com/dgageot/chroma v0.4.1-0.20190326114921-11eec8e9afad
+## explicit
 github.com/alecthomas/chroma
 github.com/alecthomas/chroma/formatters/html
 github.com/alecthomas/chroma/lexers
@@ -34,11 +39,17 @@ github.com/alecthomas/chroma/lexers/w
 github.com/alecthomas/chroma/lexers/x
 github.com/alecthomas/chroma/lexers/y
 github.com/alecthomas/chroma/styles
+# github.com/alecthomas/colour v0.1.0
+## explicit
+# github.com/alecthomas/repr v0.0.0-20181024024818-d37bc2a10ba1
+## explicit
 # github.com/boombuler/barcode v1.0.0
+## explicit
 github.com/boombuler/barcode
 github.com/boombuler/barcode/qr
 github.com/boombuler/barcode/utils
-# github.com/chromedp/cdproto v0.0.0-20191114225735-6626966fbae4
+# github.com/chromedp/cdproto v0.0.0-20200424080200-0de008e41fa0
+## explicit
 github.com/chromedp/cdproto
 github.com/chromedp/cdproto/accessibility
 github.com/chromedp/cdproto/animation
@@ -85,21 +96,26 @@ github.com/chromedp/cdproto/tracing
 github.com/chromedp/cdproto/webaudio
 github.com/chromedp/cdproto/webauthn
 # github.com/chromedp/chromedp v0.5.1
+## explicit
 github.com/chromedp/chromedp
 github.com/chromedp/chromedp/device
 github.com/chromedp/chromedp/kb
 # github.com/creack/pty v1.1.9
+## explicit
 github.com/creack/pty
 # github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964
 github.com/danwakefield/fnmatch
 # github.com/dlclark/regexp2 v1.2.0
+## explicit
 github.com/dlclark/regexp2
 github.com/dlclark/regexp2/syntax
 # github.com/docker/distribution v2.7.1+incompatible
+## explicit
 github.com/docker/distribution/digestset
 github.com/docker/distribution/reference
 github.com/docker/distribution/registry/api/errcode
 # github.com/docker/docker v1.4.2-0.20190319215453-e7b5f7dbe98c
+## explicit
 github.com/docker/docker/api
 github.com/docker/docker/api/types
 github.com/docker/docker/api/types/blkiodev
@@ -119,12 +135,15 @@ github.com/docker/docker/api/types/volume
 github.com/docker/docker/client
 github.com/docker/docker/errdefs
 # github.com/docker/go-connections v0.4.0
+## explicit
 github.com/docker/go-connections/nat
 github.com/docker/go-connections/sockets
 github.com/docker/go-connections/tlsconfig
 # github.com/docker/go-units v0.4.0
+## explicit
 github.com/docker/go-units
 # github.com/elazarl/go-bindata-assetfs v1.0.0
+## explicit
 github.com/elazarl/go-bindata-assetfs
 # github.com/emirpasic/gods v1.12.0
 github.com/emirpasic/gods/containers
@@ -133,6 +152,8 @@ github.com/emirpasic/gods/lists/arraylist
 github.com/emirpasic/gods/trees
 github.com/emirpasic/gods/trees/binaryheap
 github.com/emirpasic/gods/utils
+# github.com/fsnotify/fsnotify v1.4.7
+## explicit
 # github.com/gobwas/httphead v0.0.0-20180130184737-2c6c146eadee
 github.com/gobwas/httphead
 # github.com/gobwas/pool v0.2.0
@@ -144,6 +165,7 @@ github.com/gobwas/pool/pbytes
 github.com/gobwas/ws
 github.com/gobwas/ws/wsutil
 # github.com/gogo/protobuf v1.3.1
+## explicit
 github.com/gogo/protobuf/proto
 # github.com/golang/protobuf v1.3.3
 github.com/golang/protobuf/proto
@@ -151,15 +173,21 @@ github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
+# github.com/gopherjs/gopherjs v0.0.0-20191106031601-ce3c9ade29de
+## explicit
 # github.com/gorilla/mux v1.7.3
+## explicit
 github.com/gorilla/mux
 # github.com/gorilla/websocket v1.4.1
+## explicit
 github.com/gorilla/websocket
 # github.com/jaschaephraim/lrserver v0.0.0-20171129202958-50d19f603f71
+## explicit
 github.com/jaschaephraim/lrserver
 # github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99
 github.com/jbenet/go-context/io
 # github.com/jung-kurt/gofpdf v1.16.2
+## explicit
 github.com/jung-kurt/gofpdf
 # github.com/kevinburke/ssh_config v0.0.0-20190725054713-01f96b0aa0cd
 github.com/kevinburke/ssh_config
@@ -174,29 +202,44 @@ github.com/mailru/easyjson
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
+# github.com/mattn/go-isatty v0.0.10
+## explicit
 # github.com/mitchellh/go-homedir v1.1.0
 github.com/mitchellh/go-homedir
+# github.com/morikuni/aec v1.0.0
+## explicit
 # github.com/opencontainers/go-digest v1.0.0-rc1
+## explicit
 github.com/opencontainers/go-digest
 # github.com/opencontainers/image-spec v1.0.1
+## explicit
 github.com/opencontainers/image-spec/specs-go
 github.com/opencontainers/image-spec/specs-go/v1
 # github.com/pkg/errors v0.8.1
 github.com/pkg/errors
 # github.com/radovskyb/watcher v1.0.7
+## explicit
 github.com/radovskyb/watcher
 # github.com/sergi/go-diff v1.0.0
 github.com/sergi/go-diff/diffmatchpatch
 # github.com/sirupsen/logrus v1.6.0
+## explicit
 github.com/sirupsen/logrus
+# github.com/smartystreets/assertions v1.0.1
+## explicit
+# github.com/smartystreets/goconvey v1.6.4
+## explicit
 # github.com/src-d/gcfg v1.4.0
 github.com/src-d/gcfg
 github.com/src-d/gcfg/scanner
 github.com/src-d/gcfg/token
 github.com/src-d/gcfg/types
+# github.com/stretchr/testify v1.4.0
+## explicit
 # github.com/xanzy/ssh-agent v0.2.1
 github.com/xanzy/ssh-agent
 # github.com/yudai/gotty v2.0.0-alpha.3+incompatible
+## explicit
 github.com/yudai/gotty/backend/localcommand
 github.com/yudai/gotty/pkg/homedir
 github.com/yudai/gotty/pkg/randomstring
@@ -224,15 +267,23 @@ golang.org/x/net/context
 golang.org/x/net/internal/socks
 golang.org/x/net/proxy
 # golang.org/x/sys v0.0.0-20191120155948-bd437916bb0e
+## explicit
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
 golang.org/x/sys/windows
+# golang.org/x/time v0.0.0-20200416051211-89c76fbcd5d1
+## explicit
 # google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.29.1
+## explicit
 google.golang.org/grpc/codes
 google.golang.org/grpc/internal/status
 google.golang.org/grpc/status
+# gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
+## explicit
+# gopkg.in/fsnotify.v1 v1.4.7
+## explicit
 # gopkg.in/src-d/go-billy.v4 v4.3.2
 gopkg.in/src-d/go-billy.v4
 gopkg.in/src-d/go-billy.v4/helper/chroot
@@ -240,6 +291,7 @@ gopkg.in/src-d/go-billy.v4/helper/polyfill
 gopkg.in/src-d/go-billy.v4/osfs
 gopkg.in/src-d/go-billy.v4/util
 # gopkg.in/src-d/go-git.v4 v4.13.1
+## explicit
 gopkg.in/src-d/go-git.v4
 gopkg.in/src-d/go-git.v4/config
 gopkg.in/src-d/go-git.v4/internal/revision
@@ -283,3 +335,8 @@ gopkg.in/src-d/go-git.v4/utils/merkletrie/internal/frame
 gopkg.in/src-d/go-git.v4/utils/merkletrie/noder
 # gopkg.in/warnings.v0 v0.1.2
 gopkg.in/warnings.v0
+# gopkg.in/yaml.v2 v2.2.7
+## explicit
+# gotest.tools v2.2.0+incompatible
+## explicit
+# github.com/alecthomas/chroma => github.com/dgageot/chroma v0.4.1-0.20190326114921-11eec8e9afad

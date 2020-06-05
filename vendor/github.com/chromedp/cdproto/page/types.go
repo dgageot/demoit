@@ -214,6 +214,13 @@ type AppManifestError struct {
 	Column   int64  `json:"column"`   // Error column.
 }
 
+// AppManifestParsedProperties parsed app manifest properties.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#type-AppManifestParsedProperties
+type AppManifestParsedProperties struct {
+	Scope string `json:"scope"` // Computed scope value
+}
+
 // LayoutViewport layout viewport position and dimensions.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Page#type-LayoutViewport
@@ -289,6 +296,7 @@ const (
 	ClientNavigationReasonMetaTagRefresh        ClientNavigationReason = "metaTagRefresh"
 	ClientNavigationReasonPageBlockInterstitial ClientNavigationReason = "pageBlockInterstitial"
 	ClientNavigationReasonReload                ClientNavigationReason = "reload"
+	ClientNavigationReasonAnchorClick           ClientNavigationReason = "anchorClick"
 )
 
 // MarshalEasyJSON satisfies easyjson.Marshaler.
@@ -318,6 +326,8 @@ func (t *ClientNavigationReason) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = ClientNavigationReasonPageBlockInterstitial
 	case ClientNavigationReasonReload:
 		*t = ClientNavigationReasonReload
+	case ClientNavigationReasonAnchorClick:
+		*t = ClientNavigationReasonAnchorClick
 
 	default:
 		in.AddError(errors.New("unknown ClientNavigationReason value"))
@@ -329,9 +339,87 @@ func (t *ClientNavigationReason) UnmarshalJSON(buf []byte) error {
 	return easyjson.Unmarshal(buf, t)
 }
 
-// FileChooserOpenedMode [no description].
+// InstallabilityErrorArgument [no description].
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#type-mode
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#type-InstallabilityErrorArgument
+type InstallabilityErrorArgument struct {
+	Name  string `json:"name"`  // Argument name (e.g. name:'minimum-icon-size-in-pixels').
+	Value string `json:"value"` // Argument value (e.g. value:'64').
+}
+
+// InstallabilityError the installability error.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#type-InstallabilityError
+type InstallabilityError struct {
+	ErrorID        string                         `json:"errorId"`        // The error id (e.g. 'manifest-missing-suitable-icon').
+	ErrorArguments []*InstallabilityErrorArgument `json:"errorArguments"` // The list of error arguments (e.g. {name:'minimum-icon-size-in-pixels', value:'64'}).
+}
+
+// ReferrerPolicy the referring-policy used for the navigation.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#type-ReferrerPolicy
+type ReferrerPolicy string
+
+// String returns the ReferrerPolicy as string value.
+func (t ReferrerPolicy) String() string {
+	return string(t)
+}
+
+// ReferrerPolicy values.
+const (
+	ReferrerPolicyNoReferrer                  ReferrerPolicy = "noReferrer"
+	ReferrerPolicyNoReferrerWhenDowngrade     ReferrerPolicy = "noReferrerWhenDowngrade"
+	ReferrerPolicyOrigin                      ReferrerPolicy = "origin"
+	ReferrerPolicyOriginWhenCrossOrigin       ReferrerPolicy = "originWhenCrossOrigin"
+	ReferrerPolicySameOrigin                  ReferrerPolicy = "sameOrigin"
+	ReferrerPolicyStrictOrigin                ReferrerPolicy = "strictOrigin"
+	ReferrerPolicyStrictOriginWhenCrossOrigin ReferrerPolicy = "strictOriginWhenCrossOrigin"
+	ReferrerPolicyUnsafeURL                   ReferrerPolicy = "unsafeUrl"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t ReferrerPolicy) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t ReferrerPolicy) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *ReferrerPolicy) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch ReferrerPolicy(in.String()) {
+	case ReferrerPolicyNoReferrer:
+		*t = ReferrerPolicyNoReferrer
+	case ReferrerPolicyNoReferrerWhenDowngrade:
+		*t = ReferrerPolicyNoReferrerWhenDowngrade
+	case ReferrerPolicyOrigin:
+		*t = ReferrerPolicyOrigin
+	case ReferrerPolicyOriginWhenCrossOrigin:
+		*t = ReferrerPolicyOriginWhenCrossOrigin
+	case ReferrerPolicySameOrigin:
+		*t = ReferrerPolicySameOrigin
+	case ReferrerPolicyStrictOrigin:
+		*t = ReferrerPolicyStrictOrigin
+	case ReferrerPolicyStrictOriginWhenCrossOrigin:
+		*t = ReferrerPolicyStrictOriginWhenCrossOrigin
+	case ReferrerPolicyUnsafeURL:
+		*t = ReferrerPolicyUnsafeURL
+
+	default:
+		in.AddError(errors.New("unknown ReferrerPolicy value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *ReferrerPolicy) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
+// FileChooserOpenedMode input mode.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#event-fileChooserOpened
 type FileChooserOpenedMode string
 
 // String returns the FileChooserOpenedMode as string value.
@@ -373,9 +461,56 @@ func (t *FileChooserOpenedMode) UnmarshalJSON(buf []byte) error {
 	return easyjson.Unmarshal(buf, t)
 }
 
+// DownloadProgressState download status.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#event-downloadProgress
+type DownloadProgressState string
+
+// String returns the DownloadProgressState as string value.
+func (t DownloadProgressState) String() string {
+	return string(t)
+}
+
+// DownloadProgressState values.
+const (
+	DownloadProgressStateInProgress DownloadProgressState = "inProgress"
+	DownloadProgressStateCompleted  DownloadProgressState = "completed"
+	DownloadProgressStateCanceled   DownloadProgressState = "canceled"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t DownloadProgressState) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t DownloadProgressState) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *DownloadProgressState) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch DownloadProgressState(in.String()) {
+	case DownloadProgressStateInProgress:
+		*t = DownloadProgressStateInProgress
+	case DownloadProgressStateCompleted:
+		*t = DownloadProgressStateCompleted
+	case DownloadProgressStateCanceled:
+		*t = DownloadProgressStateCanceled
+
+	default:
+		in.AddError(errors.New("unknown DownloadProgressState value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *DownloadProgressState) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
 // CaptureScreenshotFormat image compression format (defaults to png).
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#type-format
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#method-captureScreenshot
 type CaptureScreenshotFormat string
 
 // String returns the CaptureScreenshotFormat as string value.
@@ -419,7 +554,7 @@ func (t *CaptureScreenshotFormat) UnmarshalJSON(buf []byte) error {
 
 // CaptureSnapshotFormat format (defaults to mhtml).
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#type-format
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#method-captureSnapshot
 type CaptureSnapshotFormat string
 
 // String returns the CaptureSnapshotFormat as string value.
@@ -460,7 +595,7 @@ func (t *CaptureSnapshotFormat) UnmarshalJSON(buf []byte) error {
 
 // PrintToPDFTransferMode return as stream.
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#type-transferMode
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#method-printToPDF
 type PrintToPDFTransferMode string
 
 // String returns the PrintToPDFTransferMode as string value.
@@ -502,57 +637,9 @@ func (t *PrintToPDFTransferMode) UnmarshalJSON(buf []byte) error {
 	return easyjson.Unmarshal(buf, t)
 }
 
-// SetDownloadBehaviorBehavior whether to allow all or deny all download
-// requests, or use default Chrome behavior if available (otherwise deny).
-//
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#type-behavior
-type SetDownloadBehaviorBehavior string
-
-// String returns the SetDownloadBehaviorBehavior as string value.
-func (t SetDownloadBehaviorBehavior) String() string {
-	return string(t)
-}
-
-// SetDownloadBehaviorBehavior values.
-const (
-	SetDownloadBehaviorBehaviorDeny    SetDownloadBehaviorBehavior = "deny"
-	SetDownloadBehaviorBehaviorAllow   SetDownloadBehaviorBehavior = "allow"
-	SetDownloadBehaviorBehaviorDefault SetDownloadBehaviorBehavior = "default"
-)
-
-// MarshalEasyJSON satisfies easyjson.Marshaler.
-func (t SetDownloadBehaviorBehavior) MarshalEasyJSON(out *jwriter.Writer) {
-	out.String(string(t))
-}
-
-// MarshalJSON satisfies json.Marshaler.
-func (t SetDownloadBehaviorBehavior) MarshalJSON() ([]byte, error) {
-	return easyjson.Marshal(t)
-}
-
-// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
-func (t *SetDownloadBehaviorBehavior) UnmarshalEasyJSON(in *jlexer.Lexer) {
-	switch SetDownloadBehaviorBehavior(in.String()) {
-	case SetDownloadBehaviorBehaviorDeny:
-		*t = SetDownloadBehaviorBehaviorDeny
-	case SetDownloadBehaviorBehaviorAllow:
-		*t = SetDownloadBehaviorBehaviorAllow
-	case SetDownloadBehaviorBehaviorDefault:
-		*t = SetDownloadBehaviorBehaviorDefault
-
-	default:
-		in.AddError(errors.New("unknown SetDownloadBehaviorBehavior value"))
-	}
-}
-
-// UnmarshalJSON satisfies json.Unmarshaler.
-func (t *SetDownloadBehaviorBehavior) UnmarshalJSON(buf []byte) error {
-	return easyjson.Unmarshal(buf, t)
-}
-
 // ScreencastFormat image compression format.
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#type-format
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#method-startScreencast
 type ScreencastFormat string
 
 // String returns the ScreencastFormat as string value.
@@ -596,7 +683,7 @@ func (t *ScreencastFormat) UnmarshalJSON(buf []byte) error {
 
 // SetWebLifecycleStateState target lifecycle state.
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#type-state
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#method-setWebLifecycleState
 type SetWebLifecycleStateState string
 
 // String returns the SetWebLifecycleStateState as string value.
@@ -635,52 +722,5 @@ func (t *SetWebLifecycleStateState) UnmarshalEasyJSON(in *jlexer.Lexer) {
 
 // UnmarshalJSON satisfies json.Unmarshaler.
 func (t *SetWebLifecycleStateState) UnmarshalJSON(buf []byte) error {
-	return easyjson.Unmarshal(buf, t)
-}
-
-// HandleFileChooserAction [no description].
-//
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#type-action
-type HandleFileChooserAction string
-
-// String returns the HandleFileChooserAction as string value.
-func (t HandleFileChooserAction) String() string {
-	return string(t)
-}
-
-// HandleFileChooserAction values.
-const (
-	HandleFileChooserActionAccept   HandleFileChooserAction = "accept"
-	HandleFileChooserActionCancel   HandleFileChooserAction = "cancel"
-	HandleFileChooserActionFallback HandleFileChooserAction = "fallback"
-)
-
-// MarshalEasyJSON satisfies easyjson.Marshaler.
-func (t HandleFileChooserAction) MarshalEasyJSON(out *jwriter.Writer) {
-	out.String(string(t))
-}
-
-// MarshalJSON satisfies json.Marshaler.
-func (t HandleFileChooserAction) MarshalJSON() ([]byte, error) {
-	return easyjson.Marshal(t)
-}
-
-// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
-func (t *HandleFileChooserAction) UnmarshalEasyJSON(in *jlexer.Lexer) {
-	switch HandleFileChooserAction(in.String()) {
-	case HandleFileChooserActionAccept:
-		*t = HandleFileChooserActionAccept
-	case HandleFileChooserActionCancel:
-		*t = HandleFileChooserActionCancel
-	case HandleFileChooserActionFallback:
-		*t = HandleFileChooserActionFallback
-
-	default:
-		in.AddError(errors.New("unknown HandleFileChooserAction value"))
-	}
-}
-
-// UnmarshalJSON satisfies json.Unmarshaler.
-func (t *HandleFileChooserAction) UnmarshalJSON(buf []byte) error {
 	return easyjson.Unmarshal(buf, t)
 }

@@ -99,6 +99,9 @@ const (
 	EventApplicationCacheApplicationCacheStatusUpdated     = "ApplicationCache.applicationCacheStatusUpdated"
 	EventApplicationCacheNetworkStateUpdated               = "ApplicationCache.networkStateUpdated"
 	CommandAuditsGetEncodedResponse                        = audits.CommandGetEncodedResponse
+	CommandAuditsDisable                                   = audits.CommandDisable
+	CommandAuditsEnable                                    = audits.CommandEnable
+	EventAuditsIssueAdded                                  = "Audits.issueAdded"
 	CommandBackgroundServiceStartObserving                 = backgroundservice.CommandStartObserving
 	CommandBackgroundServiceStopObserving                  = backgroundservice.CommandStopObserving
 	CommandBackgroundServiceSetRecording                   = backgroundservice.CommandSetRecording
@@ -108,6 +111,7 @@ const (
 	CommandBrowserSetPermission                            = browser.CommandSetPermission
 	CommandBrowserGrantPermissions                         = browser.CommandGrantPermissions
 	CommandBrowserResetPermissions                         = browser.CommandResetPermissions
+	CommandBrowserSetDownloadBehavior                      = browser.CommandSetDownloadBehavior
 	CommandBrowserClose                                    = browser.CommandClose
 	CommandBrowserCrash                                    = browser.CommandCrash
 	CommandBrowserCrashGpuProcess                          = browser.CommandCrashGpuProcess
@@ -161,6 +165,7 @@ const (
 	CommandDOMCollectClassNamesFromSubtree                 = dom.CommandCollectClassNamesFromSubtree
 	CommandDOMCopyTo                                       = dom.CommandCopyTo
 	CommandDOMDescribeNode                                 = dom.CommandDescribeNode
+	CommandDOMScrollIntoViewIfNeeded                       = dom.CommandScrollIntoViewIfNeeded
 	CommandDOMDisable                                      = dom.CommandDisable
 	CommandDOMDiscardSearchResults                         = dom.CommandDiscardSearchResults
 	CommandDOMEnable                                       = dom.CommandEnable
@@ -246,7 +251,6 @@ const (
 	CommandDebuggerEvaluateOnCallFrame                     = debugger.CommandEvaluateOnCallFrame
 	CommandDebuggerGetPossibleBreakpoints                  = debugger.CommandGetPossibleBreakpoints
 	CommandDebuggerGetScriptSource                         = debugger.CommandGetScriptSource
-	CommandDebuggerGetWasmBytecode                         = debugger.CommandGetWasmBytecode
 	CommandDebuggerGetStackTrace                           = debugger.CommandGetStackTrace
 	CommandDebuggerPause                                   = debugger.CommandPause
 	CommandDebuggerRemoveBreakpoint                        = debugger.CommandRemoveBreakpoint
@@ -288,11 +292,13 @@ const (
 	CommandEmulationSetDocumentCookieDisabled              = emulation.CommandSetDocumentCookieDisabled
 	CommandEmulationSetEmitTouchEventsForMouse             = emulation.CommandSetEmitTouchEventsForMouse
 	CommandEmulationSetEmulatedMedia                       = emulation.CommandSetEmulatedMedia
+	CommandEmulationSetEmulatedVisionDeficiency            = emulation.CommandSetEmulatedVisionDeficiency
 	CommandEmulationSetGeolocationOverride                 = emulation.CommandSetGeolocationOverride
 	CommandEmulationSetPageScaleFactor                     = emulation.CommandSetPageScaleFactor
 	CommandEmulationSetScriptExecutionDisabled             = emulation.CommandSetScriptExecutionDisabled
 	CommandEmulationSetTouchEmulationEnabled               = emulation.CommandSetTouchEmulationEnabled
 	CommandEmulationSetVirtualTimePolicy                   = emulation.CommandSetVirtualTimePolicy
+	CommandEmulationSetLocaleOverride                      = emulation.CommandSetLocaleOverride
 	CommandEmulationSetTimezoneOverride                    = emulation.CommandSetTimezoneOverride
 	CommandEmulationSetUserAgentOverride                   = emulation.CommandSetUserAgentOverride
 	EventEmulationVirtualTimeBudgetExpired                 = "Emulation.virtualTimeBudgetExpired"
@@ -455,6 +461,7 @@ const (
 	CommandPageEnable                                      = page.CommandEnable
 	CommandPageGetAppManifest                              = page.CommandGetAppManifest
 	CommandPageGetInstallabilityErrors                     = page.CommandGetInstallabilityErrors
+	CommandPageGetManifestIcons                            = page.CommandGetManifestIcons
 	CommandPageGetFrameTree                                = page.CommandGetFrameTree
 	CommandPageGetLayoutMetrics                            = page.CommandGetLayoutMetrics
 	CommandPageGetNavigationHistory                        = page.CommandGetNavigationHistory
@@ -474,7 +481,6 @@ const (
 	CommandPageSetFontFamilies                             = page.CommandSetFontFamilies
 	CommandPageSetFontSizes                                = page.CommandSetFontSizes
 	CommandPageSetDocumentContent                          = page.CommandSetDocumentContent
-	CommandPageSetDownloadBehavior                         = page.CommandSetDownloadBehavior
 	CommandPageSetLifecycleEventsEnabled                   = page.CommandSetLifecycleEventsEnabled
 	CommandPageStartScreencast                             = page.CommandStartScreencast
 	CommandPageStopLoading                                 = page.CommandStopLoading
@@ -488,7 +494,6 @@ const (
 	CommandPageGenerateTestReport                          = page.CommandGenerateTestReport
 	CommandPageWaitForDebugger                             = page.CommandWaitForDebugger
 	CommandPageSetInterceptFileChooserDialog               = page.CommandSetInterceptFileChooserDialog
-	CommandPageHandleFileChooser                           = page.CommandHandleFileChooser
 	EventPageDomContentEventFired                          = "Page.domContentEventFired"
 	EventPageFileChooserOpened                             = "Page.fileChooserOpened"
 	EventPageFrameAttached                                 = "Page.frameAttached"
@@ -499,6 +504,7 @@ const (
 	EventPageFrameStartedLoading                           = "Page.frameStartedLoading"
 	EventPageFrameStoppedLoading                           = "Page.frameStoppedLoading"
 	EventPageDownloadWillBegin                             = "Page.downloadWillBegin"
+	EventPageDownloadProgress                              = "Page.downloadProgress"
 	EventPageInterstitialHidden                            = "Page.interstitialHidden"
 	EventPageInterstitialShown                             = "Page.interstitialShown"
 	EventPageJavascriptDialogClosed                        = "Page.javascriptDialogClosed"
@@ -512,7 +518,6 @@ const (
 	EventPageCompilationCacheProduced                      = "Page.compilationCacheProduced"
 	CommandPerformanceDisable                              = performance.CommandDisable
 	CommandPerformanceEnable                               = performance.CommandEnable
-	CommandPerformanceSetTimeDomain                        = performance.CommandSetTimeDomain
 	CommandPerformanceGetMetrics                           = performance.CommandGetMetrics
 	EventPerformanceMetrics                                = "Performance.metrics"
 	CommandProfilerDisable                                 = profiler.CommandDisable
@@ -532,6 +537,7 @@ const (
 	CommandProfilerGetRuntimeCallStats                     = profiler.CommandGetRuntimeCallStats
 	EventProfilerConsoleProfileFinished                    = "Profiler.consoleProfileFinished"
 	EventProfilerConsoleProfileStarted                     = "Profiler.consoleProfileStarted"
+	EventProfilerPreciseCoverageDeltaUpdate                = "Profiler.preciseCoverageDeltaUpdate"
 	CommandRuntimeAwaitPromise                             = runtime.CommandAwaitPromise
 	CommandRuntimeCallFunctionOn                           = runtime.CommandCallFunctionOn
 	CommandRuntimeCompileScript                            = runtime.CommandCompileScript
@@ -583,6 +589,9 @@ const (
 	EventServiceWorkerWorkerRegistrationUpdated            = "ServiceWorker.workerRegistrationUpdated"
 	EventServiceWorkerWorkerVersionUpdated                 = "ServiceWorker.workerVersionUpdated"
 	CommandStorageClearDataForOrigin                       = storage.CommandClearDataForOrigin
+	CommandStorageGetCookies                               = storage.CommandGetCookies
+	CommandStorageSetCookies                               = storage.CommandSetCookies
+	CommandStorageClearCookies                             = storage.CommandClearCookies
 	CommandStorageGetUsageAndQuota                         = storage.CommandGetUsageAndQuota
 	CommandStorageTrackCacheStorageForOrigin               = storage.CommandTrackCacheStorageForOrigin
 	CommandStorageTrackIndexedDBForOrigin                  = storage.CommandTrackIndexedDBForOrigin
@@ -757,6 +766,15 @@ func UnmarshalMessage(msg *Message) (interface{}, error) {
 	case CommandAuditsGetEncodedResponse:
 		v = new(audits.GetEncodedResponseReturns)
 
+	case CommandAuditsDisable:
+		return emptyVal, nil
+
+	case CommandAuditsEnable:
+		return emptyVal, nil
+
+	case EventAuditsIssueAdded:
+		v = new(audits.EventIssueAdded)
+
 	case CommandBackgroundServiceStartObserving:
 		return emptyVal, nil
 
@@ -782,6 +800,9 @@ func UnmarshalMessage(msg *Message) (interface{}, error) {
 		return emptyVal, nil
 
 	case CommandBrowserResetPermissions:
+		return emptyVal, nil
+
+	case CommandBrowserSetDownloadBehavior:
 		return emptyVal, nil
 
 	case CommandBrowserClose:
@@ -942,6 +963,9 @@ func UnmarshalMessage(msg *Message) (interface{}, error) {
 
 	case CommandDOMDescribeNode:
 		v = new(dom.DescribeNodeReturns)
+
+	case CommandDOMScrollIntoViewIfNeeded:
+		return emptyVal, nil
 
 	case CommandDOMDisable:
 		return emptyVal, nil
@@ -1198,9 +1222,6 @@ func UnmarshalMessage(msg *Message) (interface{}, error) {
 	case CommandDebuggerGetScriptSource:
 		v = new(debugger.GetScriptSourceReturns)
 
-	case CommandDebuggerGetWasmBytecode:
-		v = new(debugger.GetWasmBytecodeReturns)
-
 	case CommandDebuggerGetStackTrace:
 		v = new(debugger.GetStackTraceReturns)
 
@@ -1324,6 +1345,9 @@ func UnmarshalMessage(msg *Message) (interface{}, error) {
 	case CommandEmulationSetEmulatedMedia:
 		return emptyVal, nil
 
+	case CommandEmulationSetEmulatedVisionDeficiency:
+		return emptyVal, nil
+
 	case CommandEmulationSetGeolocationOverride:
 		return emptyVal, nil
 
@@ -1338,6 +1362,9 @@ func UnmarshalMessage(msg *Message) (interface{}, error) {
 
 	case CommandEmulationSetVirtualTimePolicy:
 		v = new(emulation.SetVirtualTimePolicyReturns)
+
+	case CommandEmulationSetLocaleOverride:
+		return emptyVal, nil
 
 	case CommandEmulationSetTimezoneOverride:
 		return emptyVal, nil
@@ -1825,6 +1852,9 @@ func UnmarshalMessage(msg *Message) (interface{}, error) {
 	case CommandPageGetInstallabilityErrors:
 		v = new(page.GetInstallabilityErrorsReturns)
 
+	case CommandPageGetManifestIcons:
+		v = new(page.GetManifestIconsReturns)
+
 	case CommandPageGetFrameTree:
 		v = new(page.GetFrameTreeReturns)
 
@@ -1882,9 +1912,6 @@ func UnmarshalMessage(msg *Message) (interface{}, error) {
 	case CommandPageSetDocumentContent:
 		return emptyVal, nil
 
-	case CommandPageSetDownloadBehavior:
-		return emptyVal, nil
-
 	case CommandPageSetLifecycleEventsEnabled:
 		return emptyVal, nil
 
@@ -1924,9 +1951,6 @@ func UnmarshalMessage(msg *Message) (interface{}, error) {
 	case CommandPageSetInterceptFileChooserDialog:
 		return emptyVal, nil
 
-	case CommandPageHandleFileChooser:
-		return emptyVal, nil
-
 	case EventPageDomContentEventFired:
 		v = new(page.EventDomContentEventFired)
 
@@ -1956,6 +1980,9 @@ func UnmarshalMessage(msg *Message) (interface{}, error) {
 
 	case EventPageDownloadWillBegin:
 		v = new(page.EventDownloadWillBegin)
+
+	case EventPageDownloadProgress:
+		v = new(page.EventDownloadProgress)
 
 	case EventPageInterstitialHidden:
 		v = new(page.EventInterstitialHidden)
@@ -1996,9 +2023,6 @@ func UnmarshalMessage(msg *Message) (interface{}, error) {
 	case CommandPerformanceEnable:
 		return emptyVal, nil
 
-	case CommandPerformanceSetTimeDomain:
-		return emptyVal, nil
-
 	case CommandPerformanceGetMetrics:
 		v = new(performance.GetMetricsReturns)
 
@@ -2021,7 +2045,7 @@ func UnmarshalMessage(msg *Message) (interface{}, error) {
 		return emptyVal, nil
 
 	case CommandProfilerStartPreciseCoverage:
-		return emptyVal, nil
+		v = new(profiler.StartPreciseCoverageReturns)
 
 	case CommandProfilerStartTypeProfile:
 		return emptyVal, nil
@@ -2055,6 +2079,9 @@ func UnmarshalMessage(msg *Message) (interface{}, error) {
 
 	case EventProfilerConsoleProfileStarted:
 		v = new(profiler.EventConsoleProfileStarted)
+
+	case EventProfilerPreciseCoverageDeltaUpdate:
+		v = new(profiler.EventPreciseCoverageDeltaUpdate)
 
 	case CommandRuntimeAwaitPromise:
 		v = new(runtime.AwaitPromiseReturns)
@@ -2207,6 +2234,15 @@ func UnmarshalMessage(msg *Message) (interface{}, error) {
 		v = new(serviceworker.EventWorkerVersionUpdated)
 
 	case CommandStorageClearDataForOrigin:
+		return emptyVal, nil
+
+	case CommandStorageGetCookies:
+		v = new(storage.GetCookiesReturns)
+
+	case CommandStorageSetCookies:
+		return emptyVal, nil
+
+	case CommandStorageClearCookies:
 		return emptyVal, nil
 
 	case CommandStorageGetUsageAndQuota:

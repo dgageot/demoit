@@ -130,22 +130,76 @@ func (t *State) UnmarshalJSON(buf []byte) error {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Security#type-CertificateSecurityState
 type CertificateSecurityState struct {
-	Protocol                   string              `json:"protocol"`                   // Protocol name (e.g. "TLS 1.2" or "QUIC").
-	KeyExchange                string              `json:"keyExchange"`                // Key Exchange used by the connection, or the empty string if not applicable.
-	KeyExchangeGroup           string              `json:"keyExchangeGroup,omitempty"` // (EC)DH group used by the connection, if applicable.
-	Cipher                     string              `json:"cipher"`                     // Cipher name.
-	Mac                        string              `json:"mac,omitempty"`              // TLS MAC. Note that AEAD ciphers do not have separate MACs.
-	Certificate                []string            `json:"certificate"`                // Page certificate.
-	SubjectName                string              `json:"subjectName"`                // Certificate subject name.
-	Issuer                     string              `json:"issuer"`                     // Name of the issuing CA.
-	ValidFrom                  *cdp.TimeSinceEpoch `json:"validFrom"`                  // Certificate valid from date.
-	ValidTo                    *cdp.TimeSinceEpoch `json:"validTo"`                    // Certificate valid to (expiration) date
-	CertifcateHasWeakSignature bool                `json:"certifcateHasWeakSignature"` // True if the certificate uses a weak signature aglorithm.
-	ModernSSL                  bool                `json:"modernSSL"`                  // True if modern SSL
-	ObsoleteSslProtocol        bool                `json:"obsoleteSslProtocol"`        // True if the connection is using an obsolete SSL protocol.
-	ObsoleteSslKeyExchange     bool                `json:"obsoleteSslKeyExchange"`     // True if the connection is using an obsolete SSL key exchange.
-	ObsoleteSslCipher          bool                `json:"obsoleteSslCipher"`          // True if the connection is using an obsolete SSL cipher.
-	ObsoleteSslSignature       bool                `json:"obsoleteSslSignature"`       // True if the connection is using an obsolete SSL signature.
+	Protocol                    string              `json:"protocol"`                          // Protocol name (e.g. "TLS 1.2" or "QUIC").
+	KeyExchange                 string              `json:"keyExchange"`                       // Key Exchange used by the connection, or the empty string if not applicable.
+	KeyExchangeGroup            string              `json:"keyExchangeGroup,omitempty"`        // (EC)DH group used by the connection, if applicable.
+	Cipher                      string              `json:"cipher"`                            // Cipher name.
+	Mac                         string              `json:"mac,omitempty"`                     // TLS MAC. Note that AEAD ciphers do not have separate MACs.
+	Certificate                 []string            `json:"certificate"`                       // Page certificate.
+	SubjectName                 string              `json:"subjectName"`                       // Certificate subject name.
+	Issuer                      string              `json:"issuer"`                            // Name of the issuing CA.
+	ValidFrom                   *cdp.TimeSinceEpoch `json:"validFrom"`                         // Certificate valid from date.
+	ValidTo                     *cdp.TimeSinceEpoch `json:"validTo"`                           // Certificate valid to (expiration) date
+	CertificateNetworkError     string              `json:"certificateNetworkError,omitempty"` // The highest priority network error code, if the certificate has an error.
+	CertificateHasWeakSignature bool                `json:"certificateHasWeakSignature"`       // True if the certificate uses a weak signature aglorithm.
+	CertificateHasSha1signature bool                `json:"certificateHasSha1Signature"`       // True if the certificate has a SHA1 signature in the chain.
+	ModernSSL                   bool                `json:"modernSSL"`                         // True if modern SSL
+	ObsoleteSslProtocol         bool                `json:"obsoleteSslProtocol"`               // True if the connection is using an obsolete SSL protocol.
+	ObsoleteSslKeyExchange      bool                `json:"obsoleteSslKeyExchange"`            // True if the connection is using an obsolete SSL key exchange.
+	ObsoleteSslCipher           bool                `json:"obsoleteSslCipher"`                 // True if the connection is using an obsolete SSL cipher.
+	ObsoleteSslSignature        bool                `json:"obsoleteSslSignature"`              // True if the connection is using an obsolete SSL signature.
+}
+
+// SafetyTipStatus [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Security#type-SafetyTipStatus
+type SafetyTipStatus string
+
+// String returns the SafetyTipStatus as string value.
+func (t SafetyTipStatus) String() string {
+	return string(t)
+}
+
+// SafetyTipStatus values.
+const (
+	SafetyTipStatusBadReputation SafetyTipStatus = "badReputation"
+	SafetyTipStatusLookalike     SafetyTipStatus = "lookalike"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t SafetyTipStatus) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t SafetyTipStatus) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *SafetyTipStatus) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch SafetyTipStatus(in.String()) {
+	case SafetyTipStatusBadReputation:
+		*t = SafetyTipStatusBadReputation
+	case SafetyTipStatusLookalike:
+		*t = SafetyTipStatusLookalike
+
+	default:
+		in.AddError(errors.New("unknown SafetyTipStatus value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *SafetyTipStatus) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
+// SafetyTipInfo [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Security#type-SafetyTipInfo
+type SafetyTipInfo struct {
+	SafetyTipStatus SafetyTipStatus `json:"safetyTipStatus"`   // Describes whether the page triggers any safety tips or reputation warnings. Default is unknown.
+	SafeURL         string          `json:"safeUrl,omitempty"` // The URL the safety tip suggested ("Did you mean?"). Only filled in for lookalike matches.
 }
 
 // VisibleSecurityState security state information about the page.
@@ -154,6 +208,7 @@ type CertificateSecurityState struct {
 type VisibleSecurityState struct {
 	SecurityState            State                     `json:"securityState"`                      // The security level of the page.
 	CertificateSecurityState *CertificateSecurityState `json:"certificateSecurityState,omitempty"` // Security state details about the page certificate.
+	SafetyTipInfo            *SafetyTipInfo            `json:"safetyTipInfo,omitempty"`            // The type of Safety Tip triggered on the page. Note that this field will be set even if the Safety Tip UI was not actually shown.
 	SecurityStateIssueIds    []string                  `json:"securityStateIssueIds"`              // Array of security state issues ids.
 }
 
