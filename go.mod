@@ -10,7 +10,6 @@ require (
 	github.com/boombuler/barcode v1.0.0
 	github.com/chromedp/cdproto v0.0.0-20191114225735-6626966fbae4
 	github.com/chromedp/chromedp v0.5.1
-	github.com/containerd/containerd v1.3.4 // indirect
 	github.com/creack/pty v1.1.9 // indirect
 	github.com/dlclark/regexp2 v1.2.0 // indirect
 	github.com/docker/distribution v2.7.1+incompatible // indirect
@@ -40,7 +39,6 @@ require (
 	google.golang.org/grpc v1.29.1 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
-	gopkg.in/src-d/go-billy.v4 v4.3.2
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v2 v2.2.7 // indirect
 	gotest.tools v2.2.0+incompatible // indirect
