@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/mailru/easyjson"
@@ -21,6 +22,16 @@ type ScriptID string
 // String returns the ScriptID as string value.
 func (t ScriptID) String() string {
 	return string(t)
+}
+
+// WebDriverValue represents the value serialiazed by the WebDriver BiDi
+// specification https://w3c.github.io/webdriver-bidi.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#type-WebDriverValue
+type WebDriverValue struct {
+	Type     WebDriverValueType  `json:"type"`
+	Value    easyjson.RawMessage `json:"value,omitempty"`
+	ObjectID string              `json:"objectId,omitempty"`
 }
 
 // RemoteObjectID unique object identifier.
@@ -49,11 +60,12 @@ func (t UnserializableValue) String() string {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#type-RemoteObject
 type RemoteObject struct {
 	Type                Type                `json:"type"`                          // Object type.
-	Subtype             Subtype             `json:"subtype,omitempty"`             // Object subtype hint. Specified for object or wasm type values only.
+	Subtype             Subtype             `json:"subtype,omitempty"`             // Object subtype hint. Specified for object type values only. NOTE: If you change anything here, make sure to also update subtype in ObjectPreview and PropertyPreview below.
 	ClassName           string              `json:"className,omitempty"`           // Object class (constructor) name. Specified for object type values only.
 	Value               easyjson.RawMessage `json:"value,omitempty"`               // Remote object value in case of primitive values or JSON values (if it was requested).
 	UnserializableValue UnserializableValue `json:"unserializableValue,omitempty"` // Primitive value which can not be JSON-stringified does not have value, but gets this property.
 	Description         string              `json:"description,omitempty"`         // String representation of the object.
+	WebDriverValue      *WebDriverValue     `json:"webDriverValue,omitempty"`      // WebDriver BiDi representation of the value.
 	ObjectID            RemoteObjectID      `json:"objectId,omitempty"`            // Unique object identifier (for non-primitive values).
 	Preview             *ObjectPreview      `json:"preview,omitempty"`             // Preview containing abbreviated property values. Specified for object type values only.
 	CustomPreview       *CustomPreview      `json:"customPreview,omitempty"`
@@ -158,10 +170,11 @@ func (t ExecutionContextID) Int64() int64 {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#type-ExecutionContextDescription
 type ExecutionContextDescription struct {
-	ID      ExecutionContextID  `json:"id"`     // Unique id of the execution context. It can be used to specify in which execution context script evaluation should be performed.
-	Origin  string              `json:"origin"` // Execution context origin.
-	Name    string              `json:"name"`   // Human readable name describing given context.
-	AuxData easyjson.RawMessage `json:"auxData,omitempty"`
+	ID       ExecutionContextID  `json:"id"`       // Unique id of the execution context. It can be used to specify in which execution context script evaluation should be performed.
+	Origin   string              `json:"origin"`   // Execution context origin.
+	Name     string              `json:"name"`     // Human readable name describing given context.
+	UniqueID string              `json:"uniqueId"` // A system-unique execution context identifier. Unlike the id, this is unique across multiple processes, so can be reliably used to identify specific context while backend performs a cross-process navigation.
+	AuxData  easyjson.RawMessage `json:"auxData,omitempty"`
 }
 
 // ExceptionDetails detailed information about exception (or error) that was
@@ -169,22 +182,28 @@ type ExecutionContextDescription struct {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#type-ExceptionDetails
 type ExceptionDetails struct {
-	ExceptionID        int64              `json:"exceptionId"`                  // Exception id.
-	Text               string             `json:"text"`                         // Exception text, which should be used together with exception object when available.
-	LineNumber         int64              `json:"lineNumber"`                   // Line number of the exception location (0-based).
-	ColumnNumber       int64              `json:"columnNumber"`                 // Column number of the exception location (0-based).
-	ScriptID           ScriptID           `json:"scriptId,omitempty"`           // Script ID of the exception location.
-	URL                string             `json:"url,omitempty"`                // URL of the exception location, to be used when the script was not reported.
-	StackTrace         *StackTrace        `json:"stackTrace,omitempty"`         // JavaScript stack trace if available.
-	Exception          *RemoteObject      `json:"exception,omitempty"`          // Exception object if available.
-	ExecutionContextID ExecutionContextID `json:"executionContextId,omitempty"` // Identifier of the context where exception happened.
+	ExceptionID        int64               `json:"exceptionId"`                  // Exception id.
+	Text               string              `json:"text"`                         // Exception text, which should be used together with exception object when available.
+	LineNumber         int64               `json:"lineNumber"`                   // Line number of the exception location (0-based).
+	ColumnNumber       int64               `json:"columnNumber"`                 // Column number of the exception location (0-based).
+	ScriptID           ScriptID            `json:"scriptId,omitempty"`           // Script ID of the exception location.
+	URL                string              `json:"url,omitempty"`                // URL of the exception location, to be used when the script was not reported.
+	StackTrace         *StackTrace         `json:"stackTrace,omitempty"`         // JavaScript stack trace if available.
+	Exception          *RemoteObject       `json:"exception,omitempty"`          // Exception object if available.
+	ExecutionContextID ExecutionContextID  `json:"executionContextId,omitempty"` // Identifier of the context where exception happened.
+	ExceptionMetaData  easyjson.RawMessage `json:"exceptionMetaData,omitempty"`
 }
 
 // Error satisfies the error interface.
 func (e *ExceptionDetails) Error() string {
+	var b strings.Builder
 	// TODO: watch script parsed events and match the ExceptionDetails.ScriptID
 	// to the name/location of the actual code and display here
-	return fmt.Sprintf("encountered exception '%s' (%d:%d)", e.Text, e.LineNumber, e.ColumnNumber)
+	fmt.Fprintf(&b, "exception %q (%d:%d)", e.Text, e.LineNumber, e.ColumnNumber)
+	if obj := e.Exception; obj != nil {
+		fmt.Fprintf(&b, ": %s", obj.Description)
+	}
+	return b.String()
 }
 
 // Timestamp number of milliseconds since epoch.
@@ -271,6 +290,113 @@ type StackTraceID struct {
 	DebuggerID UniqueDebuggerID `json:"debuggerId,omitempty"`
 }
 
+// WebDriverValueType [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#type-WebDriverValue
+type WebDriverValueType string
+
+// String returns the WebDriverValueType as string value.
+func (t WebDriverValueType) String() string {
+	return string(t)
+}
+
+// WebDriverValueType values.
+const (
+	WebDriverValueTypeUndefined   WebDriverValueType = "undefined"
+	WebDriverValueTypeNull        WebDriverValueType = "null"
+	WebDriverValueTypeString      WebDriverValueType = "string"
+	WebDriverValueTypeNumber      WebDriverValueType = "number"
+	WebDriverValueTypeBoolean     WebDriverValueType = "boolean"
+	WebDriverValueTypeBigint      WebDriverValueType = "bigint"
+	WebDriverValueTypeRegexp      WebDriverValueType = "regexp"
+	WebDriverValueTypeDate        WebDriverValueType = "date"
+	WebDriverValueTypeSymbol      WebDriverValueType = "symbol"
+	WebDriverValueTypeArray       WebDriverValueType = "array"
+	WebDriverValueTypeObject      WebDriverValueType = "object"
+	WebDriverValueTypeFunction    WebDriverValueType = "function"
+	WebDriverValueTypeMap         WebDriverValueType = "map"
+	WebDriverValueTypeSet         WebDriverValueType = "set"
+	WebDriverValueTypeWeakmap     WebDriverValueType = "weakmap"
+	WebDriverValueTypeWeakset     WebDriverValueType = "weakset"
+	WebDriverValueTypeError       WebDriverValueType = "error"
+	WebDriverValueTypeProxy       WebDriverValueType = "proxy"
+	WebDriverValueTypePromise     WebDriverValueType = "promise"
+	WebDriverValueTypeTypedarray  WebDriverValueType = "typedarray"
+	WebDriverValueTypeArraybuffer WebDriverValueType = "arraybuffer"
+	WebDriverValueTypeNode        WebDriverValueType = "node"
+	WebDriverValueTypeWindow      WebDriverValueType = "window"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t WebDriverValueType) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t WebDriverValueType) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *WebDriverValueType) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch WebDriverValueType(in.String()) {
+	case WebDriverValueTypeUndefined:
+		*t = WebDriverValueTypeUndefined
+	case WebDriverValueTypeNull:
+		*t = WebDriverValueTypeNull
+	case WebDriverValueTypeString:
+		*t = WebDriverValueTypeString
+	case WebDriverValueTypeNumber:
+		*t = WebDriverValueTypeNumber
+	case WebDriverValueTypeBoolean:
+		*t = WebDriverValueTypeBoolean
+	case WebDriverValueTypeBigint:
+		*t = WebDriverValueTypeBigint
+	case WebDriverValueTypeRegexp:
+		*t = WebDriverValueTypeRegexp
+	case WebDriverValueTypeDate:
+		*t = WebDriverValueTypeDate
+	case WebDriverValueTypeSymbol:
+		*t = WebDriverValueTypeSymbol
+	case WebDriverValueTypeArray:
+		*t = WebDriverValueTypeArray
+	case WebDriverValueTypeObject:
+		*t = WebDriverValueTypeObject
+	case WebDriverValueTypeFunction:
+		*t = WebDriverValueTypeFunction
+	case WebDriverValueTypeMap:
+		*t = WebDriverValueTypeMap
+	case WebDriverValueTypeSet:
+		*t = WebDriverValueTypeSet
+	case WebDriverValueTypeWeakmap:
+		*t = WebDriverValueTypeWeakmap
+	case WebDriverValueTypeWeakset:
+		*t = WebDriverValueTypeWeakset
+	case WebDriverValueTypeError:
+		*t = WebDriverValueTypeError
+	case WebDriverValueTypeProxy:
+		*t = WebDriverValueTypeProxy
+	case WebDriverValueTypePromise:
+		*t = WebDriverValueTypePromise
+	case WebDriverValueTypeTypedarray:
+		*t = WebDriverValueTypeTypedarray
+	case WebDriverValueTypeArraybuffer:
+		*t = WebDriverValueTypeArraybuffer
+	case WebDriverValueTypeNode:
+		*t = WebDriverValueTypeNode
+	case WebDriverValueTypeWindow:
+		*t = WebDriverValueTypeWindow
+
+	default:
+		in.AddError(errors.New("unknown WebDriverValueType value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *WebDriverValueType) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
 // Type object type.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#type-RemoteObject
@@ -291,7 +417,6 @@ const (
 	TypeBoolean   Type = "boolean"
 	TypeSymbol    Type = "symbol"
 	TypeBigint    Type = "bigint"
-	TypeWasm      Type = "wasm"
 	TypeAccessor  Type = "accessor"
 )
 
@@ -324,8 +449,6 @@ func (t *Type) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = TypeSymbol
 	case TypeBigint:
 		*t = TypeBigint
-	case TypeWasm:
-		*t = TypeWasm
 	case TypeAccessor:
 		*t = TypeAccessor
 
@@ -339,8 +462,9 @@ func (t *Type) UnmarshalJSON(buf []byte) error {
 	return easyjson.Unmarshal(buf, t)
 }
 
-// Subtype object subtype hint. Specified for object or wasm type values
-// only.
+// Subtype object subtype hint. Specified for object type values only. NOTE:
+// If you change anything here, make sure to also update subtype in
+// ObjectPreview and PropertyPreview below.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#type-RemoteObject
 type Subtype string
@@ -352,29 +476,25 @@ func (t Subtype) String() string {
 
 // Subtype values.
 const (
-	SubtypeArray       Subtype = "array"
-	SubtypeNull        Subtype = "null"
-	SubtypeNode        Subtype = "node"
-	SubtypeRegexp      Subtype = "regexp"
-	SubtypeDate        Subtype = "date"
-	SubtypeMap         Subtype = "map"
-	SubtypeSet         Subtype = "set"
-	SubtypeWeakmap     Subtype = "weakmap"
-	SubtypeWeakset     Subtype = "weakset"
-	SubtypeIterator    Subtype = "iterator"
-	SubtypeGenerator   Subtype = "generator"
-	SubtypeError       Subtype = "error"
-	SubtypeProxy       Subtype = "proxy"
-	SubtypePromise     Subtype = "promise"
-	SubtypeTypedarray  Subtype = "typedarray"
-	SubtypeArraybuffer Subtype = "arraybuffer"
-	SubtypeDataview    Subtype = "dataview"
-	SubtypeI32         Subtype = "i32"
-	SubtypeI64         Subtype = "i64"
-	SubtypeF32         Subtype = "f32"
-	SubtypeF64         Subtype = "f64"
-	SubtypeV128        Subtype = "v128"
-	SubtypeAnyref      Subtype = "anyref"
+	SubtypeArray             Subtype = "array"
+	SubtypeNull              Subtype = "null"
+	SubtypeNode              Subtype = "node"
+	SubtypeRegexp            Subtype = "regexp"
+	SubtypeDate              Subtype = "date"
+	SubtypeMap               Subtype = "map"
+	SubtypeSet               Subtype = "set"
+	SubtypeWeakmap           Subtype = "weakmap"
+	SubtypeWeakset           Subtype = "weakset"
+	SubtypeIterator          Subtype = "iterator"
+	SubtypeGenerator         Subtype = "generator"
+	SubtypeError             Subtype = "error"
+	SubtypeProxy             Subtype = "proxy"
+	SubtypePromise           Subtype = "promise"
+	SubtypeTypedarray        Subtype = "typedarray"
+	SubtypeArraybuffer       Subtype = "arraybuffer"
+	SubtypeDataview          Subtype = "dataview"
+	SubtypeWebassemblymemory Subtype = "webassemblymemory"
+	SubtypeWasmvalue         Subtype = "wasmvalue"
 )
 
 // MarshalEasyJSON satisfies easyjson.Marshaler.
@@ -424,18 +544,10 @@ func (t *Subtype) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = SubtypeArraybuffer
 	case SubtypeDataview:
 		*t = SubtypeDataview
-	case SubtypeI32:
-		*t = SubtypeI32
-	case SubtypeI64:
-		*t = SubtypeI64
-	case SubtypeF32:
-		*t = SubtypeF32
-	case SubtypeF64:
-		*t = SubtypeF64
-	case SubtypeV128:
-		*t = SubtypeV128
-	case SubtypeAnyref:
-		*t = SubtypeAnyref
+	case SubtypeWebassemblymemory:
+		*t = SubtypeWebassemblymemory
+	case SubtypeWasmvalue:
+		*t = SubtypeWasmvalue
 
 	default:
 		in.AddError(errors.New("unknown Subtype value"))

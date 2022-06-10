@@ -1,5 +1,6 @@
 /*
 Copyright 2018 Google LLC
+Copyright 2022 David Gageot
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,6 +19,7 @@ package handlers
 
 import (
 	"bytes"
+	_ "embed"
 	"errors"
 	"fmt"
 	"html/template"
@@ -29,14 +31,17 @@ import (
 
 	"github.com/dgageot/demoit/files"
 	"github.com/dgageot/demoit/flags"
-	"github.com/dgageot/demoit/templates"
 	"github.com/gorilla/mux"
 )
+
+//go:embed resources/index.tmpl.html
+var indexHTML string
+var indexTemplate = template.Must(template.New("index").Funcs(template.FuncMap{"hash": hash}).Parse(indexHTML))
 
 // Page describes a page of the demo.
 type Page struct {
 	WorkingDir  string
-	HTML        []byte
+	HTML        template.HTML
 	URL         string
 	PrevURL     string
 	NextURL     string
@@ -64,22 +69,11 @@ func Step(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	step := steps[id]
-	pageTemplate, err := template.New("page").Parse(templates.Index(step.HTML))
-	if err != nil {
-		http.Error(w, "Unable to parse page", http.StatusInternalServerError)
-		return
-	}
-
-	var html bytes.Buffer
-	err = pageTemplate.Execute(&html, step)
-	if err != nil {
+	w.Header().Set("Content-Type", "text/html")
+	if err := indexTemplate.Execute(w, steps[id]); err != nil {
 		http.Error(w, "Unable to render page", http.StatusInternalServerError)
 		return
 	}
-
-	w.Header().Set("Content-Type", "text/html")
-	html.WriteTo(w)
 }
 
 // LastStep redirects to the latest page.
@@ -90,7 +84,7 @@ func LastStep(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("/%d", len(steps)-1), 303)
+	http.Redirect(w, r, fmt.Sprintf("/%d", len(steps)-1), http.StatusSeeOther)
 }
 
 func readSteps(folder string) ([]Page, error) {
@@ -112,7 +106,7 @@ func readSteps(folder string) ([]Page, error) {
 
 		steps = append(steps, Page{
 			WorkingDir:  folder,
-			HTML:        part,
+			HTML:        template.HTML(part),
 			DevMode:     *flags.DevMode,
 			CurrentStep: i,
 			URL:         url,
@@ -132,24 +126,34 @@ func readSteps(folder string) ([]Page, error) {
 	return steps, nil
 }
 
-// VerifyStepsFile returns non-nil error if it can't read demoit.html
-func VerifyStepsFile() error {
-	_, err := readSteps(files.Root)
-	return err
-}
-
-// VerifyResourceFolder returns non-nil error if it can't find folder .demoit
-func VerifyResourceFolder() error {
-	folderpath := filepath.Join(files.Root, ".demoit")
-	info, err := os.Stat(folderpath)
-	if os.IsNotExist(err) {
-		return errors.New(".demoit doesn't exist")
+// VerifyConfiguration runs a couple of verifications on the configuration.
+func VerifyConfiguration() error {
+	if _, err := readSteps(files.Root); err != nil {
+		return err
 	}
+
+	info, err := os.Stat(filepath.Join(files.Root, ".demoit"))
+	if os.IsNotExist(err) {
+		return errors.New(`mandatory resource folder ".demoit" doesn't exist`)
+	}
+
 	if err != nil {
 		return err
 	}
+
 	if !info.IsDir() {
-		return errors.New(".demoit is not a folder")
+		return errors.New(`mandatory resource folder ".demoit" is not a folder`)
 	}
+
 	return nil
+}
+
+// Ignore errors and return empty string if an error occurs.
+func hash(path string) string {
+	h, err := files.Sha256(path)
+	if err != nil {
+		return ""
+	}
+
+	return h[:10]
 }

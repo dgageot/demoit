@@ -22,6 +22,24 @@ type EventPlayerEventsAdded struct {
 	Events   []*PlayerEvent `json:"events"`
 }
 
+// EventPlayerMessagesLogged send a list of any messages that need to be
+// delivered.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Media#event-playerMessagesLogged
+type EventPlayerMessagesLogged struct {
+	PlayerID PlayerID         `json:"playerId"`
+	Messages []*PlayerMessage `json:"messages"`
+}
+
+// EventPlayerErrorsRaised send a list of any errors that need to be
+// delivered.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Media#event-playerErrorsRaised
+type EventPlayerErrorsRaised struct {
+	PlayerID PlayerID       `json:"playerId"`
+	Errors   []*PlayerError `json:"errors"`
+}
+
 // EventPlayersCreated called whenever a player is created, or when a new
 // agent joins and receives a list of active players. If an agent is restored,
 // it will receive the full list of player ids and all events again.

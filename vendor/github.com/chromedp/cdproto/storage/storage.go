@@ -13,6 +13,43 @@ import (
 	"github.com/chromedp/cdproto/network"
 )
 
+// GetStorageKeyForFrameParams returns a storage key given a frame id.
+type GetStorageKeyForFrameParams struct {
+	FrameID cdp.FrameID `json:"frameId"`
+}
+
+// GetStorageKeyForFrame returns a storage key given a frame id.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-getStorageKeyForFrame
+//
+// parameters:
+//   frameID
+func GetStorageKeyForFrame(frameID cdp.FrameID) *GetStorageKeyForFrameParams {
+	return &GetStorageKeyForFrameParams{
+		FrameID: frameID,
+	}
+}
+
+// GetStorageKeyForFrameReturns return values.
+type GetStorageKeyForFrameReturns struct {
+	StorageKey SerializedStorageKey `json:"storageKey,omitempty"`
+}
+
+// Do executes Storage.getStorageKeyForFrame against the provided context.
+//
+// returns:
+//   storageKey
+func (p *GetStorageKeyForFrameParams) Do(ctx context.Context) (storageKey SerializedStorageKey, err error) {
+	// execute
+	var res GetStorageKeyForFrameReturns
+	err = cdp.Execute(ctx, CommandGetStorageKeyForFrame, p, &res)
+	if err != nil {
+		return "", err
+	}
+
+	return res.StorageKey, nil
+}
+
 // ClearDataForOriginParams clears storage for origin.
 type ClearDataForOriginParams struct {
 	Origin       string `json:"origin"`       // Security origin.
@@ -156,6 +193,7 @@ func GetUsageAndQuota(origin string) *GetUsageAndQuotaParams {
 type GetUsageAndQuotaReturns struct {
 	Usage          float64         `json:"usage,omitempty"`          // Storage usage (bytes).
 	Quota          float64         `json:"quota,omitempty"`          // Storage quota (bytes).
+	OverrideActive bool            `json:"overrideActive,omitempty"` // Whether or not the origin has an active storage quota override
 	UsageBreakdown []*UsageForType `json:"usageBreakdown,omitempty"` // Storage usage per type (bytes).
 }
 
@@ -164,16 +202,52 @@ type GetUsageAndQuotaReturns struct {
 // returns:
 //   usage - Storage usage (bytes).
 //   quota - Storage quota (bytes).
+//   overrideActive - Whether or not the origin has an active storage quota override
 //   usageBreakdown - Storage usage per type (bytes).
-func (p *GetUsageAndQuotaParams) Do(ctx context.Context) (usage float64, quota float64, usageBreakdown []*UsageForType, err error) {
+func (p *GetUsageAndQuotaParams) Do(ctx context.Context) (usage float64, quota float64, overrideActive bool, usageBreakdown []*UsageForType, err error) {
 	// execute
 	var res GetUsageAndQuotaReturns
 	err = cdp.Execute(ctx, CommandGetUsageAndQuota, p, &res)
 	if err != nil {
-		return 0, 0, nil, err
+		return 0, 0, false, nil, err
 	}
 
-	return res.Usage, res.Quota, res.UsageBreakdown, nil
+	return res.Usage, res.Quota, res.OverrideActive, res.UsageBreakdown, nil
+}
+
+// OverrideQuotaForOriginParams override quota for the specified origin.
+type OverrideQuotaForOriginParams struct {
+	Origin    string  `json:"origin"`              // Security origin.
+	QuotaSize float64 `json:"quotaSize,omitempty"` // The quota size (in bytes) to override the original quota with. If this is called multiple times, the overridden quota will be equal to the quotaSize provided in the final call. If this is called without specifying a quotaSize, the quota will be reset to the default value for the specified origin. If this is called multiple times with different origins, the override will be maintained for each origin until it is disabled (called without a quotaSize).
+}
+
+// OverrideQuotaForOrigin override quota for the specified origin.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-overrideQuotaForOrigin
+//
+// parameters:
+//   origin - Security origin.
+func OverrideQuotaForOrigin(origin string) *OverrideQuotaForOriginParams {
+	return &OverrideQuotaForOriginParams{
+		Origin: origin,
+	}
+}
+
+// WithQuotaSize the quota size (in bytes) to override the original quota
+// with. If this is called multiple times, the overridden quota will be equal to
+// the quotaSize provided in the final call. If this is called without
+// specifying a quotaSize, the quota will be reset to the default value for the
+// specified origin. If this is called multiple times with different origins,
+// the override will be maintained for each origin until it is disabled (called
+// without a quotaSize).
+func (p OverrideQuotaForOriginParams) WithQuotaSize(quotaSize float64) *OverrideQuotaForOriginParams {
+	p.QuotaSize = quotaSize
+	return &p
+}
+
+// Do executes Storage.overrideQuotaForOrigin against the provided context.
+func (p *OverrideQuotaForOriginParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandOverrideQuotaForOrigin, p, nil)
 }
 
 // TrackCacheStorageForOriginParams registers origin to be notified when an
@@ -272,15 +346,158 @@ func (p *UntrackIndexedDBForOriginParams) Do(ctx context.Context) (err error) {
 	return cdp.Execute(ctx, CommandUntrackIndexedDBForOrigin, p, nil)
 }
 
+// GetTrustTokensParams returns the number of stored Trust Tokens per issuer
+// for the current browsing context.
+type GetTrustTokensParams struct{}
+
+// GetTrustTokens returns the number of stored Trust Tokens per issuer for
+// the current browsing context.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-getTrustTokens
+func GetTrustTokens() *GetTrustTokensParams {
+	return &GetTrustTokensParams{}
+}
+
+// GetTrustTokensReturns return values.
+type GetTrustTokensReturns struct {
+	Tokens []*TrustTokens `json:"tokens,omitempty"`
+}
+
+// Do executes Storage.getTrustTokens against the provided context.
+//
+// returns:
+//   tokens
+func (p *GetTrustTokensParams) Do(ctx context.Context) (tokens []*TrustTokens, err error) {
+	// execute
+	var res GetTrustTokensReturns
+	err = cdp.Execute(ctx, CommandGetTrustTokens, nil, &res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res.Tokens, nil
+}
+
+// ClearTrustTokensParams removes all Trust Tokens issued by the provided
+// issuerOrigin. Leaves other stored data, including the issuer's Redemption
+// Records, intact.
+type ClearTrustTokensParams struct {
+	IssuerOrigin string `json:"issuerOrigin"`
+}
+
+// ClearTrustTokens removes all Trust Tokens issued by the provided
+// issuerOrigin. Leaves other stored data, including the issuer's Redemption
+// Records, intact.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-clearTrustTokens
+//
+// parameters:
+//   issuerOrigin
+func ClearTrustTokens(issuerOrigin string) *ClearTrustTokensParams {
+	return &ClearTrustTokensParams{
+		IssuerOrigin: issuerOrigin,
+	}
+}
+
+// ClearTrustTokensReturns return values.
+type ClearTrustTokensReturns struct {
+	DidDeleteTokens bool `json:"didDeleteTokens,omitempty"` // True if any tokens were deleted, false otherwise.
+}
+
+// Do executes Storage.clearTrustTokens against the provided context.
+//
+// returns:
+//   didDeleteTokens - True if any tokens were deleted, false otherwise.
+func (p *ClearTrustTokensParams) Do(ctx context.Context) (didDeleteTokens bool, err error) {
+	// execute
+	var res ClearTrustTokensReturns
+	err = cdp.Execute(ctx, CommandClearTrustTokens, p, &res)
+	if err != nil {
+		return false, err
+	}
+
+	return res.DidDeleteTokens, nil
+}
+
+// GetInterestGroupDetailsParams gets details for a named interest group.
+type GetInterestGroupDetailsParams struct {
+	OwnerOrigin string `json:"ownerOrigin"`
+	Name        string `json:"name"`
+}
+
+// GetInterestGroupDetails gets details for a named interest group.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-getInterestGroupDetails
+//
+// parameters:
+//   ownerOrigin
+//   name
+func GetInterestGroupDetails(ownerOrigin string, name string) *GetInterestGroupDetailsParams {
+	return &GetInterestGroupDetailsParams{
+		OwnerOrigin: ownerOrigin,
+		Name:        name,
+	}
+}
+
+// GetInterestGroupDetailsReturns return values.
+type GetInterestGroupDetailsReturns struct {
+	Details *InterestGroupDetails `json:"details,omitempty"`
+}
+
+// Do executes Storage.getInterestGroupDetails against the provided context.
+//
+// returns:
+//   details
+func (p *GetInterestGroupDetailsParams) Do(ctx context.Context) (details *InterestGroupDetails, err error) {
+	// execute
+	var res GetInterestGroupDetailsReturns
+	err = cdp.Execute(ctx, CommandGetInterestGroupDetails, p, &res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res.Details, nil
+}
+
+// SetInterestGroupTrackingParams enables/Disables issuing of
+// interestGroupAccessed events.
+type SetInterestGroupTrackingParams struct {
+	Enable bool `json:"enable"`
+}
+
+// SetInterestGroupTracking enables/Disables issuing of interestGroupAccessed
+// events.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-setInterestGroupTracking
+//
+// parameters:
+//   enable
+func SetInterestGroupTracking(enable bool) *SetInterestGroupTrackingParams {
+	return &SetInterestGroupTrackingParams{
+		Enable: enable,
+	}
+}
+
+// Do executes Storage.setInterestGroupTracking against the provided context.
+func (p *SetInterestGroupTrackingParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandSetInterestGroupTracking, p, nil)
+}
+
 // Command names.
 const (
+	CommandGetStorageKeyForFrame        = "Storage.getStorageKeyForFrame"
 	CommandClearDataForOrigin           = "Storage.clearDataForOrigin"
 	CommandGetCookies                   = "Storage.getCookies"
 	CommandSetCookies                   = "Storage.setCookies"
 	CommandClearCookies                 = "Storage.clearCookies"
 	CommandGetUsageAndQuota             = "Storage.getUsageAndQuota"
+	CommandOverrideQuotaForOrigin       = "Storage.overrideQuotaForOrigin"
 	CommandTrackCacheStorageForOrigin   = "Storage.trackCacheStorageForOrigin"
 	CommandTrackIndexedDBForOrigin      = "Storage.trackIndexedDBForOrigin"
 	CommandUntrackCacheStorageForOrigin = "Storage.untrackCacheStorageForOrigin"
 	CommandUntrackIndexedDBForOrigin    = "Storage.untrackIndexedDBForOrigin"
+	CommandGetTrustTokens               = "Storage.getTrustTokens"
+	CommandClearTrustTokens             = "Storage.clearTrustTokens"
+	CommandGetInterestGroupDetails      = "Storage.getInterestGroupDetails"
+	CommandSetInterestGroupTracking     = "Storage.setInterestGroupTracking"
 )

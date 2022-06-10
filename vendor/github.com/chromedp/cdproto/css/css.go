@@ -347,12 +347,13 @@ func GetMatchedStylesForNode(nodeID cdp.NodeID) *GetMatchedStylesForNodeParams {
 
 // GetMatchedStylesForNodeReturns return values.
 type GetMatchedStylesForNodeReturns struct {
-	InlineStyle       *Style                  `json:"inlineStyle,omitempty"`       // Inline style for the specified DOM node.
-	AttributesStyle   *Style                  `json:"attributesStyle,omitempty"`   // Attribute-defined element style (e.g. resulting from "width=20 height=100%").
-	MatchedCSSRules   []*RuleMatch            `json:"matchedCSSRules,omitempty"`   // CSS rules matching this node, from all applicable stylesheets.
-	PseudoElements    []*PseudoElementMatches `json:"pseudoElements,omitempty"`    // Pseudo style matches for this node.
-	Inherited         []*InheritedStyleEntry  `json:"inherited,omitempty"`         // A chain of inherited styles (from the immediate node parent up to the DOM tree root).
-	CSSKeyframesRules []*KeyframesRule        `json:"cssKeyframesRules,omitempty"` // A list of CSS keyframed animations matching this node.
+	InlineStyle             *Style                           `json:"inlineStyle,omitempty"`             // Inline style for the specified DOM node.
+	AttributesStyle         *Style                           `json:"attributesStyle,omitempty"`         // Attribute-defined element style (e.g. resulting from "width=20 height=100%").
+	MatchedCSSRules         []*RuleMatch                     `json:"matchedCSSRules,omitempty"`         // CSS rules matching this node, from all applicable stylesheets.
+	PseudoElements          []*PseudoElementMatches          `json:"pseudoElements,omitempty"`          // Pseudo style matches for this node.
+	Inherited               []*InheritedStyleEntry           `json:"inherited,omitempty"`               // A chain of inherited styles (from the immediate node parent up to the DOM tree root).
+	InheritedPseudoElements []*InheritedPseudoElementMatches `json:"inheritedPseudoElements,omitempty"` // A chain of inherited pseudo element styles (from the immediate node parent up to the DOM tree root).
+	CSSKeyframesRules       []*KeyframesRule                 `json:"cssKeyframesRules,omitempty"`       // A list of CSS keyframed animations matching this node.
 }
 
 // Do executes CSS.getMatchedStylesForNode against the provided context.
@@ -363,16 +364,17 @@ type GetMatchedStylesForNodeReturns struct {
 //   matchedCSSRules - CSS rules matching this node, from all applicable stylesheets.
 //   pseudoElements - Pseudo style matches for this node.
 //   inherited - A chain of inherited styles (from the immediate node parent up to the DOM tree root).
+//   inheritedPseudoElements - A chain of inherited pseudo element styles (from the immediate node parent up to the DOM tree root).
 //   cssKeyframesRules - A list of CSS keyframed animations matching this node.
-func (p *GetMatchedStylesForNodeParams) Do(ctx context.Context) (inlineStyle *Style, attributesStyle *Style, matchedCSSRules []*RuleMatch, pseudoElements []*PseudoElementMatches, inherited []*InheritedStyleEntry, cssKeyframesRules []*KeyframesRule, err error) {
+func (p *GetMatchedStylesForNodeParams) Do(ctx context.Context) (inlineStyle *Style, attributesStyle *Style, matchedCSSRules []*RuleMatch, pseudoElements []*PseudoElementMatches, inherited []*InheritedStyleEntry, inheritedPseudoElements []*InheritedPseudoElementMatches, cssKeyframesRules []*KeyframesRule, err error) {
 	// execute
 	var res GetMatchedStylesForNodeReturns
 	err = cdp.Execute(ctx, CommandGetMatchedStylesForNode, p, &res)
 	if err != nil {
-		return nil, nil, nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, nil, nil, err
 	}
 
-	return res.InlineStyle, res.AttributesStyle, res.MatchedCSSRules, res.PseudoElements, res.Inherited, res.CSSKeyframesRules, nil
+	return res.InlineStyle, res.AttributesStyle, res.MatchedCSSRules, res.PseudoElements, res.Inherited, res.InheritedPseudoElements, res.CSSKeyframesRules, nil
 }
 
 // GetMediaQueriesParams returns all media queries parsed by the rendering
@@ -481,6 +483,118 @@ func (p *GetStyleSheetTextParams) Do(ctx context.Context) (text string, err erro
 	}
 
 	return res.Text, nil
+}
+
+// GetLayersForNodeParams returns all layers parsed by the rendering engine
+// for the tree scope of a node. Given a DOM element identified by nodeId,
+// getLayersForNode returns the root layer for the nearest ancestor document or
+// shadow root. The layer root contains the full layer tree for the tree scope
+// and their ordering.
+type GetLayersForNodeParams struct {
+	NodeID cdp.NodeID `json:"nodeId"`
+}
+
+// GetLayersForNode returns all layers parsed by the rendering engine for the
+// tree scope of a node. Given a DOM element identified by nodeId,
+// getLayersForNode returns the root layer for the nearest ancestor document or
+// shadow root. The layer root contains the full layer tree for the tree scope
+// and their ordering.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-getLayersForNode
+//
+// parameters:
+//   nodeID
+func GetLayersForNode(nodeID cdp.NodeID) *GetLayersForNodeParams {
+	return &GetLayersForNodeParams{
+		NodeID: nodeID,
+	}
+}
+
+// GetLayersForNodeReturns return values.
+type GetLayersForNodeReturns struct {
+	RootLayer *LayerData `json:"rootLayer,omitempty"`
+}
+
+// Do executes CSS.getLayersForNode against the provided context.
+//
+// returns:
+//   rootLayer
+func (p *GetLayersForNodeParams) Do(ctx context.Context) (rootLayer *LayerData, err error) {
+	// execute
+	var res GetLayersForNodeReturns
+	err = cdp.Execute(ctx, CommandGetLayersForNode, p, &res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res.RootLayer, nil
+}
+
+// TrackComputedStyleUpdatesParams starts tracking the given computed styles
+// for updates. The specified array of properties replaces the one previously
+// specified. Pass empty array to disable tracking. Use takeComputedStyleUpdates
+// to retrieve the list of nodes that had properties modified. The changes to
+// computed style properties are only tracked for nodes pushed to the front-end
+// by the DOM agent. If no changes to the tracked properties occur after the
+// node has been pushed to the front-end, no updates will be issued for the
+// node.
+type TrackComputedStyleUpdatesParams struct {
+	PropertiesToTrack []*ComputedStyleProperty `json:"propertiesToTrack"`
+}
+
+// TrackComputedStyleUpdates starts tracking the given computed styles for
+// updates. The specified array of properties replaces the one previously
+// specified. Pass empty array to disable tracking. Use takeComputedStyleUpdates
+// to retrieve the list of nodes that had properties modified. The changes to
+// computed style properties are only tracked for nodes pushed to the front-end
+// by the DOM agent. If no changes to the tracked properties occur after the
+// node has been pushed to the front-end, no updates will be issued for the
+// node.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-trackComputedStyleUpdates
+//
+// parameters:
+//   propertiesToTrack
+func TrackComputedStyleUpdates(propertiesToTrack []*ComputedStyleProperty) *TrackComputedStyleUpdatesParams {
+	return &TrackComputedStyleUpdatesParams{
+		PropertiesToTrack: propertiesToTrack,
+	}
+}
+
+// Do executes CSS.trackComputedStyleUpdates against the provided context.
+func (p *TrackComputedStyleUpdatesParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandTrackComputedStyleUpdates, p, nil)
+}
+
+// TakeComputedStyleUpdatesParams polls the next batch of computed style
+// updates.
+type TakeComputedStyleUpdatesParams struct{}
+
+// TakeComputedStyleUpdates polls the next batch of computed style updates.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-takeComputedStyleUpdates
+func TakeComputedStyleUpdates() *TakeComputedStyleUpdatesParams {
+	return &TakeComputedStyleUpdatesParams{}
+}
+
+// TakeComputedStyleUpdatesReturns return values.
+type TakeComputedStyleUpdatesReturns struct {
+	NodeIDs []cdp.NodeID `json:"nodeIds,omitempty"` // The list of node Ids that have their tracked computed styles updated
+}
+
+// Do executes CSS.takeComputedStyleUpdates against the provided context.
+//
+// returns:
+//   nodeIDs - The list of node Ids that have their tracked computed styles updated
+func (p *TakeComputedStyleUpdatesParams) Do(ctx context.Context) (nodeIDs []cdp.NodeID, err error) {
+	// execute
+	var res TakeComputedStyleUpdatesReturns
+	err = cdp.Execute(ctx, CommandTakeComputedStyleUpdates, nil, &res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res.NodeIDs, nil
 }
 
 // SetEffectivePropertyValueForNodeParams find a rule with the given active
@@ -597,6 +711,92 @@ func (p *SetMediaTextParams) Do(ctx context.Context) (media *Media, err error) {
 	}
 
 	return res.Media, nil
+}
+
+// SetContainerQueryTextParams modifies the expression of a container query.
+type SetContainerQueryTextParams struct {
+	StyleSheetID StyleSheetID `json:"styleSheetId"`
+	Range        *SourceRange `json:"range"`
+	Text         string       `json:"text"`
+}
+
+// SetContainerQueryText modifies the expression of a container query.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-setContainerQueryText
+//
+// parameters:
+//   styleSheetID
+//   range
+//   text
+func SetContainerQueryText(styleSheetID StyleSheetID, rangeVal *SourceRange, text string) *SetContainerQueryTextParams {
+	return &SetContainerQueryTextParams{
+		StyleSheetID: styleSheetID,
+		Range:        rangeVal,
+		Text:         text,
+	}
+}
+
+// SetContainerQueryTextReturns return values.
+type SetContainerQueryTextReturns struct {
+	ContainerQuery *ContainerQuery `json:"containerQuery,omitempty"` // The resulting CSS container query rule after modification.
+}
+
+// Do executes CSS.setContainerQueryText against the provided context.
+//
+// returns:
+//   containerQuery - The resulting CSS container query rule after modification.
+func (p *SetContainerQueryTextParams) Do(ctx context.Context) (containerQuery *ContainerQuery, err error) {
+	// execute
+	var res SetContainerQueryTextReturns
+	err = cdp.Execute(ctx, CommandSetContainerQueryText, p, &res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res.ContainerQuery, nil
+}
+
+// SetSupportsTextParams modifies the expression of a supports at-rule.
+type SetSupportsTextParams struct {
+	StyleSheetID StyleSheetID `json:"styleSheetId"`
+	Range        *SourceRange `json:"range"`
+	Text         string       `json:"text"`
+}
+
+// SetSupportsText modifies the expression of a supports at-rule.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-setSupportsText
+//
+// parameters:
+//   styleSheetID
+//   range
+//   text
+func SetSupportsText(styleSheetID StyleSheetID, rangeVal *SourceRange, text string) *SetSupportsTextParams {
+	return &SetSupportsTextParams{
+		StyleSheetID: styleSheetID,
+		Range:        rangeVal,
+		Text:         text,
+	}
+}
+
+// SetSupportsTextReturns return values.
+type SetSupportsTextReturns struct {
+	Supports *Supports `json:"supports,omitempty"` // The resulting CSS Supports rule after modification.
+}
+
+// Do executes CSS.setSupportsText against the provided context.
+//
+// returns:
+//   supports - The resulting CSS Supports rule after modification.
+func (p *SetSupportsTextParams) Do(ctx context.Context) (supports *Supports, err error) {
+	// execute
+	var res SetSupportsTextReturns
+	err = cdp.Execute(ctx, CommandSetSupportsText, p, &res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res.Supports, nil
 }
 
 // SetRuleSelectorParams modifies the rule selector.
@@ -804,6 +1004,30 @@ func (p *TakeCoverageDeltaParams) Do(ctx context.Context) (coverage []*RuleUsage
 	return res.Coverage, res.Timestamp, nil
 }
 
+// SetLocalFontsEnabledParams enables/disables rendering of local CSS fonts
+// (enabled by default).
+type SetLocalFontsEnabledParams struct {
+	Enabled bool `json:"enabled"` // Whether rendering of local fonts is enabled.
+}
+
+// SetLocalFontsEnabled enables/disables rendering of local CSS fonts
+// (enabled by default).
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-setLocalFontsEnabled
+//
+// parameters:
+//   enabled - Whether rendering of local fonts is enabled.
+func SetLocalFontsEnabled(enabled bool) *SetLocalFontsEnabledParams {
+	return &SetLocalFontsEnabledParams{
+		Enabled: enabled,
+	}
+}
+
+// Do executes CSS.setLocalFontsEnabled against the provided context.
+func (p *SetLocalFontsEnabledParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandSetLocalFontsEnabled, p, nil)
+}
+
 // Command names.
 const (
 	CommandAddRule                          = "CSS.addRule"
@@ -819,13 +1043,19 @@ const (
 	CommandGetMediaQueries                  = "CSS.getMediaQueries"
 	CommandGetPlatformFontsForNode          = "CSS.getPlatformFontsForNode"
 	CommandGetStyleSheetText                = "CSS.getStyleSheetText"
+	CommandGetLayersForNode                 = "CSS.getLayersForNode"
+	CommandTrackComputedStyleUpdates        = "CSS.trackComputedStyleUpdates"
+	CommandTakeComputedStyleUpdates         = "CSS.takeComputedStyleUpdates"
 	CommandSetEffectivePropertyValueForNode = "CSS.setEffectivePropertyValueForNode"
 	CommandSetKeyframeKey                   = "CSS.setKeyframeKey"
 	CommandSetMediaText                     = "CSS.setMediaText"
+	CommandSetContainerQueryText            = "CSS.setContainerQueryText"
+	CommandSetSupportsText                  = "CSS.setSupportsText"
 	CommandSetRuleSelector                  = "CSS.setRuleSelector"
 	CommandSetStyleSheetText                = "CSS.setStyleSheetText"
 	CommandSetStyleTexts                    = "CSS.setStyleTexts"
 	CommandStartRuleUsageTracking           = "CSS.startRuleUsageTracking"
 	CommandStopRuleUsageTracking            = "CSS.stopRuleUsageTracking"
 	CommandTakeCoverageDelta                = "CSS.takeCoverageDelta"
+	CommandSetLocalFontsEnabled             = "CSS.setLocalFontsEnabled"
 )

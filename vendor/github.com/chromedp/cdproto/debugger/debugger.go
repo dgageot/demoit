@@ -378,12 +378,31 @@ func (p *RemoveBreakpointParams) Do(ctx context.Context) (err error) {
 	return cdp.Execute(ctx, CommandRemoveBreakpoint, p, nil)
 }
 
-// RestartFrameParams restarts particular call frame from the beginning.
+// RestartFrameParams restarts particular call frame from the beginning. The
+// old, deprecated behavior of restartFrame is to stay paused and allow further
+// CDP commands after a restart was scheduled. This can cause problems with
+// restarting, so we now continue execution immediately after it has been
+// scheduled until we reach the beginning of the restarted frame. To stay
+// back-wards compatible, restartFrame now expects a mode parameter to be
+// present. If the mode parameter is missing, restartFrame errors out. The
+// various return values are deprecated and callFrames is always empty. Use the
+// call frames from the Debugger#paused events instead, that fires once V8
+// pauses at the beginning of the restarted function.
 type RestartFrameParams struct {
-	CallFrameID CallFrameID `json:"callFrameId"` // Call frame identifier to evaluate on.
+	CallFrameID CallFrameID      `json:"callFrameId"`    // Call frame identifier to evaluate on.
+	Mode        RestartFrameMode `json:"mode,omitempty"` // The mode parameter must be present and set to 'StepInto', otherwise restartFrame will error out.
 }
 
-// RestartFrame restarts particular call frame from the beginning.
+// RestartFrame restarts particular call frame from the beginning. The old,
+// deprecated behavior of restartFrame is to stay paused and allow further CDP
+// commands after a restart was scheduled. This can cause problems with
+// restarting, so we now continue execution immediately after it has been
+// scheduled until we reach the beginning of the restarted frame. To stay
+// back-wards compatible, restartFrame now expects a mode parameter to be
+// present. If the mode parameter is missing, restartFrame errors out. The
+// various return values are deprecated and callFrames is always empty. Use the
+// call frames from the Debugger#paused events instead, that fires once V8
+// pauses at the beginning of the restarted function.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-restartFrame
 //
@@ -395,28 +414,16 @@ func RestartFrame(callFrameID CallFrameID) *RestartFrameParams {
 	}
 }
 
-// RestartFrameReturns return values.
-type RestartFrameReturns struct {
-	CallFrames        []*CallFrame          `json:"callFrames,omitempty"`        // New stack trace.
-	AsyncStackTrace   *runtime.StackTrace   `json:"asyncStackTrace,omitempty"`   // Async stack trace, if any.
-	AsyncStackTraceID *runtime.StackTraceID `json:"asyncStackTraceId,omitempty"` // Async stack trace, if any.
+// WithMode the mode parameter must be present and set to 'StepInto',
+// otherwise restartFrame will error out.
+func (p RestartFrameParams) WithMode(mode RestartFrameMode) *RestartFrameParams {
+	p.Mode = mode
+	return &p
 }
 
 // Do executes Debugger.restartFrame against the provided context.
-//
-// returns:
-//   callFrames - New stack trace.
-//   asyncStackTrace - Async stack trace, if any.
-//   asyncStackTraceID - Async stack trace, if any.
-func (p *RestartFrameParams) Do(ctx context.Context) (callFrames []*CallFrame, asyncStackTrace *runtime.StackTrace, asyncStackTraceID *runtime.StackTraceID, err error) {
-	// execute
-	var res RestartFrameReturns
-	err = cdp.Execute(ctx, CommandRestartFrame, p, &res)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	return res.CallFrames, res.AsyncStackTrace, res.AsyncStackTraceID, nil
+func (p *RestartFrameParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandRestartFrame, p, nil)
 }
 
 // ResumeParams resumes JavaScript execution.
@@ -909,30 +916,24 @@ func (p SetScriptSourceParams) WithDryRun(dryRun bool) *SetScriptSourceParams {
 
 // SetScriptSourceReturns return values.
 type SetScriptSourceReturns struct {
-	CallFrames        []*CallFrame              `json:"callFrames,omitempty"`        // New stack trace in case editing has happened while VM was stopped.
-	StackChanged      bool                      `json:"stackChanged,omitempty"`      // Whether current call stack  was modified after applying the changes.
-	AsyncStackTrace   *runtime.StackTrace       `json:"asyncStackTrace,omitempty"`   // Async stack trace, if any.
-	AsyncStackTraceID *runtime.StackTraceID     `json:"asyncStackTraceId,omitempty"` // Async stack trace, if any.
-	ExceptionDetails  *runtime.ExceptionDetails `json:"exceptionDetails,omitempty"`  // Exception details if any.
+	Status           SetScriptSourceStatus     `json:"status,omitempty"`           // Whether the operation was successful or not. Only Ok denotes a successful live edit while the other enum variants denote why the live edit failed.
+	ExceptionDetails *runtime.ExceptionDetails `json:"exceptionDetails,omitempty"` // Exception details if any. Only present when status is CompileError.
 }
 
 // Do executes Debugger.setScriptSource against the provided context.
 //
 // returns:
-//   callFrames - New stack trace in case editing has happened while VM was stopped.
-//   stackChanged - Whether current call stack  was modified after applying the changes.
-//   asyncStackTrace - Async stack trace, if any.
-//   asyncStackTraceID - Async stack trace, if any.
-//   exceptionDetails - Exception details if any.
-func (p *SetScriptSourceParams) Do(ctx context.Context) (callFrames []*CallFrame, stackChanged bool, asyncStackTrace *runtime.StackTrace, asyncStackTraceID *runtime.StackTraceID, exceptionDetails *runtime.ExceptionDetails, err error) {
+//   status - Whether the operation was successful or not. Only Ok denotes a successful live edit while the other enum variants denote why the live edit failed.
+//   exceptionDetails - Exception details if any. Only present when status is CompileError.
+func (p *SetScriptSourceParams) Do(ctx context.Context) (status SetScriptSourceStatus, exceptionDetails *runtime.ExceptionDetails, err error) {
 	// execute
 	var res SetScriptSourceReturns
 	err = cdp.Execute(ctx, CommandSetScriptSource, p, &res)
 	if err != nil {
-		return nil, false, nil, nil, nil, err
+		return "", nil, err
 	}
 
-	return res.CallFrames, res.StackChanged, res.AsyncStackTrace, res.AsyncStackTraceID, res.ExceptionDetails, nil
+	return res.Status, res.ExceptionDetails, nil
 }
 
 // SetSkipAllPausesParams makes page not interrupt on any pauses (breakpoint,
@@ -994,7 +995,8 @@ func (p *SetVariableValueParams) Do(ctx context.Context) (err error) {
 
 // StepIntoParams steps into the function call.
 type StepIntoParams struct {
-	BreakOnAsyncCall bool `json:"breakOnAsyncCall,omitempty"` // Debugger will pause on the execution of the first async task which was scheduled before next pause.
+	BreakOnAsyncCall bool             `json:"breakOnAsyncCall,omitempty"` // Debugger will pause on the execution of the first async task which was scheduled before next pause.
+	SkipList         []*LocationRange `json:"skipList,omitempty"`         // The skipList specifies location ranges that should be skipped on step into.
 }
 
 // StepInto steps into the function call.
@@ -1010,6 +1012,13 @@ func StepInto() *StepIntoParams {
 // async task which was scheduled before next pause.
 func (p StepIntoParams) WithBreakOnAsyncCall(breakOnAsyncCall bool) *StepIntoParams {
 	p.BreakOnAsyncCall = breakOnAsyncCall
+	return &p
+}
+
+// WithSkipList the skipList specifies location ranges that should be skipped
+// on step into.
+func (p StepIntoParams) WithSkipList(skipList []*LocationRange) *StepIntoParams {
+	p.SkipList = skipList
 	return &p
 }
 
@@ -1034,18 +1043,29 @@ func (p *StepOutParams) Do(ctx context.Context) (err error) {
 }
 
 // StepOverParams steps over the statement.
-type StepOverParams struct{}
+type StepOverParams struct {
+	SkipList []*LocationRange `json:"skipList,omitempty"` // The skipList specifies location ranges that should be skipped on step over.
+}
 
 // StepOver steps over the statement.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-stepOver
+//
+// parameters:
 func StepOver() *StepOverParams {
 	return &StepOverParams{}
 }
 
+// WithSkipList the skipList specifies location ranges that should be skipped
+// on step over.
+func (p StepOverParams) WithSkipList(skipList []*LocationRange) *StepOverParams {
+	p.SkipList = skipList
+	return &p
+}
+
 // Do executes Debugger.stepOver against the provided context.
 func (p *StepOverParams) Do(ctx context.Context) (err error) {
-	return cdp.Execute(ctx, CommandStepOver, nil, nil)
+	return cdp.Execute(ctx, CommandStepOver, p, nil)
 }
 
 // Command names.

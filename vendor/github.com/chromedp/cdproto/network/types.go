@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/chromedp/cdproto/cdp"
+	"github.com/chromedp/cdproto/io"
 	"github.com/chromedp/cdproto/runtime"
 	"github.com/chromedp/cdproto/security"
 	"github.com/mailru/easyjson"
@@ -40,6 +41,7 @@ const (
 	ResourceTypeSignedExchange     ResourceType = "SignedExchange"
 	ResourceTypePing               ResourceType = "Ping"
 	ResourceTypeCSPViolationReport ResourceType = "CSPViolationReport"
+	ResourceTypePreflight          ResourceType = "Preflight"
 	ResourceTypeOther              ResourceType = "Other"
 )
 
@@ -86,6 +88,8 @@ func (t *ResourceType) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = ResourceTypePing
 	case ResourceTypeCSPViolationReport:
 		*t = ResourceTypeCSPViolationReport
+	case ResourceTypePreflight:
+		*t = ResourceTypePreflight
 	case ResourceTypeOther:
 		*t = ResourceTypeOther
 
@@ -366,26 +370,78 @@ func (t *CookiePriority) UnmarshalJSON(buf []byte) error {
 	return easyjson.Unmarshal(buf, t)
 }
 
+// CookieSourceScheme represents the source scheme of the origin that
+// originally set the cookie. A value of "Unset" allows protocol clients to
+// emulate legacy cookie scope for the scheme. This is a temporary ability and
+// it will be removed in the future.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-CookieSourceScheme
+type CookieSourceScheme string
+
+// String returns the CookieSourceScheme as string value.
+func (t CookieSourceScheme) String() string {
+	return string(t)
+}
+
+// CookieSourceScheme values.
+const (
+	CookieSourceSchemeUnset     CookieSourceScheme = "Unset"
+	CookieSourceSchemeNonSecure CookieSourceScheme = "NonSecure"
+	CookieSourceSchemeSecure    CookieSourceScheme = "Secure"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t CookieSourceScheme) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t CookieSourceScheme) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *CookieSourceScheme) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch CookieSourceScheme(in.String()) {
+	case CookieSourceSchemeUnset:
+		*t = CookieSourceSchemeUnset
+	case CookieSourceSchemeNonSecure:
+		*t = CookieSourceSchemeNonSecure
+	case CookieSourceSchemeSecure:
+		*t = CookieSourceSchemeSecure
+
+	default:
+		in.AddError(errors.New("unknown CookieSourceScheme value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *CookieSourceScheme) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
 // ResourceTiming timing information for the request.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-ResourceTiming
 type ResourceTiming struct {
-	RequestTime       float64 `json:"requestTime"`       // Timing's requestTime is a baseline in seconds, while the other numbers are ticks in milliseconds relatively to this requestTime.
-	ProxyStart        float64 `json:"proxyStart"`        // Started resolving proxy.
-	ProxyEnd          float64 `json:"proxyEnd"`          // Finished resolving proxy.
-	DNSStart          float64 `json:"dnsStart"`          // Started DNS address resolve.
-	DNSEnd            float64 `json:"dnsEnd"`            // Finished DNS address resolve.
-	ConnectStart      float64 `json:"connectStart"`      // Started connecting to the remote host.
-	ConnectEnd        float64 `json:"connectEnd"`        // Connected to the remote host.
-	SslStart          float64 `json:"sslStart"`          // Started SSL handshake.
-	SslEnd            float64 `json:"sslEnd"`            // Finished SSL handshake.
-	WorkerStart       float64 `json:"workerStart"`       // Started running ServiceWorker.
-	WorkerReady       float64 `json:"workerReady"`       // Finished Starting ServiceWorker.
-	SendStart         float64 `json:"sendStart"`         // Started sending request.
-	SendEnd           float64 `json:"sendEnd"`           // Finished sending request.
-	PushStart         float64 `json:"pushStart"`         // Time the server started pushing request.
-	PushEnd           float64 `json:"pushEnd"`           // Time the server finished pushing request.
-	ReceiveHeadersEnd float64 `json:"receiveHeadersEnd"` // Finished receiving response headers.
+	RequestTime              float64 `json:"requestTime"`              // Timing's requestTime is a baseline in seconds, while the other numbers are ticks in milliseconds relatively to this requestTime.
+	ProxyStart               float64 `json:"proxyStart"`               // Started resolving proxy.
+	ProxyEnd                 float64 `json:"proxyEnd"`                 // Finished resolving proxy.
+	DNSStart                 float64 `json:"dnsStart"`                 // Started DNS address resolve.
+	DNSEnd                   float64 `json:"dnsEnd"`                   // Finished DNS address resolve.
+	ConnectStart             float64 `json:"connectStart"`             // Started connecting to the remote host.
+	ConnectEnd               float64 `json:"connectEnd"`               // Connected to the remote host.
+	SslStart                 float64 `json:"sslStart"`                 // Started SSL handshake.
+	SslEnd                   float64 `json:"sslEnd"`                   // Finished SSL handshake.
+	WorkerStart              float64 `json:"workerStart"`              // Started running ServiceWorker.
+	WorkerReady              float64 `json:"workerReady"`              // Finished Starting ServiceWorker.
+	WorkerFetchStart         float64 `json:"workerFetchStart"`         // Started fetch event.
+	WorkerRespondWithSettled float64 `json:"workerRespondWithSettled"` // Settled fetch event respondWith promise.
+	SendStart                float64 `json:"sendStart"`                // Started sending request.
+	SendEnd                  float64 `json:"sendEnd"`                  // Finished sending request.
+	PushStart                float64 `json:"pushStart"`                // Time the server started pushing request.
+	PushEnd                  float64 `json:"pushEnd"`                  // Time the server finished pushing request.
+	ReceiveHeadersEnd        float64 `json:"receiveHeadersEnd"`        // Finished receiving response headers.
 }
 
 // ResourcePriority loading priority of a resource request.
@@ -441,6 +497,13 @@ func (t *ResourcePriority) UnmarshalJSON(buf []byte) error {
 	return easyjson.Unmarshal(buf, t)
 }
 
+// PostDataEntry post data entry for HTTP request.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-PostDataEntry
+type PostDataEntry struct {
+	Bytes string `json:"bytes,omitempty"`
+}
+
 // Request HTTP request data.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-Request
@@ -451,10 +514,13 @@ type Request struct {
 	Headers          Headers                   `json:"headers"`                    // HTTP request headers.
 	PostData         string                    `json:"postData,omitempty"`         // HTTP POST request data.
 	HasPostData      bool                      `json:"hasPostData,omitempty"`      // True when the request has POST data. Note that postData might still be omitted when this flag is true when the data is too long.
+	PostDataEntries  []*PostDataEntry          `json:"postDataEntries,omitempty"`  // Request body elements. This will be converted from base64 to binary
 	MixedContentType security.MixedContentType `json:"mixedContentType,omitempty"` // The mixed content type of the request.
 	InitialPriority  ResourcePriority          `json:"initialPriority"`            // Priority of the resource request at the time request is sent.
 	ReferrerPolicy   ReferrerPolicy            `json:"referrerPolicy"`             // The referrer policy of the request, as defined in https://www.w3.org/TR/referrer-policy/
 	IsLinkPreload    bool                      `json:"isLinkPreload,omitempty"`    // Whether is loaded via link preload.
+	TrustTokenParams *TrustTokenParams         `json:"trustTokenParams,omitempty"` // Set for requests when the TrustToken API is used. Contains the parameters passed by the developer (e.g. via "fetch") as understood by the backend.
+	IsSameSite       bool                      `json:"isSameSite,omitempty"`       // True if this resource request is considered to be the 'same site' as the request correspondinfg to the main frame.
 }
 
 // SignedCertificateTimestamp details of a signed certificate timestamp
@@ -462,14 +528,14 @@ type Request struct {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-SignedCertificateTimestamp
 type SignedCertificateTimestamp struct {
-	Status             string              `json:"status"`             // Validation status.
-	Origin             string              `json:"origin"`             // Origin.
-	LogDescription     string              `json:"logDescription"`     // Log name / description.
-	LogID              string              `json:"logId"`              // Log ID.
-	Timestamp          *cdp.TimeSinceEpoch `json:"timestamp"`          // Issuance date.
-	HashAlgorithm      string              `json:"hashAlgorithm"`      // Hash algorithm.
-	SignatureAlgorithm string              `json:"signatureAlgorithm"` // Signature algorithm.
-	SignatureData      string              `json:"signatureData"`      // Signature data.
+	Status             string  `json:"status"`             // Validation status.
+	Origin             string  `json:"origin"`             // Origin.
+	LogDescription     string  `json:"logDescription"`     // Log name / description.
+	LogID              string  `json:"logId"`              // Log ID.
+	Timestamp          float64 `json:"timestamp"`          // Issuance date. Unlike TimeSinceEpoch, this contains the number of milliseconds since January 1, 1970, UTC, not the number of seconds.
+	HashAlgorithm      string  `json:"hashAlgorithm"`      // Hash algorithm.
+	SignatureAlgorithm string  `json:"signatureAlgorithm"` // Signature algorithm.
+	SignatureData      string  `json:"signatureData"`      // Signature data.
 }
 
 // SecurityDetails security details about a request.
@@ -558,7 +624,6 @@ const (
 	BlockedReasonInspector                                         BlockedReason = "inspector"
 	BlockedReasonSubresourceFilter                                 BlockedReason = "subresource-filter"
 	BlockedReasonContentType                                       BlockedReason = "content-type"
-	BlockedReasonCollapsedByClient                                 BlockedReason = "collapsed-by-client"
 	BlockedReasonCoepFrameResourceNeedsCoepHeader                  BlockedReason = "coep-frame-resource-needs-coep-header"
 	BlockedReasonCoopSandboxedIframeCannotNavigateToCoopPage       BlockedReason = "coop-sandboxed-iframe-cannot-navigate-to-coop-page"
 	BlockedReasonCorpNotSameOrigin                                 BlockedReason = "corp-not-same-origin"
@@ -593,8 +658,6 @@ func (t *BlockedReason) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = BlockedReasonSubresourceFilter
 	case BlockedReasonContentType:
 		*t = BlockedReasonContentType
-	case BlockedReasonCollapsedByClient:
-		*t = BlockedReasonCollapsedByClient
 	case BlockedReasonCoepFrameResourceNeedsCoepHeader:
 		*t = BlockedReasonCoepFrameResourceNeedsCoepHeader
 	case BlockedReasonCoopSandboxedIframeCannotNavigateToCoopPage:
@@ -616,30 +679,275 @@ func (t *BlockedReason) UnmarshalJSON(buf []byte) error {
 	return easyjson.Unmarshal(buf, t)
 }
 
+// CorsError the reason why request was blocked.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-CorsError
+type CorsError string
+
+// String returns the CorsError as string value.
+func (t CorsError) String() string {
+	return string(t)
+}
+
+// CorsError values.
+const (
+	CorsErrorDisallowedByMode                     CorsError = "DisallowedByMode"
+	CorsErrorInvalidResponse                      CorsError = "InvalidResponse"
+	CorsErrorWildcardOriginNotAllowed             CorsError = "WildcardOriginNotAllowed"
+	CorsErrorMissingAllowOriginHeader             CorsError = "MissingAllowOriginHeader"
+	CorsErrorMultipleAllowOriginValues            CorsError = "MultipleAllowOriginValues"
+	CorsErrorInvalidAllowOriginValue              CorsError = "InvalidAllowOriginValue"
+	CorsErrorAllowOriginMismatch                  CorsError = "AllowOriginMismatch"
+	CorsErrorInvalidAllowCredentials              CorsError = "InvalidAllowCredentials"
+	CorsErrorCorsDisabledScheme                   CorsError = "CorsDisabledScheme"
+	CorsErrorPreflightInvalidStatus               CorsError = "PreflightInvalidStatus"
+	CorsErrorPreflightDisallowedRedirect          CorsError = "PreflightDisallowedRedirect"
+	CorsErrorPreflightWildcardOriginNotAllowed    CorsError = "PreflightWildcardOriginNotAllowed"
+	CorsErrorPreflightMissingAllowOriginHeader    CorsError = "PreflightMissingAllowOriginHeader"
+	CorsErrorPreflightMultipleAllowOriginValues   CorsError = "PreflightMultipleAllowOriginValues"
+	CorsErrorPreflightInvalidAllowOriginValue     CorsError = "PreflightInvalidAllowOriginValue"
+	CorsErrorPreflightAllowOriginMismatch         CorsError = "PreflightAllowOriginMismatch"
+	CorsErrorPreflightInvalidAllowCredentials     CorsError = "PreflightInvalidAllowCredentials"
+	CorsErrorPreflightMissingAllowExternal        CorsError = "PreflightMissingAllowExternal"
+	CorsErrorPreflightInvalidAllowExternal        CorsError = "PreflightInvalidAllowExternal"
+	CorsErrorPreflightMissingAllowPrivateNetwork  CorsError = "PreflightMissingAllowPrivateNetwork"
+	CorsErrorPreflightInvalidAllowPrivateNetwork  CorsError = "PreflightInvalidAllowPrivateNetwork"
+	CorsErrorInvalidAllowMethodsPreflightResponse CorsError = "InvalidAllowMethodsPreflightResponse"
+	CorsErrorInvalidAllowHeadersPreflightResponse CorsError = "InvalidAllowHeadersPreflightResponse"
+	CorsErrorMethodDisallowedByPreflightResponse  CorsError = "MethodDisallowedByPreflightResponse"
+	CorsErrorHeaderDisallowedByPreflightResponse  CorsError = "HeaderDisallowedByPreflightResponse"
+	CorsErrorRedirectContainsCredentials          CorsError = "RedirectContainsCredentials"
+	CorsErrorInsecurePrivateNetwork               CorsError = "InsecurePrivateNetwork"
+	CorsErrorInvalidPrivateNetworkAccess          CorsError = "InvalidPrivateNetworkAccess"
+	CorsErrorUnexpectedPrivateNetworkAccess       CorsError = "UnexpectedPrivateNetworkAccess"
+	CorsErrorNoCorsRedirectModeNotFollow          CorsError = "NoCorsRedirectModeNotFollow"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t CorsError) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t CorsError) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *CorsError) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch CorsError(in.String()) {
+	case CorsErrorDisallowedByMode:
+		*t = CorsErrorDisallowedByMode
+	case CorsErrorInvalidResponse:
+		*t = CorsErrorInvalidResponse
+	case CorsErrorWildcardOriginNotAllowed:
+		*t = CorsErrorWildcardOriginNotAllowed
+	case CorsErrorMissingAllowOriginHeader:
+		*t = CorsErrorMissingAllowOriginHeader
+	case CorsErrorMultipleAllowOriginValues:
+		*t = CorsErrorMultipleAllowOriginValues
+	case CorsErrorInvalidAllowOriginValue:
+		*t = CorsErrorInvalidAllowOriginValue
+	case CorsErrorAllowOriginMismatch:
+		*t = CorsErrorAllowOriginMismatch
+	case CorsErrorInvalidAllowCredentials:
+		*t = CorsErrorInvalidAllowCredentials
+	case CorsErrorCorsDisabledScheme:
+		*t = CorsErrorCorsDisabledScheme
+	case CorsErrorPreflightInvalidStatus:
+		*t = CorsErrorPreflightInvalidStatus
+	case CorsErrorPreflightDisallowedRedirect:
+		*t = CorsErrorPreflightDisallowedRedirect
+	case CorsErrorPreflightWildcardOriginNotAllowed:
+		*t = CorsErrorPreflightWildcardOriginNotAllowed
+	case CorsErrorPreflightMissingAllowOriginHeader:
+		*t = CorsErrorPreflightMissingAllowOriginHeader
+	case CorsErrorPreflightMultipleAllowOriginValues:
+		*t = CorsErrorPreflightMultipleAllowOriginValues
+	case CorsErrorPreflightInvalidAllowOriginValue:
+		*t = CorsErrorPreflightInvalidAllowOriginValue
+	case CorsErrorPreflightAllowOriginMismatch:
+		*t = CorsErrorPreflightAllowOriginMismatch
+	case CorsErrorPreflightInvalidAllowCredentials:
+		*t = CorsErrorPreflightInvalidAllowCredentials
+	case CorsErrorPreflightMissingAllowExternal:
+		*t = CorsErrorPreflightMissingAllowExternal
+	case CorsErrorPreflightInvalidAllowExternal:
+		*t = CorsErrorPreflightInvalidAllowExternal
+	case CorsErrorPreflightMissingAllowPrivateNetwork:
+		*t = CorsErrorPreflightMissingAllowPrivateNetwork
+	case CorsErrorPreflightInvalidAllowPrivateNetwork:
+		*t = CorsErrorPreflightInvalidAllowPrivateNetwork
+	case CorsErrorInvalidAllowMethodsPreflightResponse:
+		*t = CorsErrorInvalidAllowMethodsPreflightResponse
+	case CorsErrorInvalidAllowHeadersPreflightResponse:
+		*t = CorsErrorInvalidAllowHeadersPreflightResponse
+	case CorsErrorMethodDisallowedByPreflightResponse:
+		*t = CorsErrorMethodDisallowedByPreflightResponse
+	case CorsErrorHeaderDisallowedByPreflightResponse:
+		*t = CorsErrorHeaderDisallowedByPreflightResponse
+	case CorsErrorRedirectContainsCredentials:
+		*t = CorsErrorRedirectContainsCredentials
+	case CorsErrorInsecurePrivateNetwork:
+		*t = CorsErrorInsecurePrivateNetwork
+	case CorsErrorInvalidPrivateNetworkAccess:
+		*t = CorsErrorInvalidPrivateNetworkAccess
+	case CorsErrorUnexpectedPrivateNetworkAccess:
+		*t = CorsErrorUnexpectedPrivateNetworkAccess
+	case CorsErrorNoCorsRedirectModeNotFollow:
+		*t = CorsErrorNoCorsRedirectModeNotFollow
+
+	default:
+		in.AddError(errors.New("unknown CorsError value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *CorsError) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
+// CorsErrorStatus [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-CorsErrorStatus
+type CorsErrorStatus struct {
+	CorsError       CorsError `json:"corsError"`
+	FailedParameter string    `json:"failedParameter"`
+}
+
+// ServiceWorkerResponseSource source of serviceworker response.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-ServiceWorkerResponseSource
+type ServiceWorkerResponseSource string
+
+// String returns the ServiceWorkerResponseSource as string value.
+func (t ServiceWorkerResponseSource) String() string {
+	return string(t)
+}
+
+// ServiceWorkerResponseSource values.
+const (
+	ServiceWorkerResponseSourceCacheStorage ServiceWorkerResponseSource = "cache-storage"
+	ServiceWorkerResponseSourceHTTPCache    ServiceWorkerResponseSource = "http-cache"
+	ServiceWorkerResponseSourceFallbackCode ServiceWorkerResponseSource = "fallback-code"
+	ServiceWorkerResponseSourceNetwork      ServiceWorkerResponseSource = "network"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t ServiceWorkerResponseSource) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t ServiceWorkerResponseSource) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *ServiceWorkerResponseSource) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch ServiceWorkerResponseSource(in.String()) {
+	case ServiceWorkerResponseSourceCacheStorage:
+		*t = ServiceWorkerResponseSourceCacheStorage
+	case ServiceWorkerResponseSourceHTTPCache:
+		*t = ServiceWorkerResponseSourceHTTPCache
+	case ServiceWorkerResponseSourceFallbackCode:
+		*t = ServiceWorkerResponseSourceFallbackCode
+	case ServiceWorkerResponseSourceNetwork:
+		*t = ServiceWorkerResponseSourceNetwork
+
+	default:
+		in.AddError(errors.New("unknown ServiceWorkerResponseSource value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *ServiceWorkerResponseSource) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
+// TrustTokenParams determines what type of Trust Token operation is executed
+// and depending on the type, some additional parameters. The values are
+// specified in third_party/blink/renderer/core/fetch/trust_token.idl.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-TrustTokenParams
+type TrustTokenParams struct {
+	Type          TrustTokenOperationType       `json:"type"`
+	RefreshPolicy TrustTokenParamsRefreshPolicy `json:"refreshPolicy"`     // Only set for "token-redemption" type and determine whether to request a fresh SRR or use a still valid cached SRR.
+	Issuers       []string                      `json:"issuers,omitempty"` // Origins of issuers from whom to request tokens or redemption records.
+}
+
+// TrustTokenOperationType [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-TrustTokenOperationType
+type TrustTokenOperationType string
+
+// String returns the TrustTokenOperationType as string value.
+func (t TrustTokenOperationType) String() string {
+	return string(t)
+}
+
+// TrustTokenOperationType values.
+const (
+	TrustTokenOperationTypeIssuance   TrustTokenOperationType = "Issuance"
+	TrustTokenOperationTypeRedemption TrustTokenOperationType = "Redemption"
+	TrustTokenOperationTypeSigning    TrustTokenOperationType = "Signing"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t TrustTokenOperationType) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t TrustTokenOperationType) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *TrustTokenOperationType) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch TrustTokenOperationType(in.String()) {
+	case TrustTokenOperationTypeIssuance:
+		*t = TrustTokenOperationTypeIssuance
+	case TrustTokenOperationTypeRedemption:
+		*t = TrustTokenOperationTypeRedemption
+	case TrustTokenOperationTypeSigning:
+		*t = TrustTokenOperationTypeSigning
+
+	default:
+		in.AddError(errors.New("unknown TrustTokenOperationType value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *TrustTokenOperationType) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
 // Response HTTP response data.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-Response
 type Response struct {
-	URL                string           `json:"url"`                          // Response URL. This URL can be different from CachedResource.url in case of redirect.
-	Status             int64            `json:"status"`                       // HTTP response status code.
-	StatusText         string           `json:"statusText"`                   // HTTP response status text.
-	Headers            Headers          `json:"headers"`                      // HTTP response headers.
-	HeadersText        string           `json:"headersText,omitempty"`        // HTTP response headers text.
-	MimeType           string           `json:"mimeType"`                     // Resource mimeType as determined by the browser.
-	RequestHeaders     Headers          `json:"requestHeaders,omitempty"`     // Refined HTTP request headers that were actually transmitted over the network.
-	RequestHeadersText string           `json:"requestHeadersText,omitempty"` // HTTP request headers text.
-	ConnectionReused   bool             `json:"connectionReused"`             // Specifies whether physical connection was actually reused for this request.
-	ConnectionID       float64          `json:"connectionId"`                 // Physical connection id that was actually used for this request.
-	RemoteIPAddress    string           `json:"remoteIPAddress,omitempty"`    // Remote IP address.
-	RemotePort         int64            `json:"remotePort,omitempty"`         // Remote port.
-	FromDiskCache      bool             `json:"fromDiskCache,omitempty"`      // Specifies that the request was served from the disk cache.
-	FromServiceWorker  bool             `json:"fromServiceWorker,omitempty"`  // Specifies that the request was served from the ServiceWorker.
-	FromPrefetchCache  bool             `json:"fromPrefetchCache,omitempty"`  // Specifies that the request was served from the prefetch cache.
-	EncodedDataLength  float64          `json:"encodedDataLength"`            // Total number of bytes received for this request so far.
-	Timing             *ResourceTiming  `json:"timing,omitempty"`             // Timing information for the given request.
-	Protocol           string           `json:"protocol,omitempty"`           // Protocol used to fetch this request.
-	SecurityState      security.State   `json:"securityState"`                // Security state of the request resource.
-	SecurityDetails    *SecurityDetails `json:"securityDetails,omitempty"`    // Security details for the request.
+	URL                         string                      `json:"url"`                                   // Response URL. This URL can be different from CachedResource.url in case of redirect.
+	Status                      int64                       `json:"status"`                                // HTTP response status code.
+	StatusText                  string                      `json:"statusText"`                            // HTTP response status text.
+	Headers                     Headers                     `json:"headers"`                               // HTTP response headers.
+	MimeType                    string                      `json:"mimeType"`                              // Resource mimeType as determined by the browser.
+	RequestHeaders              Headers                     `json:"requestHeaders,omitempty"`              // Refined HTTP request headers that were actually transmitted over the network.
+	ConnectionReused            bool                        `json:"connectionReused"`                      // Specifies whether physical connection was actually reused for this request.
+	ConnectionID                float64                     `json:"connectionId"`                          // Physical connection id that was actually used for this request.
+	RemoteIPAddress             string                      `json:"remoteIPAddress,omitempty"`             // Remote IP address.
+	RemotePort                  int64                       `json:"remotePort,omitempty"`                  // Remote port.
+	FromDiskCache               bool                        `json:"fromDiskCache,omitempty"`               // Specifies that the request was served from the disk cache.
+	FromServiceWorker           bool                        `json:"fromServiceWorker,omitempty"`           // Specifies that the request was served from the ServiceWorker.
+	FromPrefetchCache           bool                        `json:"fromPrefetchCache,omitempty"`           // Specifies that the request was served from the prefetch cache.
+	EncodedDataLength           float64                     `json:"encodedDataLength"`                     // Total number of bytes received for this request so far.
+	Timing                      *ResourceTiming             `json:"timing,omitempty"`                      // Timing information for the given request.
+	ServiceWorkerResponseSource ServiceWorkerResponseSource `json:"serviceWorkerResponseSource,omitempty"` // Response source of response from ServiceWorker.
+	ResponseTime                *cdp.TimeSinceEpoch         `json:"responseTime,omitempty"`                // The time at which the returned response was generated.
+	CacheStorageCacheName       string                      `json:"cacheStorageCacheName,omitempty"`       // Cache Storage Cache Name.
+	Protocol                    string                      `json:"protocol,omitempty"`                    // Protocol used to fetch this request.
+	SecurityState               security.State              `json:"securityState"`                         // Security state of the request resource.
+	SecurityDetails             *SecurityDetails            `json:"securityDetails,omitempty"`             // Security details for the request.
 }
 
 // WebSocketRequest webSocket request data.
@@ -685,27 +993,34 @@ type CachedResource struct {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-Initiator
 type Initiator struct {
-	Type       InitiatorType       `json:"type"`                 // Type of this initiator.
-	Stack      *runtime.StackTrace `json:"stack,omitempty"`      // Initiator JavaScript stack trace, set for Script only.
-	URL        string              `json:"url,omitempty"`        // Initiator URL, set for Parser type or for Script type (when script is importing module) or for SignedExchange type.
-	LineNumber float64             `json:"lineNumber,omitempty"` // Initiator line number, set for Parser type or for Script type (when script is importing module) (0-based).
+	Type         InitiatorType       `json:"type"`                   // Type of this initiator.
+	Stack        *runtime.StackTrace `json:"stack,omitempty"`        // Initiator JavaScript stack trace, set for Script only.
+	URL          string              `json:"url,omitempty"`          // Initiator URL, set for Parser type or for Script type (when script is importing module) or for SignedExchange type.
+	LineNumber   float64             `json:"lineNumber,omitempty"`   // Initiator line number, set for Parser type or for Script type (when script is importing module) (0-based).
+	ColumnNumber float64             `json:"columnNumber,omitempty"` // Initiator column number, set for Parser type or for Script type (when script is importing module) (0-based).
+	RequestID    RequestID           `json:"requestId,omitempty"`    // Set if another request triggered this request (e.g. preflight).
 }
 
 // Cookie cookie object.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-Cookie
 type Cookie struct {
-	Name     string         `json:"name"`               // Cookie name.
-	Value    string         `json:"value"`              // Cookie value.
-	Domain   string         `json:"domain"`             // Cookie domain.
-	Path     string         `json:"path"`               // Cookie path.
-	Expires  float64        `json:"expires"`            // Cookie expiration date as the number of seconds since the UNIX epoch.
-	Size     int64          `json:"size"`               // Cookie size.
-	HTTPOnly bool           `json:"httpOnly"`           // True if cookie is http-only.
-	Secure   bool           `json:"secure"`             // True if cookie is secure.
-	Session  bool           `json:"session"`            // True in case of session cookie.
-	SameSite CookieSameSite `json:"sameSite,omitempty"` // Cookie SameSite type.
-	Priority CookiePriority `json:"priority"`           // Cookie Priority
+	Name               string             `json:"name"`                         // Cookie name.
+	Value              string             `json:"value"`                        // Cookie value.
+	Domain             string             `json:"domain"`                       // Cookie domain.
+	Path               string             `json:"path"`                         // Cookie path.
+	Expires            float64            `json:"expires"`                      // Cookie expiration date as the number of seconds since the UNIX epoch.
+	Size               int64              `json:"size"`                         // Cookie size.
+	HTTPOnly           bool               `json:"httpOnly"`                     // True if cookie is http-only.
+	Secure             bool               `json:"secure"`                       // True if cookie is secure.
+	Session            bool               `json:"session"`                      // True in case of session cookie.
+	SameSite           CookieSameSite     `json:"sameSite,omitempty"`           // Cookie SameSite type.
+	Priority           CookiePriority     `json:"priority"`                     // Cookie Priority
+	SameParty          bool               `json:"sameParty"`                    // True if cookie is SameParty.
+	SourceScheme       CookieSourceScheme `json:"sourceScheme"`                 // Cookie source scheme type.
+	SourcePort         int64              `json:"sourcePort"`                   // Cookie source port. Valid values are {-1, [1, 65535]}, -1 indicates an unspecified port. An unspecified port value allows protocol clients to emulate legacy cookie scope for the port. This is a temporary ability and it will be removed in the future.
+	PartitionKey       string             `json:"partitionKey,omitempty"`       // Cookie partition key. The site of the top-level URL the browser was visiting at the start of the request to the endpoint that set the cookie.
+	PartitionKeyOpaque bool               `json:"partitionKeyOpaque,omitempty"` // True if cookie partition key is opaque.
 }
 
 // SetCookieBlockedReason types of reasons why a cookie may not be stored
@@ -721,18 +1036,24 @@ func (t SetCookieBlockedReason) String() string {
 
 // SetCookieBlockedReason values.
 const (
-	SetCookieBlockedReasonSecureOnly                      SetCookieBlockedReason = "SecureOnly"
-	SetCookieBlockedReasonSameSiteStrict                  SetCookieBlockedReason = "SameSiteStrict"
-	SetCookieBlockedReasonSameSiteLax                     SetCookieBlockedReason = "SameSiteLax"
-	SetCookieBlockedReasonSameSiteUnspecifiedTreatedAsLax SetCookieBlockedReason = "SameSiteUnspecifiedTreatedAsLax"
-	SetCookieBlockedReasonSameSiteNoneInsecure            SetCookieBlockedReason = "SameSiteNoneInsecure"
-	SetCookieBlockedReasonUserPreferences                 SetCookieBlockedReason = "UserPreferences"
-	SetCookieBlockedReasonSyntaxError                     SetCookieBlockedReason = "SyntaxError"
-	SetCookieBlockedReasonSchemeNotSupported              SetCookieBlockedReason = "SchemeNotSupported"
-	SetCookieBlockedReasonOverwriteSecure                 SetCookieBlockedReason = "OverwriteSecure"
-	SetCookieBlockedReasonInvalidDomain                   SetCookieBlockedReason = "InvalidDomain"
-	SetCookieBlockedReasonInvalidPrefix                   SetCookieBlockedReason = "InvalidPrefix"
-	SetCookieBlockedReasonUnknownError                    SetCookieBlockedReason = "UnknownError"
+	SetCookieBlockedReasonSecureOnly                               SetCookieBlockedReason = "SecureOnly"
+	SetCookieBlockedReasonSameSiteStrict                           SetCookieBlockedReason = "SameSiteStrict"
+	SetCookieBlockedReasonSameSiteLax                              SetCookieBlockedReason = "SameSiteLax"
+	SetCookieBlockedReasonSameSiteUnspecifiedTreatedAsLax          SetCookieBlockedReason = "SameSiteUnspecifiedTreatedAsLax"
+	SetCookieBlockedReasonSameSiteNoneInsecure                     SetCookieBlockedReason = "SameSiteNoneInsecure"
+	SetCookieBlockedReasonUserPreferences                          SetCookieBlockedReason = "UserPreferences"
+	SetCookieBlockedReasonSyntaxError                              SetCookieBlockedReason = "SyntaxError"
+	SetCookieBlockedReasonSchemeNotSupported                       SetCookieBlockedReason = "SchemeNotSupported"
+	SetCookieBlockedReasonOverwriteSecure                          SetCookieBlockedReason = "OverwriteSecure"
+	SetCookieBlockedReasonInvalidDomain                            SetCookieBlockedReason = "InvalidDomain"
+	SetCookieBlockedReasonInvalidPrefix                            SetCookieBlockedReason = "InvalidPrefix"
+	SetCookieBlockedReasonUnknownError                             SetCookieBlockedReason = "UnknownError"
+	SetCookieBlockedReasonSchemefulSameSiteStrict                  SetCookieBlockedReason = "SchemefulSameSiteStrict"
+	SetCookieBlockedReasonSchemefulSameSiteLax                     SetCookieBlockedReason = "SchemefulSameSiteLax"
+	SetCookieBlockedReasonSchemefulSameSiteUnspecifiedTreatedAsLax SetCookieBlockedReason = "SchemefulSameSiteUnspecifiedTreatedAsLax"
+	SetCookieBlockedReasonSamePartyFromCrossPartyContext           SetCookieBlockedReason = "SamePartyFromCrossPartyContext"
+	SetCookieBlockedReasonSamePartyConflictsWithOtherAttributes    SetCookieBlockedReason = "SamePartyConflictsWithOtherAttributes"
+	SetCookieBlockedReasonNameValuePairExceedsMaxSize              SetCookieBlockedReason = "NameValuePairExceedsMaxSize"
 )
 
 // MarshalEasyJSON satisfies easyjson.Marshaler.
@@ -772,6 +1093,18 @@ func (t *SetCookieBlockedReason) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = SetCookieBlockedReasonInvalidPrefix
 	case SetCookieBlockedReasonUnknownError:
 		*t = SetCookieBlockedReasonUnknownError
+	case SetCookieBlockedReasonSchemefulSameSiteStrict:
+		*t = SetCookieBlockedReasonSchemefulSameSiteStrict
+	case SetCookieBlockedReasonSchemefulSameSiteLax:
+		*t = SetCookieBlockedReasonSchemefulSameSiteLax
+	case SetCookieBlockedReasonSchemefulSameSiteUnspecifiedTreatedAsLax:
+		*t = SetCookieBlockedReasonSchemefulSameSiteUnspecifiedTreatedAsLax
+	case SetCookieBlockedReasonSamePartyFromCrossPartyContext:
+		*t = SetCookieBlockedReasonSamePartyFromCrossPartyContext
+	case SetCookieBlockedReasonSamePartyConflictsWithOtherAttributes:
+		*t = SetCookieBlockedReasonSamePartyConflictsWithOtherAttributes
+	case SetCookieBlockedReasonNameValuePairExceedsMaxSize:
+		*t = SetCookieBlockedReasonNameValuePairExceedsMaxSize
 
 	default:
 		in.AddError(errors.New("unknown SetCookieBlockedReason value"))
@@ -796,15 +1129,20 @@ func (t CookieBlockedReason) String() string {
 
 // CookieBlockedReason values.
 const (
-	CookieBlockedReasonSecureOnly                      CookieBlockedReason = "SecureOnly"
-	CookieBlockedReasonNotOnPath                       CookieBlockedReason = "NotOnPath"
-	CookieBlockedReasonDomainMismatch                  CookieBlockedReason = "DomainMismatch"
-	CookieBlockedReasonSameSiteStrict                  CookieBlockedReason = "SameSiteStrict"
-	CookieBlockedReasonSameSiteLax                     CookieBlockedReason = "SameSiteLax"
-	CookieBlockedReasonSameSiteUnspecifiedTreatedAsLax CookieBlockedReason = "SameSiteUnspecifiedTreatedAsLax"
-	CookieBlockedReasonSameSiteNoneInsecure            CookieBlockedReason = "SameSiteNoneInsecure"
-	CookieBlockedReasonUserPreferences                 CookieBlockedReason = "UserPreferences"
-	CookieBlockedReasonUnknownError                    CookieBlockedReason = "UnknownError"
+	CookieBlockedReasonSecureOnly                               CookieBlockedReason = "SecureOnly"
+	CookieBlockedReasonNotOnPath                                CookieBlockedReason = "NotOnPath"
+	CookieBlockedReasonDomainMismatch                           CookieBlockedReason = "DomainMismatch"
+	CookieBlockedReasonSameSiteStrict                           CookieBlockedReason = "SameSiteStrict"
+	CookieBlockedReasonSameSiteLax                              CookieBlockedReason = "SameSiteLax"
+	CookieBlockedReasonSameSiteUnspecifiedTreatedAsLax          CookieBlockedReason = "SameSiteUnspecifiedTreatedAsLax"
+	CookieBlockedReasonSameSiteNoneInsecure                     CookieBlockedReason = "SameSiteNoneInsecure"
+	CookieBlockedReasonUserPreferences                          CookieBlockedReason = "UserPreferences"
+	CookieBlockedReasonUnknownError                             CookieBlockedReason = "UnknownError"
+	CookieBlockedReasonSchemefulSameSiteStrict                  CookieBlockedReason = "SchemefulSameSiteStrict"
+	CookieBlockedReasonSchemefulSameSiteLax                     CookieBlockedReason = "SchemefulSameSiteLax"
+	CookieBlockedReasonSchemefulSameSiteUnspecifiedTreatedAsLax CookieBlockedReason = "SchemefulSameSiteUnspecifiedTreatedAsLax"
+	CookieBlockedReasonSamePartyFromCrossPartyContext           CookieBlockedReason = "SamePartyFromCrossPartyContext"
+	CookieBlockedReasonNameValuePairExceedsMaxSize              CookieBlockedReason = "NameValuePairExceedsMaxSize"
 )
 
 // MarshalEasyJSON satisfies easyjson.Marshaler.
@@ -838,6 +1176,16 @@ func (t *CookieBlockedReason) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = CookieBlockedReasonUserPreferences
 	case CookieBlockedReasonUnknownError:
 		*t = CookieBlockedReasonUnknownError
+	case CookieBlockedReasonSchemefulSameSiteStrict:
+		*t = CookieBlockedReasonSchemefulSameSiteStrict
+	case CookieBlockedReasonSchemefulSameSiteLax:
+		*t = CookieBlockedReasonSchemefulSameSiteLax
+	case CookieBlockedReasonSchemefulSameSiteUnspecifiedTreatedAsLax:
+		*t = CookieBlockedReasonSchemefulSameSiteUnspecifiedTreatedAsLax
+	case CookieBlockedReasonSamePartyFromCrossPartyContext:
+		*t = CookieBlockedReasonSamePartyFromCrossPartyContext
+	case CookieBlockedReasonNameValuePairExceedsMaxSize:
+		*t = CookieBlockedReasonNameValuePairExceedsMaxSize
 
 	default:
 		in.AddError(errors.New("unknown CookieBlockedReason value"))
@@ -872,16 +1220,20 @@ type BlockedCookieWithReason struct {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-CookieParam
 type CookieParam struct {
-	Name     string              `json:"name"`               // Cookie name.
-	Value    string              `json:"value"`              // Cookie value.
-	URL      string              `json:"url,omitempty"`      // The request-URI to associate with the setting of the cookie. This value can affect the default domain and path values of the created cookie.
-	Domain   string              `json:"domain,omitempty"`   // Cookie domain.
-	Path     string              `json:"path,omitempty"`     // Cookie path.
-	Secure   bool                `json:"secure,omitempty"`   // True if cookie is secure.
-	HTTPOnly bool                `json:"httpOnly,omitempty"` // True if cookie is http-only.
-	SameSite CookieSameSite      `json:"sameSite,omitempty"` // Cookie SameSite type.
-	Expires  *cdp.TimeSinceEpoch `json:"expires,omitempty"`  // Cookie expiration date, session cookie if not set
-	Priority CookiePriority      `json:"priority,omitempty"` // Cookie Priority.
+	Name         string              `json:"name"`                   // Cookie name.
+	Value        string              `json:"value"`                  // Cookie value.
+	URL          string              `json:"url,omitempty"`          // The request-URI to associate with the setting of the cookie. This value can affect the default domain, path, source port, and source scheme values of the created cookie.
+	Domain       string              `json:"domain,omitempty"`       // Cookie domain.
+	Path         string              `json:"path,omitempty"`         // Cookie path.
+	Secure       bool                `json:"secure,omitempty"`       // True if cookie is secure.
+	HTTPOnly     bool                `json:"httpOnly,omitempty"`     // True if cookie is http-only.
+	SameSite     CookieSameSite      `json:"sameSite,omitempty"`     // Cookie SameSite type.
+	Expires      *cdp.TimeSinceEpoch `json:"expires,omitempty"`      // Cookie expiration date, session cookie if not set
+	Priority     CookiePriority      `json:"priority,omitempty"`     // Cookie Priority.
+	SameParty    bool                `json:"sameParty,omitempty"`    // True if cookie is SameParty.
+	SourceScheme CookieSourceScheme  `json:"sourceScheme,omitempty"` // Cookie source scheme type.
+	SourcePort   int64               `json:"sourcePort,omitempty"`   // Cookie source port. Valid values are {-1, [1, 65535]}, -1 indicates an unspecified port. An unspecified port value allows protocol clients to emulate legacy cookie scope for the port. This is a temporary ability and it will be removed in the future.
+	PartitionKey string              `json:"partitionKey,omitempty"` // Cookie partition key. The site of the top-level URL the browser was visiting at the start of the request to the endpoint that set the cookie. If not set, the cookie will be set as not partitioned.
 }
 
 // AuthChallenge authorization challenge for HTTP status code 401 or 407.
@@ -1061,6 +1413,409 @@ type SignedExchangeInfo struct {
 	Errors          []*SignedExchangeError `json:"errors,omitempty"`          // Errors occurred while handling the signed exchagne.
 }
 
+// ContentEncoding list of content encodings supported by the backend.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-ContentEncoding
+type ContentEncoding string
+
+// String returns the ContentEncoding as string value.
+func (t ContentEncoding) String() string {
+	return string(t)
+}
+
+// ContentEncoding values.
+const (
+	ContentEncodingDeflate ContentEncoding = "deflate"
+	ContentEncodingGzip    ContentEncoding = "gzip"
+	ContentEncodingBr      ContentEncoding = "br"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t ContentEncoding) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t ContentEncoding) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *ContentEncoding) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch ContentEncoding(in.String()) {
+	case ContentEncodingDeflate:
+		*t = ContentEncodingDeflate
+	case ContentEncodingGzip:
+		*t = ContentEncodingGzip
+	case ContentEncodingBr:
+		*t = ContentEncodingBr
+
+	default:
+		in.AddError(errors.New("unknown ContentEncoding value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *ContentEncoding) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
+// PrivateNetworkRequestPolicy [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-PrivateNetworkRequestPolicy
+type PrivateNetworkRequestPolicy string
+
+// String returns the PrivateNetworkRequestPolicy as string value.
+func (t PrivateNetworkRequestPolicy) String() string {
+	return string(t)
+}
+
+// PrivateNetworkRequestPolicy values.
+const (
+	PrivateNetworkRequestPolicyAllow                          PrivateNetworkRequestPolicy = "Allow"
+	PrivateNetworkRequestPolicyBlockFromInsecureToMorePrivate PrivateNetworkRequestPolicy = "BlockFromInsecureToMorePrivate"
+	PrivateNetworkRequestPolicyWarnFromInsecureToMorePrivate  PrivateNetworkRequestPolicy = "WarnFromInsecureToMorePrivate"
+	PrivateNetworkRequestPolicyPreflightBlock                 PrivateNetworkRequestPolicy = "PreflightBlock"
+	PrivateNetworkRequestPolicyPreflightWarn                  PrivateNetworkRequestPolicy = "PreflightWarn"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t PrivateNetworkRequestPolicy) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t PrivateNetworkRequestPolicy) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *PrivateNetworkRequestPolicy) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch PrivateNetworkRequestPolicy(in.String()) {
+	case PrivateNetworkRequestPolicyAllow:
+		*t = PrivateNetworkRequestPolicyAllow
+	case PrivateNetworkRequestPolicyBlockFromInsecureToMorePrivate:
+		*t = PrivateNetworkRequestPolicyBlockFromInsecureToMorePrivate
+	case PrivateNetworkRequestPolicyWarnFromInsecureToMorePrivate:
+		*t = PrivateNetworkRequestPolicyWarnFromInsecureToMorePrivate
+	case PrivateNetworkRequestPolicyPreflightBlock:
+		*t = PrivateNetworkRequestPolicyPreflightBlock
+	case PrivateNetworkRequestPolicyPreflightWarn:
+		*t = PrivateNetworkRequestPolicyPreflightWarn
+
+	default:
+		in.AddError(errors.New("unknown PrivateNetworkRequestPolicy value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *PrivateNetworkRequestPolicy) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
+// IPAddressSpace [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-IPAddressSpace
+type IPAddressSpace string
+
+// String returns the IPAddressSpace as string value.
+func (t IPAddressSpace) String() string {
+	return string(t)
+}
+
+// IPAddressSpace values.
+const (
+	IPAddressSpaceLocal   IPAddressSpace = "Local"
+	IPAddressSpacePrivate IPAddressSpace = "Private"
+	IPAddressSpacePublic  IPAddressSpace = "Public"
+	IPAddressSpaceUnknown IPAddressSpace = "Unknown"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t IPAddressSpace) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t IPAddressSpace) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *IPAddressSpace) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch IPAddressSpace(in.String()) {
+	case IPAddressSpaceLocal:
+		*t = IPAddressSpaceLocal
+	case IPAddressSpacePrivate:
+		*t = IPAddressSpacePrivate
+	case IPAddressSpacePublic:
+		*t = IPAddressSpacePublic
+	case IPAddressSpaceUnknown:
+		*t = IPAddressSpaceUnknown
+
+	default:
+		in.AddError(errors.New("unknown IPAddressSpace value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *IPAddressSpace) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
+// ConnectTiming [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-ConnectTiming
+type ConnectTiming struct {
+	RequestTime float64 `json:"requestTime"` // Timing's requestTime is a baseline in seconds, while the other numbers are ticks in milliseconds relatively to this requestTime. Matches ResourceTiming's requestTime for the same request (but not for redirected requests).
+}
+
+// ClientSecurityState [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-ClientSecurityState
+type ClientSecurityState struct {
+	InitiatorIsSecureContext    bool                        `json:"initiatorIsSecureContext"`
+	InitiatorIPAddressSpace     IPAddressSpace              `json:"initiatorIPAddressSpace"`
+	PrivateNetworkRequestPolicy PrivateNetworkRequestPolicy `json:"privateNetworkRequestPolicy"`
+}
+
+// CrossOriginOpenerPolicyValue [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-CrossOriginOpenerPolicyValue
+type CrossOriginOpenerPolicyValue string
+
+// String returns the CrossOriginOpenerPolicyValue as string value.
+func (t CrossOriginOpenerPolicyValue) String() string {
+	return string(t)
+}
+
+// CrossOriginOpenerPolicyValue values.
+const (
+	CrossOriginOpenerPolicyValueSameOrigin                 CrossOriginOpenerPolicyValue = "SameOrigin"
+	CrossOriginOpenerPolicyValueSameOriginAllowPopups      CrossOriginOpenerPolicyValue = "SameOriginAllowPopups"
+	CrossOriginOpenerPolicyValueRestrictProperties         CrossOriginOpenerPolicyValue = "RestrictProperties"
+	CrossOriginOpenerPolicyValueUnsafeNone                 CrossOriginOpenerPolicyValue = "UnsafeNone"
+	CrossOriginOpenerPolicyValueSameOriginPlusCoep         CrossOriginOpenerPolicyValue = "SameOriginPlusCoep"
+	CrossOriginOpenerPolicyValueRestrictPropertiesPlusCoep CrossOriginOpenerPolicyValue = "RestrictPropertiesPlusCoep"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t CrossOriginOpenerPolicyValue) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t CrossOriginOpenerPolicyValue) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *CrossOriginOpenerPolicyValue) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch CrossOriginOpenerPolicyValue(in.String()) {
+	case CrossOriginOpenerPolicyValueSameOrigin:
+		*t = CrossOriginOpenerPolicyValueSameOrigin
+	case CrossOriginOpenerPolicyValueSameOriginAllowPopups:
+		*t = CrossOriginOpenerPolicyValueSameOriginAllowPopups
+	case CrossOriginOpenerPolicyValueRestrictProperties:
+		*t = CrossOriginOpenerPolicyValueRestrictProperties
+	case CrossOriginOpenerPolicyValueUnsafeNone:
+		*t = CrossOriginOpenerPolicyValueUnsafeNone
+	case CrossOriginOpenerPolicyValueSameOriginPlusCoep:
+		*t = CrossOriginOpenerPolicyValueSameOriginPlusCoep
+	case CrossOriginOpenerPolicyValueRestrictPropertiesPlusCoep:
+		*t = CrossOriginOpenerPolicyValueRestrictPropertiesPlusCoep
+
+	default:
+		in.AddError(errors.New("unknown CrossOriginOpenerPolicyValue value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *CrossOriginOpenerPolicyValue) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
+// CrossOriginOpenerPolicyStatus [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-CrossOriginOpenerPolicyStatus
+type CrossOriginOpenerPolicyStatus struct {
+	Value                       CrossOriginOpenerPolicyValue `json:"value"`
+	ReportOnlyValue             CrossOriginOpenerPolicyValue `json:"reportOnlyValue"`
+	ReportingEndpoint           string                       `json:"reportingEndpoint,omitempty"`
+	ReportOnlyReportingEndpoint string                       `json:"reportOnlyReportingEndpoint,omitempty"`
+}
+
+// CrossOriginEmbedderPolicyValue [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-CrossOriginEmbedderPolicyValue
+type CrossOriginEmbedderPolicyValue string
+
+// String returns the CrossOriginEmbedderPolicyValue as string value.
+func (t CrossOriginEmbedderPolicyValue) String() string {
+	return string(t)
+}
+
+// CrossOriginEmbedderPolicyValue values.
+const (
+	CrossOriginEmbedderPolicyValueNone           CrossOriginEmbedderPolicyValue = "None"
+	CrossOriginEmbedderPolicyValueCredentialless CrossOriginEmbedderPolicyValue = "Credentialless"
+	CrossOriginEmbedderPolicyValueRequireCorp    CrossOriginEmbedderPolicyValue = "RequireCorp"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t CrossOriginEmbedderPolicyValue) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t CrossOriginEmbedderPolicyValue) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *CrossOriginEmbedderPolicyValue) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch CrossOriginEmbedderPolicyValue(in.String()) {
+	case CrossOriginEmbedderPolicyValueNone:
+		*t = CrossOriginEmbedderPolicyValueNone
+	case CrossOriginEmbedderPolicyValueCredentialless:
+		*t = CrossOriginEmbedderPolicyValueCredentialless
+	case CrossOriginEmbedderPolicyValueRequireCorp:
+		*t = CrossOriginEmbedderPolicyValueRequireCorp
+
+	default:
+		in.AddError(errors.New("unknown CrossOriginEmbedderPolicyValue value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *CrossOriginEmbedderPolicyValue) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
+// CrossOriginEmbedderPolicyStatus [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-CrossOriginEmbedderPolicyStatus
+type CrossOriginEmbedderPolicyStatus struct {
+	Value                       CrossOriginEmbedderPolicyValue `json:"value"`
+	ReportOnlyValue             CrossOriginEmbedderPolicyValue `json:"reportOnlyValue"`
+	ReportingEndpoint           string                         `json:"reportingEndpoint,omitempty"`
+	ReportOnlyReportingEndpoint string                         `json:"reportOnlyReportingEndpoint,omitempty"`
+}
+
+// SecurityIsolationStatus [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-SecurityIsolationStatus
+type SecurityIsolationStatus struct {
+	Coop *CrossOriginOpenerPolicyStatus   `json:"coop,omitempty"`
+	Coep *CrossOriginEmbedderPolicyStatus `json:"coep,omitempty"`
+}
+
+// ReportStatus the status of a Reporting API report.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-ReportStatus
+type ReportStatus string
+
+// String returns the ReportStatus as string value.
+func (t ReportStatus) String() string {
+	return string(t)
+}
+
+// ReportStatus values.
+const (
+	ReportStatusQueued           ReportStatus = "Queued"
+	ReportStatusPending          ReportStatus = "Pending"
+	ReportStatusMarkedForRemoval ReportStatus = "MarkedForRemoval"
+	ReportStatusSuccess          ReportStatus = "Success"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t ReportStatus) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t ReportStatus) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *ReportStatus) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch ReportStatus(in.String()) {
+	case ReportStatusQueued:
+		*t = ReportStatusQueued
+	case ReportStatusPending:
+		*t = ReportStatusPending
+	case ReportStatusMarkedForRemoval:
+		*t = ReportStatusMarkedForRemoval
+	case ReportStatusSuccess:
+		*t = ReportStatusSuccess
+
+	default:
+		in.AddError(errors.New("unknown ReportStatus value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *ReportStatus) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
+// ReportID [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-ReportId
+type ReportID string
+
+// String returns the ReportID as string value.
+func (t ReportID) String() string {
+	return string(t)
+}
+
+// ReportingAPIReport an object representing a report generated by the
+// Reporting API.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-ReportingApiReport
+type ReportingAPIReport struct {
+	ID                ReportID            `json:"id"`
+	InitiatorURL      string              `json:"initiatorUrl"`      // The URL of the document that triggered the report.
+	Destination       string              `json:"destination"`       // The name of the endpoint group that should be used to deliver the report.
+	Type              string              `json:"type"`              // The type of the report (specifies the set of data that is contained in the report body).
+	Timestamp         *cdp.TimeSinceEpoch `json:"timestamp"`         // When the report was generated.
+	Depth             int64               `json:"depth"`             // How many uploads deep the related request was.
+	CompletedAttempts int64               `json:"completedAttempts"` // The number of delivery attempts made so far, not including an active attempt.
+	Body              easyjson.RawMessage `json:"body"`
+	Status            ReportStatus        `json:"status"`
+}
+
+// ReportingAPIEndpoint [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-ReportingApiEndpoint
+type ReportingAPIEndpoint struct {
+	URL       string `json:"url"`       // The URL of the endpoint to which reports may be delivered.
+	GroupName string `json:"groupName"` // Name of the endpoint group.
+}
+
+// LoadNetworkResourcePageResult an object providing the result of a network
+// resource load.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-LoadNetworkResourcePageResult
+type LoadNetworkResourcePageResult struct {
+	Success        bool            `json:"success"`
+	NetError       float64         `json:"netError,omitempty"` // Optional values used for error reporting.
+	NetErrorName   string          `json:"netErrorName,omitempty"`
+	HTTPStatusCode float64         `json:"httpStatusCode,omitempty"`
+	Stream         io.StreamHandle `json:"stream,omitempty"`  // If successful, one of the following two fields holds the result.
+	Headers        Headers         `json:"headers,omitempty"` // Response headers.
+}
+
+// LoadNetworkResourceOptions an options object that may be extended later to
+// better support CORS, CORB and streaming.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-LoadNetworkResourceOptions
+type LoadNetworkResourceOptions struct {
+	DisableCache       bool `json:"disableCache"`
+	IncludeCredentials bool `json:"includeCredentials"`
+}
+
 // ReferrerPolicy the referrer policy of the request, as defined in
 // https://www.w3.org/TR/referrer-policy/.
 //
@@ -1124,6 +1879,51 @@ func (t *ReferrerPolicy) UnmarshalJSON(buf []byte) error {
 	return easyjson.Unmarshal(buf, t)
 }
 
+// TrustTokenParamsRefreshPolicy only set for "token-redemption" type and
+// determine whether to request a fresh SRR or use a still valid cached SRR.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-TrustTokenParams
+type TrustTokenParamsRefreshPolicy string
+
+// String returns the TrustTokenParamsRefreshPolicy as string value.
+func (t TrustTokenParamsRefreshPolicy) String() string {
+	return string(t)
+}
+
+// TrustTokenParamsRefreshPolicy values.
+const (
+	TrustTokenParamsRefreshPolicyUseCached TrustTokenParamsRefreshPolicy = "UseCached"
+	TrustTokenParamsRefreshPolicyRefresh   TrustTokenParamsRefreshPolicy = "Refresh"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t TrustTokenParamsRefreshPolicy) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t TrustTokenParamsRefreshPolicy) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *TrustTokenParamsRefreshPolicy) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch TrustTokenParamsRefreshPolicy(in.String()) {
+	case TrustTokenParamsRefreshPolicyUseCached:
+		*t = TrustTokenParamsRefreshPolicyUseCached
+	case TrustTokenParamsRefreshPolicyRefresh:
+		*t = TrustTokenParamsRefreshPolicyRefresh
+
+	default:
+		in.AddError(errors.New("unknown TrustTokenParamsRefreshPolicy value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *TrustTokenParamsRefreshPolicy) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
 // InitiatorType type of this initiator.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-Initiator
@@ -1140,6 +1940,7 @@ const (
 	InitiatorTypeScript         InitiatorType = "script"
 	InitiatorTypePreload        InitiatorType = "preload"
 	InitiatorTypeSignedExchange InitiatorType = "SignedExchange"
+	InitiatorTypePreflight      InitiatorType = "preflight"
 	InitiatorTypeOther          InitiatorType = "other"
 )
 
@@ -1164,6 +1965,8 @@ func (t *InitiatorType) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = InitiatorTypePreload
 	case InitiatorTypeSignedExchange:
 		*t = InitiatorTypeSignedExchange
+	case InitiatorTypePreflight:
+		*t = InitiatorTypePreflight
 	case InitiatorTypeOther:
 		*t = InitiatorTypeOther
 
@@ -1268,5 +2071,76 @@ func (t *AuthChallengeResponseResponse) UnmarshalEasyJSON(in *jlexer.Lexer) {
 
 // UnmarshalJSON satisfies json.Unmarshaler.
 func (t *AuthChallengeResponseResponse) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
+// TrustTokenOperationDoneStatus detailed success or error status of the
+// operation. 'AlreadyExists' also signifies a successful operation, as the
+// result of the operation already exists und thus, the operation was abort
+// preemptively (e.g. a cache hit).
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#event-trustTokenOperationDone
+type TrustTokenOperationDoneStatus string
+
+// String returns the TrustTokenOperationDoneStatus as string value.
+func (t TrustTokenOperationDoneStatus) String() string {
+	return string(t)
+}
+
+// TrustTokenOperationDoneStatus values.
+const (
+	TrustTokenOperationDoneStatusOk                 TrustTokenOperationDoneStatus = "Ok"
+	TrustTokenOperationDoneStatusInvalidArgument    TrustTokenOperationDoneStatus = "InvalidArgument"
+	TrustTokenOperationDoneStatusFailedPrecondition TrustTokenOperationDoneStatus = "FailedPrecondition"
+	TrustTokenOperationDoneStatusResourceExhausted  TrustTokenOperationDoneStatus = "ResourceExhausted"
+	TrustTokenOperationDoneStatusAlreadyExists      TrustTokenOperationDoneStatus = "AlreadyExists"
+	TrustTokenOperationDoneStatusUnavailable        TrustTokenOperationDoneStatus = "Unavailable"
+	TrustTokenOperationDoneStatusBadResponse        TrustTokenOperationDoneStatus = "BadResponse"
+	TrustTokenOperationDoneStatusInternalError      TrustTokenOperationDoneStatus = "InternalError"
+	TrustTokenOperationDoneStatusUnknownError       TrustTokenOperationDoneStatus = "UnknownError"
+	TrustTokenOperationDoneStatusFulfilledLocally   TrustTokenOperationDoneStatus = "FulfilledLocally"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t TrustTokenOperationDoneStatus) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t TrustTokenOperationDoneStatus) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *TrustTokenOperationDoneStatus) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch TrustTokenOperationDoneStatus(in.String()) {
+	case TrustTokenOperationDoneStatusOk:
+		*t = TrustTokenOperationDoneStatusOk
+	case TrustTokenOperationDoneStatusInvalidArgument:
+		*t = TrustTokenOperationDoneStatusInvalidArgument
+	case TrustTokenOperationDoneStatusFailedPrecondition:
+		*t = TrustTokenOperationDoneStatusFailedPrecondition
+	case TrustTokenOperationDoneStatusResourceExhausted:
+		*t = TrustTokenOperationDoneStatusResourceExhausted
+	case TrustTokenOperationDoneStatusAlreadyExists:
+		*t = TrustTokenOperationDoneStatusAlreadyExists
+	case TrustTokenOperationDoneStatusUnavailable:
+		*t = TrustTokenOperationDoneStatusUnavailable
+	case TrustTokenOperationDoneStatusBadResponse:
+		*t = TrustTokenOperationDoneStatusBadResponse
+	case TrustTokenOperationDoneStatusInternalError:
+		*t = TrustTokenOperationDoneStatusInternalError
+	case TrustTokenOperationDoneStatusUnknownError:
+		*t = TrustTokenOperationDoneStatusUnknownError
+	case TrustTokenOperationDoneStatusFulfilledLocally:
+		*t = TrustTokenOperationDoneStatusFulfilledLocally
+
+	default:
+		in.AddError(errors.New("unknown TrustTokenOperationDoneStatus value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *TrustTokenOperationDoneStatus) UnmarshalJSON(buf []byte) error {
 	return easyjson.Unmarshal(buf, t)
 }

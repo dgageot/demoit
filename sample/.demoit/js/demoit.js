@@ -557,7 +557,7 @@ class VSCode extends BaseHTMLElement {
 
         return `
         <fake-window title="code ~ ${this.path}">
-            <iframe id="site" class="site" src="/vscode/${this.path}"></iframe>
+            <iframe id="site" class="site" src="/beta/vscode/${this.path}"></iframe>
         </fake-window>`;
     }
 }

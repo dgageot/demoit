@@ -1,5 +1,6 @@
 /*
 Copyright 2019 Google LLC
+Copyright 2022 David Gageot
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,13 +18,17 @@ limitations under the License.
 package handlers
 
 import (
-	"bytes"
+	_ "embed"
 	"fmt"
 	"html/template"
 	"net/http"
 
 	"github.com/dgageot/demoit/files"
 )
+
+//go:embed resources/grid.tmpl.html
+var gridHTML string
+var gridTemplate = template.Must(template.New("grid").Funcs(template.FuncMap{"hash": hash}).Parse(gridHTML))
 
 // Grid displays a grid view of all steps as iframes.
 //
@@ -38,66 +43,10 @@ func Grid(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gridTemplate, err := template.New("grid").Parse(gridTmpl)
-	if err != nil {
-		http.Error(w, "Unable to parse grid page", http.StatusInternalServerError)
-		return
-	}
-	var html bytes.Buffer
-	err = gridTemplate.Execute(&html, steps)
-	if err != nil {
+	w.Header().Set("Content-Type", "text/html")
+
+	if err := gridTemplate.Execute(w, steps); err != nil {
 		http.Error(w, "Unable to render grid view", http.StatusInternalServerError)
 		return
 	}
-
-	w.Header().Set("Content-Type", "text/html")
-	html.WriteTo(w)
 }
-
-const gridTmpl = `
-<!DOCTYPE html>
-<html>
-	<head>
-        <style>
-			.cell {
-				display: inline-block;
-				overflow: hidden;
-				margin: 1rem;
-				width: 480px;
-				/*
-				height: 270px;
-				*/
-			}
-			.thumb {
-				overflow: hidden;
-				display: inline-block;
-				position: relative;
-				width: 480px;
-				height: 270px;
-				border: 1px solid #BBB;
-			}
-            .thumb iframe {
-				width: 1920px;
-				height: 1080px;
-				transform: scale(0.25);
-				transform-origin: 0 0;
-            }
-        </style>
-    </head>
-<body>
-<title>DemoIt grid view</title>
-
-<h2><a href="/">Start presentation</a></h2>
-
-{{range $i, $step := .}}
-	<div class="cell">
-		<h2><a href="/{{$i}}">Step {{$i}}</a></h2>
-		<div class="thumb">
-			<iframe src="/{{$i}}"></iframe>
-		</div>
-	</div>
-{{end}}
-
-</body>
-</html>
-`

@@ -29,7 +29,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoLayertree(in *jlexer.Lexer, o
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -140,7 +140,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoLayertree1(in *jlexer.Lexer, 
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -237,7 +237,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoLayertree2(in *jlexer.Lexer, 
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -303,7 +303,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoLayertree3(in *jlexer.Lexer, 
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -388,7 +388,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoLayertree4(in *jlexer.Lexer, 
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -455,7 +455,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoLayertree5(in *jlexer.Lexer, 
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -542,7 +542,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoLayertree6(in *jlexer.Lexer, 
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -608,7 +608,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoLayertree7(in *jlexer.Lexer, 
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -737,7 +737,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoLayertree8(in *jlexer.Lexer, 
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -832,7 +832,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoLayertree9(in *jlexer.Lexer, 
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -912,7 +912,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoLayertree10(in *jlexer.Lexer,
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -979,7 +979,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoLayertree11(in *jlexer.Lexer,
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -1045,7 +1045,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoLayertree12(in *jlexer.Lexer,
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -1112,7 +1112,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoLayertree13(in *jlexer.Lexer,
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -1222,7 +1222,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoLayertree14(in *jlexer.Lexer,
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -1473,7 +1473,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoLayertree15(in *jlexer.Lexer,
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -1582,7 +1582,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoLayertree16(in *jlexer.Lexer,
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -1667,7 +1667,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoLayertree17(in *jlexer.Lexer,
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -1726,7 +1726,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoLayertree18(in *jlexer.Lexer,
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -1785,7 +1785,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoLayertree19(in *jlexer.Lexer,
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -1796,22 +1796,22 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoLayertree19(in *jlexer.Lexer,
 		case "compositingReasonIds":
 			if in.IsNull() {
 				in.Skip()
-				out.CompositingReasonIds = nil
+				out.CompositingReasonIDs = nil
 			} else {
 				in.Delim('[')
-				if out.CompositingReasonIds == nil {
+				if out.CompositingReasonIDs == nil {
 					if !in.IsDelim(']') {
-						out.CompositingReasonIds = make([]string, 0, 4)
+						out.CompositingReasonIDs = make([]string, 0, 4)
 					} else {
-						out.CompositingReasonIds = []string{}
+						out.CompositingReasonIDs = []string{}
 					}
 				} else {
-					out.CompositingReasonIds = (out.CompositingReasonIds)[:0]
+					out.CompositingReasonIDs = (out.CompositingReasonIDs)[:0]
 				}
 				for !in.IsDelim(']') {
 					var v22 string
 					v22 = string(in.String())
-					out.CompositingReasonIds = append(out.CompositingReasonIds, v22)
+					out.CompositingReasonIDs = append(out.CompositingReasonIDs, v22)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1830,13 +1830,13 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoLayertree19(out *jwriter.Writ
 	out.RawByte('{')
 	first := true
 	_ = first
-	if len(in.CompositingReasonIds) != 0 {
+	if len(in.CompositingReasonIDs) != 0 {
 		const prefix string = ",\"compositingReasonIds\":"
 		first = false
 		out.RawString(prefix[1:])
 		{
 			out.RawByte('[')
-			for v23, v24 := range in.CompositingReasonIds {
+			for v23, v24 := range in.CompositingReasonIDs {
 				if v23 > 0 {
 					out.RawByte(',')
 				}
@@ -1882,7 +1882,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoLayertree20(in *jlexer.Lexer,
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()

@@ -1,5 +1,6 @@
 /*
 Copyright 2018 Google LLC
+Copyright 2022 David Gageot
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,31 +17,29 @@ limitations under the License.
 
 package flags
 
-import (
-	"fmt"
-)
+import "fmt"
 
-// DevMode activates dev mode with live reload
+// DevMode activates dev mode with live reload.
 var DevMode *bool
 
-// WebServerPort is the local port for presentation
+// WebServerPort is the local port for presentation.
 var WebServerPort *int
 
-// WebServerHost is the host to bind the presentation web server
+// WebServerHost is the host to bind the presentation web server.
 var WebServerHost *string
 
-// ShellPort is the local port for shell server
+// ShellPort is the local port for shell server.
 var ShellPort *int
 
-// ShellHost is the host to bind the shell server
+// ShellHost is the host to bind the shell server.
 var ShellHost *string
 
-// WebServerAddress is the addresse to bind the presentation web server
+// WebServerAddress is the addresse to bind the presentation web server.
 func WebServerAddress() string {
 	return fmt.Sprintf("%s:%d", *WebServerHost, *WebServerPort)
 }
 
-// ShellAddress is the addresse to bind the shell server
+// ShellAddress is the addresse to bind the shell server.
 func ShellAddress() string {
 	return fmt.Sprintf("%s:%d", *ShellHost, *ShellPort)
 }

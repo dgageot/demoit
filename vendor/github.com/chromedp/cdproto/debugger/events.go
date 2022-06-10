@@ -46,7 +46,7 @@ type EventScriptFailedToParse struct {
 	EndLine                 int64                      `json:"endLine"`            // Last line of the script.
 	EndColumn               int64                      `json:"endColumn"`          // Length of the last line of the script.
 	ExecutionContextID      runtime.ExecutionContextID `json:"executionContextId"` // Specifies script creation context.
-	Hash                    string                     `json:"hash"`               // Content hash of the script.
+	Hash                    string                     `json:"hash"`               // Content hash of the script, SHA-256.
 	ExecutionContextAuxData easyjson.RawMessage        `json:"executionContextAuxData,omitempty"`
 	SourceMapURL            string                     `json:"sourceMapURL,omitempty"`   // URL of source map associated with script (if any).
 	HasSourceURL            bool                       `json:"hasSourceURL,omitempty"`   // True, if this script has sourceURL.
@@ -55,6 +55,7 @@ type EventScriptFailedToParse struct {
 	StackTrace              *runtime.StackTrace        `json:"stackTrace,omitempty"`     // JavaScript top stack frame of where the script parsed event was triggered if available.
 	CodeOffset              int64                      `json:"codeOffset,omitempty"`     // If the scriptLanguage is WebAssembly, the code section offset in the module.
 	ScriptLanguage          ScriptLanguage             `json:"scriptLanguage,omitempty"` // The language of the script.
+	EmbedderName            string                     `json:"embedderName,omitempty"`   // The name the embedder supplied for this script.
 }
 
 // EventScriptParsed fired when virtual machine parses script. This event is
@@ -69,7 +70,7 @@ type EventScriptParsed struct {
 	EndLine                 int64                      `json:"endLine"`            // Last line of the script.
 	EndColumn               int64                      `json:"endColumn"`          // Length of the last line of the script.
 	ExecutionContextID      runtime.ExecutionContextID `json:"executionContextId"` // Specifies script creation context.
-	Hash                    string                     `json:"hash"`               // Content hash of the script.
+	Hash                    string                     `json:"hash"`               // Content hash of the script, SHA-256.
 	ExecutionContextAuxData easyjson.RawMessage        `json:"executionContextAuxData,omitempty"`
 	IsLiveEdit              bool                       `json:"isLiveEdit,omitempty"`     // True, if this script is generated as a result of the live edit operation.
 	SourceMapURL            string                     `json:"sourceMapURL,omitempty"`   // URL of source map associated with script (if any).
@@ -79,4 +80,6 @@ type EventScriptParsed struct {
 	StackTrace              *runtime.StackTrace        `json:"stackTrace,omitempty"`     // JavaScript top stack frame of where the script parsed event was triggered if available.
 	CodeOffset              int64                      `json:"codeOffset,omitempty"`     // If the scriptLanguage is WebAssembly, the code section offset in the module.
 	ScriptLanguage          ScriptLanguage             `json:"scriptLanguage,omitempty"` // The language of the script.
+	DebugSymbols            *DebugSymbols              `json:"debugSymbols,omitempty"`   // If the scriptLanguage is WebASsembly, the source of debug symbols for the module.
+	EmbedderName            string                     `json:"embedderName,omitempty"`   // The name the embedder supplied for this script.
 }

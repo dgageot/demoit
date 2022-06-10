@@ -151,6 +151,7 @@ type DocumentSnapshot struct {
 type NodeTreeSnapshot struct {
 	ParentIndex          []int64             `json:"parentIndex,omitempty"`          // Parent node index.
 	NodeType             []int64             `json:"nodeType,omitempty"`             // Node's nodeType.
+	ShadowRootType       *RareStringData     `json:"shadowRootType,omitempty"`       // Type of the shadow root the Node is in. String values are equal to the ShadowRootType enum.
 	NodeName             []StringIndex       `json:"nodeName,omitempty"`             // Node's nodeName.
 	NodeValue            []StringIndex       `json:"nodeValue,omitempty"`            // Node's nodeValue.
 	BackendNodeID        []cdp.BackendNodeID `json:"backendNodeId,omitempty"`        // Node's id, corresponds to DOM.Node.backendNodeId.
@@ -161,6 +162,7 @@ type NodeTreeSnapshot struct {
 	OptionSelected       *RareBooleanData    `json:"optionSelected,omitempty"`       // Only set for option elements, indicates if the element has been selected
 	ContentDocumentIndex *RareIntegerData    `json:"contentDocumentIndex,omitempty"` // The index of the document in the list of the snapshot documents.
 	PseudoType           *RareStringData     `json:"pseudoType,omitempty"`           // Type of a pseudo element node.
+	PseudoIdentifier     *RareStringData     `json:"pseudoIdentifier,omitempty"`     // Pseudo element identifier for this node. Only present if there is a valid pseudoType.
 	IsClickable          *RareBooleanData    `json:"isClickable,omitempty"`          // Whether this DOM node responds to mouse clicks. This includes nodes that have had click event listeners attached via JavaScript as well as anchor tags that naturally navigate when clicked.
 	CurrentSourceURL     *RareStringData     `json:"currentSourceURL,omitempty"`     // The selected url for nodes with a srcset attribute.
 	OriginURL            *RareStringData     `json:"originURL,omitempty"`            // The url of the script (if any) that generates this node.
@@ -171,15 +173,17 @@ type NodeTreeSnapshot struct {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOMSnapshot#type-LayoutTreeSnapshot
 type LayoutTreeSnapshot struct {
-	NodeIndex        []int64          `json:"nodeIndex"`             // Index of the corresponding node in the NodeTreeSnapshot array returned by captureSnapshot.
-	Styles           []ArrayOfStrings `json:"styles"`                // Array of indexes specifying computed style strings, filtered according to the computedStyles parameter passed to captureSnapshot.
-	Bounds           []Rectangle      `json:"bounds"`                // The absolute position bounding box.
-	Text             []StringIndex    `json:"text"`                  // Contents of the LayoutText, if any.
-	StackingContexts *RareBooleanData `json:"stackingContexts"`      // Stacking context information.
-	PaintOrders      []int64          `json:"paintOrders,omitempty"` // Global paint order index, which is determined by the stacking order of the nodes. Nodes that are painted together will have the same index. Only provided if includePaintOrder in captureSnapshot was true.
-	OffsetRects      []Rectangle      `json:"offsetRects,omitempty"` // The offset rect of nodes. Only available when includeDOMRects is set to true
-	ScrollRects      []Rectangle      `json:"scrollRects,omitempty"` // The scroll rect of nodes. Only available when includeDOMRects is set to true
-	ClientRects      []Rectangle      `json:"clientRects,omitempty"` // The client rect of nodes. Only available when includeDOMRects is set to true
+	NodeIndex               []int64          `json:"nodeIndex"`                         // Index of the corresponding node in the NodeTreeSnapshot array returned by captureSnapshot.
+	Styles                  []ArrayOfStrings `json:"styles"`                            // Array of indexes specifying computed style strings, filtered according to the computedStyles parameter passed to captureSnapshot.
+	Bounds                  []Rectangle      `json:"bounds"`                            // The absolute position bounding box.
+	Text                    []StringIndex    `json:"text"`                              // Contents of the LayoutText, if any.
+	StackingContexts        *RareBooleanData `json:"stackingContexts"`                  // Stacking context information.
+	PaintOrders             []int64          `json:"paintOrders,omitempty"`             // Global paint order index, which is determined by the stacking order of the nodes. Nodes that are painted together will have the same index. Only provided if includePaintOrder in captureSnapshot was true.
+	OffsetRects             []Rectangle      `json:"offsetRects,omitempty"`             // The offset rect of nodes. Only available when includeDOMRects is set to true
+	ScrollRects             []Rectangle      `json:"scrollRects,omitempty"`             // The scroll rect of nodes. Only available when includeDOMRects is set to true
+	ClientRects             []Rectangle      `json:"clientRects,omitempty"`             // The client rect of nodes. Only available when includeDOMRects is set to true
+	BlendedBackgroundColors []StringIndex    `json:"blendedBackgroundColors,omitempty"` // The list of background colors that are blended with colors of overlapping elements.
+	TextColorOpacities      []float64        `json:"textColorOpacities,omitempty"`      // The list of computed text opacities.
 }
 
 // TextBoxSnapshot table of details of the post layout rendered text

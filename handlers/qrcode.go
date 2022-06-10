@@ -1,5 +1,6 @@
 /*
 Copyright 2018 Google LLC
+Copyright 2022 David Gageot
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -44,5 +45,8 @@ func QRCode(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "image/png")
-	png.Encode(w, qrCode)
+	if err := png.Encode(w, qrCode); err != nil {
+		http.Error(w, fmt.Sprintf("Unable to encode the qrcode: %v", err), http.StatusInternalServerError)
+		return
+	}
 }

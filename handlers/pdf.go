@@ -1,5 +1,6 @@
 /*
 Copyright 2018 Google LLC
+Copyright 2022 David Gageot
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,9 +27,8 @@ import (
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
 	"github.com/dgageot/demoit/files"
-	"github.com/jung-kurt/gofpdf"
-
 	"github.com/dgageot/demoit/flags"
+	"github.com/jung-kurt/gofpdf"
 )
 
 const (

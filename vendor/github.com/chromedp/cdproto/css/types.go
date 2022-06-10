@@ -78,8 +78,9 @@ func (t *StyleSheetOrigin) UnmarshalJSON(buf []byte) error {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#type-PseudoElementMatches
 type PseudoElementMatches struct {
-	PseudoType cdp.PseudoType `json:"pseudoType"` // Pseudo element type.
-	Matches    []*RuleMatch   `json:"matches"`    // Matches of CSS rules applicable to the pseudo style.
+	PseudoType       cdp.PseudoType `json:"pseudoType"`                 // Pseudo element type.
+	PseudoIdentifier string         `json:"pseudoIdentifier,omitempty"` // Pseudo element custom ident.
+	Matches          []*RuleMatch   `json:"matches"`                    // Matches of CSS rules applicable to the pseudo style.
 }
 
 // InheritedStyleEntry inherited CSS rule collection from ancestor node.
@@ -88,6 +89,14 @@ type PseudoElementMatches struct {
 type InheritedStyleEntry struct {
 	InlineStyle     *Style       `json:"inlineStyle,omitempty"` // The ancestor node's inline style, if any, in the style inheritance chain.
 	MatchedCSSRules []*RuleMatch `json:"matchedCSSRules"`       // Matches of CSS rules matching the ancestor node in the style inheritance chain.
+}
+
+// InheritedPseudoElementMatches inherited pseudo element matches from
+// pseudos of an ancestor node.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#type-InheritedPseudoElementMatches
+type InheritedPseudoElementMatches struct {
+	PseudoElements []*PseudoElementMatches `json:"pseudoElements"` // Matches of pseudo styles from the pseudos of an ancestor node.
 }
 
 // RuleMatch match data for a CSS rule.
@@ -119,32 +128,37 @@ type SelectorList struct {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#type-CSSStyleSheetHeader
 type StyleSheetHeader struct {
-	StyleSheetID StyleSheetID      `json:"styleSheetId"`           // The stylesheet identifier.
-	FrameID      cdp.FrameID       `json:"frameId"`                // Owner frame identifier.
-	SourceURL    string            `json:"sourceURL"`              // Stylesheet resource URL.
-	SourceMapURL string            `json:"sourceMapURL,omitempty"` // URL of source map associated with the stylesheet (if any).
-	Origin       StyleSheetOrigin  `json:"origin"`                 // Stylesheet origin.
-	Title        string            `json:"title"`                  // Stylesheet title.
-	OwnerNode    cdp.BackendNodeID `json:"ownerNode,omitempty"`    // The backend id for the owner node of the stylesheet.
-	Disabled     bool              `json:"disabled"`               // Denotes whether the stylesheet is disabled.
-	HasSourceURL bool              `json:"hasSourceURL,omitempty"` // Whether the sourceURL field value comes from the sourceURL comment.
-	IsInline     bool              `json:"isInline"`               // Whether this stylesheet is created for STYLE tag by parser. This flag is not set for document.written STYLE tags.
-	StartLine    float64           `json:"startLine"`              // Line offset of the stylesheet within the resource (zero based).
-	StartColumn  float64           `json:"startColumn"`            // Column offset of the stylesheet within the resource (zero based).
-	Length       float64           `json:"length"`                 // Size of the content (in characters).
-	EndLine      float64           `json:"endLine"`                // Line offset of the end of the stylesheet within the resource (zero based).
-	EndColumn    float64           `json:"endColumn"`              // Column offset of the end of the stylesheet within the resource (zero based).
+	StyleSheetID  StyleSheetID      `json:"styleSheetId"`           // The stylesheet identifier.
+	FrameID       cdp.FrameID       `json:"frameId"`                // Owner frame identifier.
+	SourceURL     string            `json:"sourceURL"`              // Stylesheet resource URL. Empty if this is a constructed stylesheet created using new CSSStyleSheet() (but non-empty if this is a constructed sylesheet imported as a CSS module script).
+	SourceMapURL  string            `json:"sourceMapURL,omitempty"` // URL of source map associated with the stylesheet (if any).
+	Origin        StyleSheetOrigin  `json:"origin"`                 // Stylesheet origin.
+	Title         string            `json:"title"`                  // Stylesheet title.
+	OwnerNode     cdp.BackendNodeID `json:"ownerNode,omitempty"`    // The backend id for the owner node of the stylesheet.
+	Disabled      bool              `json:"disabled"`               // Denotes whether the stylesheet is disabled.
+	HasSourceURL  bool              `json:"hasSourceURL,omitempty"` // Whether the sourceURL field value comes from the sourceURL comment.
+	IsInline      bool              `json:"isInline"`               // Whether this stylesheet is created for STYLE tag by parser. This flag is not set for document.written STYLE tags.
+	IsMutable     bool              `json:"isMutable"`              // Whether this stylesheet is mutable. Inline stylesheets become mutable after they have been modified via CSSOM API. <link> element's stylesheets become mutable only if DevTools modifies them. Constructed stylesheets (new CSSStyleSheet()) are mutable immediately after creation.
+	IsConstructed bool              `json:"isConstructed"`          // True if this stylesheet is created through new CSSStyleSheet() or imported as a CSS module script.
+	StartLine     float64           `json:"startLine"`              // Line offset of the stylesheet within the resource (zero based).
+	StartColumn   float64           `json:"startColumn"`            // Column offset of the stylesheet within the resource (zero based).
+	Length        float64           `json:"length"`                 // Size of the content (in characters).
+	EndLine       float64           `json:"endLine"`                // Line offset of the end of the stylesheet within the resource (zero based).
+	EndColumn     float64           `json:"endColumn"`              // Column offset of the end of the stylesheet within the resource (zero based).
 }
 
 // Rule CSS rule representation.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#type-CSSRule
 type Rule struct {
-	StyleSheetID StyleSheetID     `json:"styleSheetId,omitempty"` // The css style sheet identifier (absent for user agent stylesheet and user-specified stylesheet rules) this rule came from.
-	SelectorList *SelectorList    `json:"selectorList"`           // Rule selector data.
-	Origin       StyleSheetOrigin `json:"origin"`                 // Parent stylesheet's origin.
-	Style        *Style           `json:"style"`                  // Associated style declaration.
-	Media        []*Media         `json:"media,omitempty"`        // Media list array (for rules involving media queries). The array enumerates media queries starting with the innermost one, going outwards.
+	StyleSheetID     StyleSheetID      `json:"styleSheetId,omitempty"`     // The css style sheet identifier (absent for user agent stylesheet and user-specified stylesheet rules) this rule came from.
+	SelectorList     *SelectorList     `json:"selectorList"`               // Rule selector data.
+	Origin           StyleSheetOrigin  `json:"origin"`                     // Parent stylesheet's origin.
+	Style            *Style            `json:"style"`                      // Associated style declaration.
+	Media            []*Media          `json:"media,omitempty"`            // Media list array (for rules involving media queries). The array enumerates media queries starting with the innermost one, going outwards.
+	ContainerQueries []*ContainerQuery `json:"containerQueries,omitempty"` // Container query list array (for rules involving container queries). The array enumerates container queries starting with the innermost one, going outwards.
+	Supports         []*Supports       `json:"supports,omitempty"`         // @supports CSS at-rule array. The array enumerates @supports at-rules starting with the innermost one, going outwards.
+	Layers           []*Layer          `json:"layers,omitempty"`           // Cascade layer array. Contains the layer hierarchy that this rule belongs to starting with the innermost layer and going outwards.
 }
 
 // RuleUsage CSS coverage information.
@@ -240,6 +254,44 @@ type MediaQueryExpression struct {
 	ComputedLength float64      `json:"computedLength,omitempty"` // Computed length of media query expression (if applicable).
 }
 
+// ContainerQuery CSS container query rule descriptor.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#type-CSSContainerQuery
+type ContainerQuery struct {
+	Text         string       `json:"text"`                   // Container query text.
+	Range        *SourceRange `json:"range,omitempty"`        // The associated rule header range in the enclosing stylesheet (if available).
+	StyleSheetID StyleSheetID `json:"styleSheetId,omitempty"` // Identifier of the stylesheet containing this object (if exists).
+	Name         string       `json:"name,omitempty"`         // Optional name for the container.
+}
+
+// Supports CSS Supports at-rule descriptor.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#type-CSSSupports
+type Supports struct {
+	Text         string       `json:"text"`                   // Supports rule text.
+	Active       bool         `json:"active"`                 // Whether the supports condition is satisfied.
+	Range        *SourceRange `json:"range,omitempty"`        // The associated rule header range in the enclosing stylesheet (if available).
+	StyleSheetID StyleSheetID `json:"styleSheetId,omitempty"` // Identifier of the stylesheet containing this object (if exists).
+}
+
+// Layer CSS Layer at-rule descriptor.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#type-CSSLayer
+type Layer struct {
+	Text         string       `json:"text"`                   // Layer name.
+	Range        *SourceRange `json:"range,omitempty"`        // The associated rule header range in the enclosing stylesheet (if available).
+	StyleSheetID StyleSheetID `json:"styleSheetId,omitempty"` // Identifier of the stylesheet containing this object (if exists).
+}
+
+// LayerData CSS Layer data.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#type-CSSLayerData
+type LayerData struct {
+	Name      string       `json:"name"`                // Layer name.
+	SubLayers []*LayerData `json:"subLayers,omitempty"` // Direct sub-layers
+	Order     float64      `json:"order"`               // Layer order. The order determines the order of the layer in the cascade order. A higher number has higher priority in the cascade order.
+}
+
 // PlatformFontUsage information about amount of glyphs that were rendered
 // with given font.
 //
@@ -250,19 +302,34 @@ type PlatformFontUsage struct {
 	GlyphCount   float64 `json:"glyphCount"`   // Amount of glyphs that were rendered with this font.
 }
 
+// FontVariationAxis information about font variation axes for variable
+// fonts.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#type-FontVariationAxis
+type FontVariationAxis struct {
+	Tag          string  `json:"tag"`          // The font-variation-setting tag (a.k.a. "axis tag").
+	Name         string  `json:"name"`         // Human-readable variation name in the default language (normally, "en").
+	MinValue     float64 `json:"minValue"`     // The minimum value (inclusive) the font supports for this tag.
+	MaxValue     float64 `json:"maxValue"`     // The maximum value (inclusive) the font supports for this tag.
+	DefaultValue float64 `json:"defaultValue"` // The default value.
+}
+
 // FontFace properties of a web font:
-// https://www.w3.org/TR/2008/REC-CSS2-20080411/fonts.html#font-descriptions.
+// https://www.w3.org/TR/2008/REC-CSS2-20080411/fonts.html#font-descriptions and
+// additional information such as platformFontFamily and fontVariationAxes.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#type-FontFace
 type FontFace struct {
-	FontFamily         string `json:"fontFamily"`         // The font-family.
-	FontStyle          string `json:"fontStyle"`          // The font-style.
-	FontVariant        string `json:"fontVariant"`        // The font-variant.
-	FontWeight         string `json:"fontWeight"`         // The font-weight.
-	FontStretch        string `json:"fontStretch"`        // The font-stretch.
-	UnicodeRange       string `json:"unicodeRange"`       // The unicode-range.
-	Src                string `json:"src"`                // The src.
-	PlatformFontFamily string `json:"platformFontFamily"` // The resolved platform font family
+	FontFamily         string               `json:"fontFamily"`                  // The font-family.
+	FontStyle          string               `json:"fontStyle"`                   // The font-style.
+	FontVariant        string               `json:"fontVariant"`                 // The font-variant.
+	FontWeight         string               `json:"fontWeight"`                  // The font-weight.
+	FontStretch        string               `json:"fontStretch"`                 // The font-stretch.
+	FontDisplay        string               `json:"fontDisplay"`                 // The font-display.
+	UnicodeRange       string               `json:"unicodeRange"`                // The unicode-range.
+	Src                string               `json:"src"`                         // The src.
+	PlatformFontFamily string               `json:"platformFontFamily"`          // The resolved platform font family
+	FontVariationAxes  []*FontVariationAxis `json:"fontVariationAxes,omitempty"` // Available variation settings (a.k.a. "axes").
 }
 
 // KeyframesRule CSS keyframes rule representation.

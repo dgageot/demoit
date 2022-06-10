@@ -103,7 +103,7 @@ type FulfillRequestParams struct {
 	ResponseCode          int64          `json:"responseCode"`                    // An HTTP response code.
 	ResponseHeaders       []*HeaderEntry `json:"responseHeaders,omitempty"`       // Response headers.
 	BinaryResponseHeaders string         `json:"binaryResponseHeaders,omitempty"` // Alternative way of specifying response headers as a \0-separated series of name: value pairs. Prefer the above method unless you need to represent some non-UTF8 values that can't be transmitted over the protocol as text.
-	Body                  string         `json:"body,omitempty"`                  // A response body.
+	Body                  string         `json:"body,omitempty"`                  // A response body. If absent, original response body will be used if the request is intercepted at the response stage and empty body will be used if the request is intercepted at the request stage.
 	ResponsePhrase        string         `json:"responsePhrase,omitempty"`        // A textual representation of responseCode. If absent, a standard phrase matching responseCode is used.
 }
 
@@ -136,7 +136,9 @@ func (p FulfillRequestParams) WithBinaryResponseHeaders(binaryResponseHeaders st
 	return &p
 }
 
-// WithBody a response body.
+// WithBody a response body. If absent, original response body will be used
+// if the request is intercepted at the response stage and empty body will be
+// used if the request is intercepted at the request stage.
 func (p FulfillRequestParams) WithBody(body string) *FulfillRequestParams {
 	p.Body = body
 	return &p
@@ -157,11 +159,12 @@ func (p *FulfillRequestParams) Do(ctx context.Context) (err error) {
 // ContinueRequestParams continues the request, optionally modifying some of
 // its parameters.
 type ContinueRequestParams struct {
-	RequestID RequestID      `json:"requestId"`          // An id the client received in requestPaused event.
-	URL       string         `json:"url,omitempty"`      // If set, the request url will be modified in a way that's not observable by page.
-	Method    string         `json:"method,omitempty"`   // If set, the request method is overridden.
-	PostData  string         `json:"postData,omitempty"` // If set, overrides the post data in the request.
-	Headers   []*HeaderEntry `json:"headers,omitempty"`  // If set, overrides the request headers.
+	RequestID         RequestID      `json:"requestId"`                   // An id the client received in requestPaused event.
+	URL               string         `json:"url,omitempty"`               // If set, the request url will be modified in a way that's not observable by page.
+	Method            string         `json:"method,omitempty"`            // If set, the request method is overridden.
+	PostData          string         `json:"postData,omitempty"`          // If set, overrides the post data in the request.
+	Headers           []*HeaderEntry `json:"headers,omitempty"`           // If set, overrides the request headers.
+	InterceptResponse bool           `json:"interceptResponse,omitempty"` // If set, overrides response interception behavior for this request.
 }
 
 // ContinueRequest continues the request, optionally modifying some of its
@@ -202,6 +205,13 @@ func (p ContinueRequestParams) WithHeaders(headers []*HeaderEntry) *ContinueRequ
 	return &p
 }
 
+// WithInterceptResponse if set, overrides response interception behavior for
+// this request.
+func (p ContinueRequestParams) WithInterceptResponse(interceptResponse bool) *ContinueRequestParams {
+	p.InterceptResponse = interceptResponse
+	return &p
+}
+
 // Do executes Fetch.continueRequest against the provided context.
 func (p *ContinueRequestParams) Do(ctx context.Context) (err error) {
 	return cdp.Execute(ctx, CommandContinueRequest, p, nil)
@@ -232,6 +242,66 @@ func ContinueWithAuth(requestID RequestID, authChallengeResponse *AuthChallengeR
 // Do executes Fetch.continueWithAuth against the provided context.
 func (p *ContinueWithAuthParams) Do(ctx context.Context) (err error) {
 	return cdp.Execute(ctx, CommandContinueWithAuth, p, nil)
+}
+
+// ContinueResponseParams continues loading of the paused response,
+// optionally modifying the response headers. If either responseCode or headers
+// are modified, all of them must be present.
+type ContinueResponseParams struct {
+	RequestID             RequestID      `json:"requestId"`                       // An id the client received in requestPaused event.
+	ResponseCode          int64          `json:"responseCode,omitempty"`          // An HTTP response code. If absent, original response code will be used.
+	ResponsePhrase        string         `json:"responsePhrase,omitempty"`        // A textual representation of responseCode. If absent, a standard phrase matching responseCode is used.
+	ResponseHeaders       []*HeaderEntry `json:"responseHeaders,omitempty"`       // Response headers. If absent, original response headers will be used.
+	BinaryResponseHeaders string         `json:"binaryResponseHeaders,omitempty"` // Alternative way of specifying response headers as a \0-separated series of name: value pairs. Prefer the above method unless you need to represent some non-UTF8 values that can't be transmitted over the protocol as text.
+}
+
+// ContinueResponse continues loading of the paused response, optionally
+// modifying the response headers. If either responseCode or headers are
+// modified, all of them must be present.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Fetch#method-continueResponse
+//
+// parameters:
+//   requestID - An id the client received in requestPaused event.
+func ContinueResponse(requestID RequestID) *ContinueResponseParams {
+	return &ContinueResponseParams{
+		RequestID: requestID,
+	}
+}
+
+// WithResponseCode an HTTP response code. If absent, original response code
+// will be used.
+func (p ContinueResponseParams) WithResponseCode(responseCode int64) *ContinueResponseParams {
+	p.ResponseCode = responseCode
+	return &p
+}
+
+// WithResponsePhrase a textual representation of responseCode. If absent, a
+// standard phrase matching responseCode is used.
+func (p ContinueResponseParams) WithResponsePhrase(responsePhrase string) *ContinueResponseParams {
+	p.ResponsePhrase = responsePhrase
+	return &p
+}
+
+// WithResponseHeaders response headers. If absent, original response headers
+// will be used.
+func (p ContinueResponseParams) WithResponseHeaders(responseHeaders []*HeaderEntry) *ContinueResponseParams {
+	p.ResponseHeaders = responseHeaders
+	return &p
+}
+
+// WithBinaryResponseHeaders alternative way of specifying response headers
+// as a \0-separated series of name: value pairs. Prefer the above method unless
+// you need to represent some non-UTF8 values that can't be transmitted over the
+// protocol as text.
+func (p ContinueResponseParams) WithBinaryResponseHeaders(binaryResponseHeaders string) *ContinueResponseParams {
+	p.BinaryResponseHeaders = binaryResponseHeaders
+	return &p
+}
+
+// Do executes Fetch.continueResponse against the provided context.
+func (p *ContinueResponseParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandContinueResponse, p, nil)
 }
 
 // GetResponseBodyParams causes the body of the response to be received from
@@ -351,6 +421,7 @@ const (
 	CommandFulfillRequest           = "Fetch.fulfillRequest"
 	CommandContinueRequest          = "Fetch.continueRequest"
 	CommandContinueWithAuth         = "Fetch.continueWithAuth"
+	CommandContinueResponse         = "Fetch.continueResponse"
 	CommandGetResponseBody          = "Fetch.getResponseBody"
 	CommandTakeResponseBodyAsStream = "Fetch.takeResponseBodyAsStream"
 )

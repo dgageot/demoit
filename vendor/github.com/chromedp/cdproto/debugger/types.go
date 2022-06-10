@@ -48,6 +48,15 @@ type ScriptPosition struct {
 	ColumnNumber int64 `json:"columnNumber"`
 }
 
+// LocationRange location range within one script.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#type-LocationRange
+type LocationRange struct {
+	ScriptID runtime.ScriptID `json:"scriptId"`
+	Start    *ScriptPosition  `json:"start"`
+	End      *ScriptPosition  `json:"end"`
+}
+
 // CallFrame JavaScript call frame. Array of call frames form the call stack.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#type-CallFrame
@@ -56,10 +65,10 @@ type CallFrame struct {
 	FunctionName     string                `json:"functionName"`               // Name of the JavaScript function called on this call frame.
 	FunctionLocation *Location             `json:"functionLocation,omitempty"` // Location in the source code.
 	Location         *Location             `json:"location"`                   // Location in the source code.
-	URL              string                `json:"url"`                        // JavaScript script name or url.
 	ScopeChain       []*Scope              `json:"scopeChain"`                 // Scope chain for this call frame.
 	This             *runtime.RemoteObject `json:"this"`                       // this object for this call frame.
 	ReturnValue      *runtime.RemoteObject `json:"returnValue,omitempty"`      // The value being returned, if the function is at return point.
+	CanBeRestarted   bool                  `json:"canBeRestarted,omitempty"`   // Valid only while the VM is paused and indicates whether this frame can be restarted or not. Note that a true value here does not guarantee that Debugger#restartFrame with this CallFrameId will be successful, but it is very likely.
 }
 
 // Scope scope description.
@@ -133,6 +142,14 @@ func (t *ScriptLanguage) UnmarshalEasyJSON(in *jlexer.Lexer) {
 // UnmarshalJSON satisfies json.Unmarshaler.
 func (t *ScriptLanguage) UnmarshalJSON(buf []byte) error {
 	return easyjson.Unmarshal(buf, t)
+}
+
+// DebugSymbols debug symbols available for a wasm script.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#type-DebugSymbols
+type DebugSymbols struct {
+	Type        DebugSymbolsType `json:"type"`                  // Type of the debug symbols.
+	ExternalURL string           `json:"externalURL,omitempty"` // URL of the external symbol source.
 }
 
 // ScopeType scope type.
@@ -250,6 +267,56 @@ func (t *BreakLocationType) UnmarshalJSON(buf []byte) error {
 	return easyjson.Unmarshal(buf, t)
 }
 
+// DebugSymbolsType type of the debug symbols.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#type-DebugSymbols
+type DebugSymbolsType string
+
+// String returns the DebugSymbolsType as string value.
+func (t DebugSymbolsType) String() string {
+	return string(t)
+}
+
+// DebugSymbolsType values.
+const (
+	DebugSymbolsTypeNone          DebugSymbolsType = "None"
+	DebugSymbolsTypeSourceMap     DebugSymbolsType = "SourceMap"
+	DebugSymbolsTypeEmbeddedDWARF DebugSymbolsType = "EmbeddedDWARF"
+	DebugSymbolsTypeExternalDWARF DebugSymbolsType = "ExternalDWARF"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t DebugSymbolsType) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t DebugSymbolsType) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *DebugSymbolsType) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch DebugSymbolsType(in.String()) {
+	case DebugSymbolsTypeNone:
+		*t = DebugSymbolsTypeNone
+	case DebugSymbolsTypeSourceMap:
+		*t = DebugSymbolsTypeSourceMap
+	case DebugSymbolsTypeEmbeddedDWARF:
+		*t = DebugSymbolsTypeEmbeddedDWARF
+	case DebugSymbolsTypeExternalDWARF:
+		*t = DebugSymbolsTypeExternalDWARF
+
+	default:
+		in.AddError(errors.New("unknown DebugSymbolsType value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *DebugSymbolsType) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
 // PausedReason pause reason.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#event-paused
@@ -264,6 +331,7 @@ func (t PausedReason) String() string {
 const (
 	PausedReasonAmbiguous        PausedReason = "ambiguous"
 	PausedReasonAssert           PausedReason = "assert"
+	PausedReasonCSPViolation     PausedReason = "CSPViolation"
 	PausedReasonDebugCommand     PausedReason = "debugCommand"
 	PausedReasonDOM              PausedReason = "DOM"
 	PausedReasonEventListener    PausedReason = "EventListener"
@@ -292,6 +360,8 @@ func (t *PausedReason) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = PausedReasonAmbiguous
 	case PausedReasonAssert:
 		*t = PausedReasonAssert
+	case PausedReasonCSPViolation:
+		*t = PausedReasonCSPViolation
 	case PausedReasonDebugCommand:
 		*t = PausedReasonDebugCommand
 	case PausedReasonDOM:
@@ -362,6 +432,48 @@ func (t *ContinueToLocationTargetCallFrames) UnmarshalEasyJSON(in *jlexer.Lexer)
 
 // UnmarshalJSON satisfies json.Unmarshaler.
 func (t *ContinueToLocationTargetCallFrames) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
+// RestartFrameMode the mode parameter must be present and set to 'StepInto',
+// otherwise restartFrame will error out.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-restartFrame
+type RestartFrameMode string
+
+// String returns the RestartFrameMode as string value.
+func (t RestartFrameMode) String() string {
+	return string(t)
+}
+
+// RestartFrameMode values.
+const (
+	RestartFrameModeStepInto RestartFrameMode = "StepInto"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t RestartFrameMode) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t RestartFrameMode) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *RestartFrameMode) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch RestartFrameMode(in.String()) {
+	case RestartFrameModeStepInto:
+		*t = RestartFrameModeStepInto
+
+	default:
+		in.AddError(errors.New("unknown RestartFrameMode value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *RestartFrameMode) UnmarshalJSON(buf []byte) error {
 	return easyjson.Unmarshal(buf, t)
 }
 
@@ -453,5 +565,57 @@ func (t *ExceptionsState) UnmarshalEasyJSON(in *jlexer.Lexer) {
 
 // UnmarshalJSON satisfies json.Unmarshaler.
 func (t *ExceptionsState) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
+// SetScriptSourceStatus whether the operation was successful or not. Only Ok
+// denotes a successful live edit while the other enum variants denote why the
+// live edit failed.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-setScriptSource
+type SetScriptSourceStatus string
+
+// String returns the SetScriptSourceStatus as string value.
+func (t SetScriptSourceStatus) String() string {
+	return string(t)
+}
+
+// SetScriptSourceStatus values.
+const (
+	SetScriptSourceStatusOk                       SetScriptSourceStatus = "Ok"
+	SetScriptSourceStatusCompileError             SetScriptSourceStatus = "CompileError"
+	SetScriptSourceStatusBlockedByActiveGenerator SetScriptSourceStatus = "BlockedByActiveGenerator"
+	SetScriptSourceStatusBlockedByActiveFunction  SetScriptSourceStatus = "BlockedByActiveFunction"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t SetScriptSourceStatus) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t SetScriptSourceStatus) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *SetScriptSourceStatus) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch SetScriptSourceStatus(in.String()) {
+	case SetScriptSourceStatusOk:
+		*t = SetScriptSourceStatusOk
+	case SetScriptSourceStatusCompileError:
+		*t = SetScriptSourceStatusCompileError
+	case SetScriptSourceStatusBlockedByActiveGenerator:
+		*t = SetScriptSourceStatusBlockedByActiveGenerator
+	case SetScriptSourceStatusBlockedByActiveFunction:
+		*t = SetScriptSourceStatusBlockedByActiveFunction
+
+	default:
+		in.AddError(errors.New("unknown SetScriptSourceStatus value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *SetScriptSourceStatus) UnmarshalJSON(buf []byte) error {
 	return easyjson.Unmarshal(buf, t)
 }

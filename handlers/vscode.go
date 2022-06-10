@@ -1,5 +1,6 @@
 /*
 Copyright 2018 Google LLC
+Copyright 2022 David Gageot
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,10 +31,15 @@ import (
 func VSCode(w http.ResponseWriter, r *http.Request) {
 	vscode.Start()
 
+	vsCodeURL := localURL(r, vscode.Port, nil)
+
 	// Wait for vscode to start as much as we can.
 	// Don't error out if it can't be started.
 	for try := 10; try > 0; try-- {
-		_, err := http.Head("http://localhost:18080/")
+		resp, err := http.Head(vsCodeURL)
+		if resp != nil {
+			resp.Body.Close()
+		}
 		if err == nil {
 			break
 		}
@@ -42,10 +48,9 @@ func VSCode(w http.ResponseWriter, r *http.Request) {
 	}
 
 	folder := mux.Vars(r)["folder"]
-
-	url := localURL(r, 18080, map[string]string{
+	url := localURL(r, vscode.Port, map[string]string{
 		"folder": path.Join("/app", folder),
 	})
 
-	http.Redirect(w, r, url, 303)
+	http.Redirect(w, r, url, http.StatusSeeOther)
 }

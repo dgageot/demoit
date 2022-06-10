@@ -1,5 +1,6 @@
 /*
 Copyright 2018 Google LLC
+Copyright 2022 David Gageot
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,44 +20,27 @@ package files
 import (
 	"fmt"
 	"log"
-	"path/filepath"
-	"time"
 
-	"github.com/jaschaephraim/lrserver"
-	"github.com/radovskyb/watcher"
+	"github.com/dgageot/demoit/livereload"
+	"github.com/rjeczalik/notify"
 )
 
 func Watch(root string) error {
-	lr := lrserver.New(lrserver.DefaultName, lrserver.DefaultPort)
+	lr := livereload.New()
 	go func() {
 		log.Fatal(lr.ListenAndServe())
 	}()
 
-	w := watcher.New()
-	w.FilterOps(watcher.Create, watcher.Write, watcher.Remove, watcher.Rename, watcher.Move)
-	if err := w.Ignore(filepath.Join(root, ".git")); err != nil {
-		return err
-	}
-	if err := w.AddRecursive(root); err != nil {
+	events := make(chan notify.EventInfo, 1)
+	if err := notify.Watch(root+"/...", events, notify.All); err != nil {
 		return err
 	}
 
-	go func() {
-		for {
-			select {
-			case event := <-w.Event:
-				fmt.Println(event)
-				lr.Reload(event.Name())
-			case err := <-w.Error:
-				log.Fatalln(err)
-			case <-w.Closed:
-				return
-			}
-		}
-	}()
-
-	if err := w.Start(time.Millisecond * 100); err != nil {
-		return err
+	for event := range events {
+		// TODO: Ignore files under .git
+		// TODO: Debounce
+		fmt.Println(event)
+		lr.Reload(event.Path())
 	}
 
 	return nil

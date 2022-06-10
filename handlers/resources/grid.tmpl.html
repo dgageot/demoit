@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>All pages</title>
+    <style>
+			.cell {
+				display: inline-block;
+				overflow: hidden;
+				margin: 0 .5rem;
+				width: calc(480px + 2px);
+			}
+			.cell h2 {
+				margin: .5rem 0;
+			}
+			.thumb {
+				height: 270px;
+				border: 1px solid #BBB;
+			}
+      .thumb iframe {
+				width: 1920px;
+				height: 1080px;
+				transform: scale(0.25);
+				transform-origin: 0 0;
+      }
+    </style>
+  </head>
+<body>
+  <h2><a href="/">Start presentation</a></h2>
+
+  {{range $i, $step := .}}
+    <div class="cell">
+      <h2><a href="/{{$i}}">Page {{$i}}</a></h2>
+      <div class="thumb">
+        <iframe frameBorder="0" src="/{{$i}}?grid=true"></iframe>
+      </div>
+    </div>
+  {{end}}
+</body>
+</html>

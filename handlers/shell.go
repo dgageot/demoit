@@ -1,5 +1,6 @@
 /*
 Copyright 2018 Google LLC
+Copyright 2022 David Gageot
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,6 +22,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -42,7 +44,7 @@ func Shell(w http.ResponseWriter, r *http.Request) {
 	commands, err := commands(path)
 	if err != nil {
 		fmt.Println(err)
-		http.Error(w, err.Error(), 500)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -50,7 +52,7 @@ func Shell(w http.ResponseWriter, r *http.Request) {
 		"arg": strings.Join(commands, ";"),
 	})
 
-	http.Redirect(w, r, url, 303)
+	http.Redirect(w, r, url, http.StatusSeeOther)
 }
 
 func commands(path string) ([]string, error) {
@@ -62,7 +64,7 @@ func commands(path string) ([]string, error) {
 	}
 	fmt.Println("Using shell", shell)
 
-	// Source custom .bashrc
+	// Source custom .bashrc.
 	bashRc, err := filepath.Abs(filepath.Join(files.Root, ".demoit", ".bashrc"))
 	if err != nil {
 		return nil, err
@@ -72,8 +74,7 @@ func commands(path string) ([]string, error) {
 		commands = append(commands, fmt.Sprintf("source %s", bashRc))
 	}
 
-	// Bash history needs to be copied because it's going to be
-	// modified by the shell.
+	// Bash history needs to be copied because it's going to be modified by the shell.
 	bashHistory, err := copyFile(".bash_history")
 	if err != nil {
 		return nil, err
@@ -92,21 +93,46 @@ func copyFile(file string) (string, error) {
 	content, err := files.Read(".demoit", file)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			// Ignore silently
+			// Ignore silently.
 			return "", nil
 		}
-		return "", fmt.Errorf("Unable to read file %s: %w", file, err)
+		return "", fmt.Errorf("unable to read file %s: %w", file, err)
 	}
 
 	tmpFile, err := ioutil.TempFile("", "demoit")
 	if err != nil {
-		return "", fmt.Errorf("Unable to create temp file: %w", err)
+		return "", fmt.Errorf("unable to create temp file: %w", err)
 	}
 
 	_, err = tmpFile.Write(content)
 	if err != nil {
-		return "", fmt.Errorf("Unable to write file: %w", err)
+		return "", fmt.Errorf("unable to write file: %w", err)
 	}
 
 	return tmpFile.Name(), nil
+}
+
+func localURL(r *http.Request, port int, params map[string]string) string {
+	domain := localhost(r)
+	localhost := fmt.Sprintf("http://%s:%d", domain, port)
+
+	if len(params) > 0 {
+		parameters := url.Values{}
+		for k, v := range params {
+			parameters.Set(k, v)
+		}
+		localhost += "?" + parameters.Encode()
+	}
+
+	return localhost
+}
+
+func localhost(r *http.Request) string {
+	if referer := r.Header.Get("Referer"); referer != "" {
+		if refererURL, err := url.Parse(referer); err == nil {
+			return strings.Split(refererURL.Host, ":")[0]
+		}
+	}
+
+	return "localhost"
 }

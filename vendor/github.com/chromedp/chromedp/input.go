@@ -56,9 +56,12 @@ func MouseClickXY(x, y float64, opts ...MouseOption) MouseAction {
 // viewport.
 func MouseClickNode(n *cdp.Node, opts ...MouseOption) MouseAction {
 	return ActionFunc(func(ctx context.Context) error {
-		var pos []float64
-		err := EvaluateAsDevTools(snippet(scrollIntoViewJS, cashX(true), nil, n), &pos).Do(ctx)
-		if err != nil {
+		t := cdp.ExecutorFromContext(ctx).(*Target)
+		if t == nil {
+			return ErrInvalidTarget
+		}
+
+		if err := dom.ScrollIntoViewIfNeeded().WithNodeID(n.NodeID).Do(ctx); err != nil {
 			return err
 		}
 
@@ -66,6 +69,11 @@ func MouseClickNode(n *cdp.Node, opts ...MouseOption) MouseAction {
 		if err != nil {
 			return err
 		}
+
+		if len(boxes) == 0 {
+			return ErrInvalidDimensions
+		}
+
 		content := boxes[0]
 
 		c := len(content)
@@ -159,6 +167,9 @@ func KeyEvent(keys string, opts ...KeyOption) KeyAction {
 	return ActionFunc(func(ctx context.Context) error {
 		for _, r := range keys {
 			for _, k := range kb.Encode(r) {
+				for _, o := range opts {
+					o(k)
+				}
 				if err := k.Do(ctx); err != nil {
 					return err
 				}

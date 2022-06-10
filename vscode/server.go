@@ -1,5 +1,6 @@
 /*
 Copyright 2018 Google LLC
+Copyright 2022 David Gageot
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,6 +24,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"strconv"
 	"sync"
 
 	"github.com/dgageot/demoit/files"
@@ -31,6 +33,14 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 )
+
+const (
+	Port          = 18080
+	dockerImage   = "codercom/code-server:4.4.0@sha256:f0b4cdac7b7742ec83167666b5bc8abb90c4f2660247d482f55fee916d079cb6"
+	containerName = "demoit-vscode"
+)
+
+var defaultFlags = []string{"--auth=none", "--disable-telemetry", "--disable-update-check", "--force"}
 
 var startLock sync.Once
 
@@ -59,21 +69,26 @@ func startVsCodeServer(ctx context.Context) error {
 	}
 
 	// Ignore error
-	_ = client.ContainerRemove(ctx, "demoit-vscode", types.ContainerRemoveOptions{Force: true})
+	_ = client.ContainerRemove(ctx, containerName, types.ContainerRemoveOptions{Force: true})
+
+	// Ignore error
+	if resp, _ := client.ImagePull(ctx, dockerImage, types.ImagePullOptions{}); resp != nil {
+		resp.Close()
+	}
 
 	body, err := client.ContainerCreate(ctx, &containertypes.Config{
-		Image: "codercom/code-server:3.4.1",
+		Image: dockerImage,
 		User:  fmt.Sprintf("%s:%s", user.Uid, user.Gid),
-		Cmd:   []string{"--auth=none", "--disable-telemetry"},
+		Cmd:   defaultFlags,
 		ExposedPorts: nat.PortSet{
 			nat.Port("8080/tcp"): struct{}{},
 		},
 	}, &containertypes.HostConfig{
 		Binds: []string{filepath.Join(cwd, files.Root) + ":/app"},
 		PortBindings: nat.PortMap{
-			nat.Port("8080/tcp"): []nat.PortBinding{{HostPort: "18080"}},
+			nat.Port("8080/tcp"): []nat.PortBinding{{HostPort: strconv.Itoa(Port)}},
 		},
-	}, nil, "demoit-vscode")
+	}, nil, nil, containerName)
 	if err != nil {
 		return fmt.Errorf("unable to create a docker container for vscode: %w", err)
 	}

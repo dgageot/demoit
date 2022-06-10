@@ -1,5 +1,6 @@
 /*
 Copyright 2018 Google LLC
+Copyright 2022 David Gageot
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,6 +19,7 @@ package shell
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -25,50 +27,22 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/yudai/gotty/backend/localcommand"
-	"github.com/yudai/gotty/server"
+	"github.com/sorenisanerd/gotty/backend/localcommand"
+	"github.com/sorenisanerd/gotty/server"
 )
-
-func strPtr(v string) *string {
-	return &v
-}
 
 // ListenAndServe starts a server for a browser based shell.
 func ListenAndServe(workingDir string, port int, host string, command string, args ...string) error {
 	appOptions := &server.Options{
 		Port:            strconv.Itoa(port),
 		Address:         host,
+		Path:            "/",
 		PermitWrite:     true,
-		Term:            "hterm",
 		PermitArguments: true,
-		Preferences: &server.HtermPrefernces{
-			FontSize:        20,
-			FontFamily:      "Inconsolata for Powerline, monaco",
-			BackgroundColor: "rgb(11,40,50)",
-			// ForegroundColor: "rgb(131,148,150)",
-			ForegroundColor: "rgb(255, 255, 255)",
-			ColorPaletteOverrides: []*string{
-				strPtr("#073642"),
-				strPtr("#dc322f"),
-				strPtr("#859900"),
-				strPtr("#b58900"),
-				strPtr("#538bd0"),
-				strPtr("#d33682"),
-				strPtr("#2aa198"),
-				strPtr("#eee8d5"),
-				strPtr("#002b36"),
-				strPtr("#cb4b16"),
-				strPtr("#586e75"),
-				strPtr("#657b83"),
-				strPtr("#839496"),
-				strPtr("#6c71c4"),
-				strPtr("#93a1a1"),
-				strPtr("#fdf6e3"),
-			},
-		},
 	}
 
 	backendOptions := &localcommand.Options{}
+
 	factory, err := localcommand.NewFactory(command, args, backendOptions)
 	if err != nil {
 		return err
@@ -88,7 +62,7 @@ func ListenAndServe(workingDir string, port int, host string, command string, ar
 	}()
 
 	err = waitSignals(errs, cancel, gCancel)
-	if err != nil && err != context.Canceled {
+	if err != nil && errors.Is(err, context.Canceled) {
 		log.Println(err)
 		os.Exit(8)
 	}

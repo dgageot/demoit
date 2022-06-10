@@ -1,5 +1,6 @@
 /*
 Copyright 2018 Google LLC
+Copyright 2022 David Gageot
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,6 +19,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -33,12 +35,27 @@ func main() {
 	flags.WebServerPort = flag.Int("port", 8888, "presentation port")
 	flags.WebServerHost = flag.String("host", "localhost", "host to bind the presentation server")
 	flags.ShellPort = flag.Int("shellport", 9999, "shell server port (terminal)")
-	flags.ShellHost = flag.String("shellhost", "localhost", "host to bind the the shell server (terminal)")
+	flags.ShellHost = flag.String("shellhost", "localhost", "host to bind the shell server (terminal)")
 	flag.Parse()
-	if len(flag.Args()) > 0 {
-		files.Root = flag.Args()[0]
+	if args := flag.Args(); len(args) > 0 {
+		files.Root = args[0]
 	}
 
+	if err := handlers.VerifyConfiguration(); err != nil {
+		log.Fatal(err)
+	}
+
+	go startWebServer()
+	if *flags.DevMode {
+		go startFileWatcher(files.Root)
+	} else {
+		fmt.Println(`"Dev Mode" to live reload your slides can be enabled with '--dev'`)
+	}
+
+	startShellServer(files.Root)
+}
+
+func startWebServer() {
 	r := mux.NewRouter()
 	r.HandleFunc("/{id:[0-9]*}", handlers.Step).Methods("GET")
 	r.HandleFunc("/last", handlers.LastStep).Methods("GET")
@@ -56,39 +73,16 @@ func main() {
 	r.HandleFunc("/pdf", handlers.ExportToPDF).Methods("GET")
 	r.HandleFunc("/speakernotes", handlers.SpeakerNotes).Methods("GET")
 	r.HandleFunc("/grid", handlers.Grid).Methods("GET")
-	r.HandleFunc("/vscode/{folder}", handlers.VSCode).Methods("GET")
+	r.HandleFunc("/beta/vscode/{folder}", handlers.VSCode).Methods("GET")
 
-	// Fail fast, in case we're not in a cromulent directory
-	if err := handlers.VerifyStepsFile(); err != nil {
-		log.Fatalln(err)
-	}
-
-	// Fail fast, in case we can't find the resource folder ".demoit"
-	if err := handlers.VerifyResourceFolder(); err != nil {
-		log.Fatalf("mandatory resource folder \".demoit\": %v", err)
-	}
-
-	go startWebServer(r)
-	if *flags.DevMode {
-		go startFileWatch(files.Root)
-	}
-
-	startShellServer(files.Root)
-}
-
-func startFileWatch(root string) {
-	log.Fatal(files.Watch(root))
-}
-
-func startWebServer(r http.Handler) {
 	addr := flags.WebServerAddress()
-
-	log.Printf("Welcome to DemoIt. Please, open %s", "http://"+addr)
-	if !*flags.DevMode {
-		log.Printf("\"Dev Mode\" to live reload your slides can be enabled with '--dev'")
-	}
+	fmt.Println("Welcome to DemoIt. Please, open http://" + addr)
 
 	log.Fatal(http.ListenAndServe(addr, r))
+}
+
+func startFileWatcher(root string) {
+	log.Fatal(files.Watch(root))
 }
 
 func startShellServer(root string) {

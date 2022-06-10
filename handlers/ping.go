@@ -1,5 +1,6 @@
 /*
 Copyright 2018 Google LLC
+Copyright 2022 David Gageot
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,17 +19,33 @@ package handlers
 
 import (
 	"net/http"
+	"net/url"
 )
 
-// Ping does http HEAD on a url and return it's status.
+// Ping does http HEAD on a URL and returns its status.
 func Ping(w http.ResponseWriter, r *http.Request) {
+	// No need to ping when in grid view mode.
+	if isGridView(r.Referer()) {
+		return
+	}
+
 	url := r.FormValue("url")
 
 	resp, err := http.Head(url)
 	if err != nil {
-		http.Error(w, "Unable to connect", 500)
+		http.Error(w, "Unable to ping", http.StatusInternalServerError)
 		return
 	}
+	defer resp.Body.Close()
 
 	w.WriteHeader(resp.StatusCode)
+}
+
+func isGridView(referer string) bool {
+	refererURL, err := url.Parse(referer)
+	if err != nil {
+		return false // Silently ignore
+	}
+
+	return refererURL.Query().Get("grid") == "true"
 }
