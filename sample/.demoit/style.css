@@ -18,6 +18,7 @@ html, body, #top {
     margin: 0;
     padding: 0;
     background-color: black;
+    font-size: 3vw;
 
     --color-text: rgb(61, 64, 67);
     --color-main: rgb(66,133,244);
@@ -48,14 +49,16 @@ body {
 h1 {
     background: var(--color-main);
     width: calc(100% - 6vw);
+    height: 4vw;
     padding: 2vw;
     overflow: hidden;
     white-space: nowrap;
     text-align: left;
     text-overflow: ellipsis;
-    border-radius: 0 8px 8px 0;
+    border-radius: 0 .8vw .8vw 0;
     text-transform: none;
     font-weight: normal;
+    font-size: 3vw;
     color: white;
 }
 
@@ -64,22 +67,39 @@ h2, h3, h4, h5, h6 {
 }
 
 h2 {
+    font-size: 5vw;
+}
+
+h3 {
     font-size: 4vw;
 }
 
-h2:first-of-type {
-    margin-top: 10vw;
+h4 {
+    font-size: 2vw;
 }
 
-img {
-    height: 80%;
-    width: auto;
+h2:first-of-type {
+    margin-top: 6vw;
+}
+
+ul {
+    text-align: left;
+    display: inline-block;
+    margin: 0;
 }
 
 .logos {
-    width: 80%;
-    margin: 7vw auto;
+    width: 100%;
+    height: calc(100% - 14vw);
     text-align: center;
+}
+
+img {
+    height: 75%;
+}
+
+.logos img {
+    margin-top: 4vw;
 }
 
 a, a:visited {
@@ -88,7 +108,7 @@ a, a:visited {
 }
 
 split-view {
-    height: calc(100% - 13vw);
+    height: calc(100% - 14vw);
     padding: 0 2vw;
 }
 
