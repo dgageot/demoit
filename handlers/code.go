@@ -18,7 +18,6 @@ limitations under the License.
 package handlers
 
 import (
-	"bytes"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -59,15 +58,9 @@ func Code(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var buffer bytes.Buffer
-	if err := formatter.Format(&buffer, style, iterator); err != nil {
-		http.Error(w, "Unable to format source code", http.StatusInternalServerError)
-		return
-	}
-
 	w.Header().Set("Content-Type", "text/html")
-	if _, err = buffer.WriteTo(w); err != nil {
-		http.Error(w, "Unable to write source code", http.StatusInternalServerError)
+	if err := formatter.Format(w, style, iterator); err != nil {
+		http.Error(w, "Unable to format source code", http.StatusInternalServerError)
 		return
 	}
 }
