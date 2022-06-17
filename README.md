@@ -39,26 +39,28 @@ Basically, the idea is to:
  + Add images, fonts and scripts in a `.demoit` folder at the root of the project.
  + Customize the style sheet in `.demoit/style.css`.
  + [sample/demoit.html](sample/demoit.html) demonstrates how to use the web components.
- 
+
 See [Run Demo](#run-demo) for setting up and running a demo to get started with your first presentation.
 
 ## Install
 
-### Clone and install
+### Install with Go 1.18+
 
 ```bash
-go get -u github.com/dgageot/demoit
+go install github.com/dgageot/demoit
 ```
 
-*As any go application, it will download demoit's sources to your `$HOME/go/src/github.com/dgageot/demoit` folder.  
-Add `$HOME/go/bin/` directory to your $PATH in order to be able to call any go executable (including `demoit`) to your path.*
+*Make sure `$HOME/go/bin/` directory is in your `$PATH`.*
 
-### Build it
+### Build from sources
 
 ```bash
-cd $HOME/go/src/github.com/dgageot/demoit
-go install -mod=vendor
+git clone https://github.com/dgageot/demoit.git
+cd demoit
+go install
 ```
+
+*This requires Go 1.18 or later.*
 
 ### Add shell font
 
