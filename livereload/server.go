@@ -18,13 +18,16 @@ limitations under the License.
 package livereload
 
 import (
+	"bytes"
 	_ "embed"
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 )
 
@@ -32,23 +35,23 @@ import (
 var js []byte
 
 type Server struct {
+	port     int
 	connSet  sync.Map
 	upgrader websocket.Upgrader
 }
 
-func New() *Server {
+func New(port int) *Server {
 	return &Server{
+		port: port,
 		upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool { return true },
 		},
 	}
 }
 
-func (s *Server) ListenAndServe() error {
-	router := http.NewServeMux()
+func (s *Server) RegisterHandlers(router *mux.Router) {
 	router.HandleFunc("/livereload.js", s.js)
 	router.HandleFunc("/livereload", s.webSocket)
-	return http.ListenAndServe(":35729", router)
 }
 
 func (s *Server) Reload(file string) {
@@ -59,8 +62,10 @@ func (s *Server) Reload(file string) {
 }
 
 func (s *Server) js(w http.ResponseWriter, r *http.Request) {
+	script := bytes.ReplaceAll(js, []byte("35729"), []byte(strconv.Itoa(s.port)))
+
 	w.Header().Set("Content-Type", "application/javascript")
-	if _, err := w.Write(js); err != nil {
+	if _, err := w.Write(script); err != nil {
 		http.Error(w, "Unable to server livereload javascript", http.StatusInternalServerError)
 	}
 }
