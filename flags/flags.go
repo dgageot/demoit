@@ -31,15 +31,7 @@ var WebServerHost *string
 // ShellPort is the local port for shell server.
 var ShellPort *int
 
-// ShellHost is the host to bind the shell server.
-var ShellHost *string
-
 // WebServerAddress is the addresse to bind the presentation web server.
 func WebServerAddress() string {
 	return fmt.Sprintf("%s:%d", *WebServerHost, *WebServerPort)
-}
-
-// ShellAddress is the addresse to bind the shell server.
-func ShellAddress() string {
-	return fmt.Sprintf("%s:%d", *ShellHost, *ShellPort)
 }

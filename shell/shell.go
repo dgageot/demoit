@@ -19,85 +19,30 @@ package shell
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"log"
-	"os"
-	"os/signal"
 	"strconv"
-	"syscall"
 
 	"github.com/sorenisanerd/gotty/backend/localcommand"
 	"github.com/sorenisanerd/gotty/server"
 )
 
 // ListenAndServe starts a server for a browser based shell.
-func ListenAndServe(workingDir string, port int, host string, command string, args ...string) error {
-	appOptions := &server.Options{
+func ListenAndServe(port int, command string, args ...string) error {
+	factory, err := localcommand.NewFactory(command, args, &localcommand.Options{})
+	if err != nil {
+		return err
+	}
+
+	options := &server.Options{
 		Port:            strconv.Itoa(port),
-		Address:         host,
+		Address:         "127.0.0.1",
 		Path:            "/tty/",
 		PermitWrite:     true,
 		PermitArguments: true,
 	}
-
-	backendOptions := &localcommand.Options{}
-
-	factory, err := localcommand.NewFactory(command, args, backendOptions)
+	srv, err := server.New(factory, options)
 	if err != nil {
 		return err
 	}
 
-	srv, err := server.New(factory, appOptions)
-	if err != nil {
-		return err
-	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-	gCtx, gCancel := context.WithCancel(context.Background())
-
-	errs := make(chan error, 1)
-	go func() {
-		errs <- srv.Run(ctx, server.WithGracefullContext(gCtx))
-	}()
-
-	err = waitSignals(errs, cancel, gCancel)
-	if err != nil && errors.Is(err, context.Canceled) {
-		log.Println(err)
-		os.Exit(8)
-	}
-
-	return nil
-}
-
-func waitSignals(errs chan error, cancel context.CancelFunc, gracefullCancel context.CancelFunc) error {
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(
-		sigChan,
-		syscall.SIGINT,
-		syscall.SIGTERM,
-	)
-
-	select {
-	case err := <-errs:
-		return err
-
-	case s := <-sigChan:
-		switch s {
-		case syscall.SIGINT:
-			gracefullCancel()
-			fmt.Println("C-C to force close")
-			select {
-			case err := <-errs:
-				return err
-			case <-sigChan:
-				fmt.Println("Force closing...")
-				cancel()
-				return <-errs
-			}
-		default:
-			cancel()
-			return <-errs
-		}
-	}
+	return srv.Run(context.Background())
 }
