@@ -1,5 +1,6 @@
 /*
 Copyright 2018 Google LLC
+Copyright 2022 David Gageot
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,7 +21,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -29,7 +29,7 @@ var Root = "."
 
 // Read reads a file in .demoit folder.
 func Read(path ...string) ([]byte, error) {
-	return ioutil.ReadFile(fullpath(path...))
+	return os.ReadFile(fullpath(path...))
 }
 
 // Exists tests if a file exists.

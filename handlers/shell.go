@@ -20,7 +20,6 @@ package handlers
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -99,7 +98,7 @@ func copyFile(file string) (string, error) {
 		return "", fmt.Errorf("unable to read file %s: %w", file, err)
 	}
 
-	tmpFile, err := ioutil.TempFile("", "demoit")
+	tmpFile, err := os.CreateTemp("", "demoit")
 	if err != nil {
 		return "", fmt.Errorf("unable to create temp file: %w", err)
 	}

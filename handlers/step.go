@@ -23,7 +23,6 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -90,7 +89,7 @@ func LastStep(w http.ResponseWriter, r *http.Request) {
 func readSteps(folder string) ([]Page, error) {
 	var steps []Page
 
-	content, err := ioutil.ReadFile(filepath.Join(folder, "demoit.html"))
+	content, err := os.ReadFile(filepath.Join(folder, "demoit.html"))
 	if err != nil {
 		return nil, err
 	}
