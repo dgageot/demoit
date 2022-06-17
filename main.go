@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/http/httputil"
 
 	"github.com/dgageot/demoit/files"
 	"github.com/dgageot/demoit/flags"
@@ -74,11 +75,24 @@ func startWebServer() {
 	r.HandleFunc("/speakernotes", handlers.SpeakerNotes).Methods("GET")
 	r.HandleFunc("/grid", handlers.Grid).Methods("GET")
 	r.HandleFunc("/beta/vscode/{folder}", handlers.VSCode).Methods("GET")
+	proxy := NewSingleHostReverseProxy()
+	r.PathPrefix("/tty").HandlerFunc(proxy.ServeHTTP)
 
 	addr := flags.WebServerAddress()
 	fmt.Println("Welcome to DemoIt. Please, open http://" + addr)
-
 	log.Fatal(http.ListenAndServe(addr, r))
+}
+
+func NewSingleHostReverseProxy() *httputil.ReverseProxy {
+	return &httputil.ReverseProxy{
+		Director: func(req *http.Request) {
+			req.URL.Scheme = "http"
+			req.URL.Host = fmt.Sprintf("localhost:%d", *flags.ShellPort)
+			if _, ok := req.Header["User-Agent"]; !ok {
+				req.Header.Set("User-Agent", "")
+			}
+		},
+	}
 }
 
 func startFileWatcher(root string) {

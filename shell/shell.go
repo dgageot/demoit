@@ -36,7 +36,7 @@ func ListenAndServe(workingDir string, port int, host string, command string, ar
 	appOptions := &server.Options{
 		Port:            strconv.Itoa(port),
 		Address:         host,
-		Path:            "/",
+		Path:            "/tty/",
 		PermitWrite:     true,
 		PermitArguments: true,
 	}
