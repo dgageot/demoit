@@ -64,7 +64,7 @@ go install
 
 ### Add shell font
 
-To have a correct display in the web terminal, you have to install the font `Inconsolata for Powerline` on your computer.  
+To have a correct display in the web terminal, you have to install the font `Inconsolata for Powerline` on your computer.
 This font can be found [here](https://github.com/powerline/fonts/tree/master/Inconsolata).
 
 ## Run Demo
