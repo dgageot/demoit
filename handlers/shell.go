@@ -27,7 +27,6 @@ import (
 	"strings"
 
 	"github.com/dgageot/demoit/files"
-	"github.com/dgageot/demoit/flags"
 	"github.com/gorilla/mux"
 )
 
@@ -42,16 +41,12 @@ func Shell(w http.ResponseWriter, r *http.Request) {
 
 	commands, err := commands(path)
 	if err != nil {
-		fmt.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	url := localURL(r, *flags.ShellPort, map[string]string{
-		"arg": strings.Join(commands, ";"),
-	})
-
-	http.Redirect(w, r, url, http.StatusSeeOther)
+	redirectURL := "/tty?arg=" + url.QueryEscape(strings.Join(commands, ";"))
+	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
 }
 
 func commands(path string) ([]string, error) {

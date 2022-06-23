@@ -22,6 +22,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 
 	"github.com/dgageot/demoit/files"
 	"github.com/dgageot/demoit/flags"
@@ -35,7 +37,6 @@ func main() {
 	flags.WebServerPort = flag.Int("port", 8888, "presentation port")
 	flags.WebServerHost = flag.String("host", "localhost", "host to bind the presentation server")
 	flags.ShellPort = flag.Int("shellport", 9999, "shell server port (terminal)")
-	flags.ShellHost = flag.String("shellhost", "localhost", "host to bind the shell server (terminal)")
 	flag.Parse()
 	if args := flag.Args(); len(args) > 0 {
 		files.Root = args[0]
@@ -74,10 +75,11 @@ func startWebServer() {
 	r.HandleFunc("/speakernotes", handlers.SpeakerNotes).Methods("GET")
 	r.HandleFunc("/grid", handlers.Grid).Methods("GET")
 	r.HandleFunc("/beta/vscode/{folder}", handlers.VSCode).Methods("GET")
+	proxy := httputil.NewSingleHostReverseProxy(mustParseURL(fmt.Sprintf("http://127.0.0.1:%d", *flags.ShellPort)))
+	r.PathPrefix("/tty").HandlerFunc(proxy.ServeHTTP)
 
 	addr := flags.WebServerAddress()
 	fmt.Println("Welcome to DemoIt. Please, open http://" + addr)
-
 	log.Fatal(http.ListenAndServe(addr, r))
 }
 
@@ -87,7 +89,14 @@ func startFileWatcher(root string) {
 
 func startShellServer(root string) {
 	port := *flags.ShellPort
-	host := *flags.ShellHost
 
-	log.Fatal(shell.ListenAndServe(root, port, host, "sh", "-c"))
+	log.Fatal(shell.ListenAndServe(port, "sh", "-c"))
+}
+
+func mustParseURL(rawURL string) *url.URL {
+	url, err := url.Parse(rawURL)
+	if err != nil {
+		panic(err)
+	}
+	return url
 }
