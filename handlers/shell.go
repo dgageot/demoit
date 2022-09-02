@@ -50,7 +50,7 @@ func Shell(w http.ResponseWriter, r *http.Request) {
 }
 
 func commands(path string) ([]string, error) {
-	commands := []string{"cd " + path}
+	commands := []string{"cd " + path + ">/dev/null"}
 
 	shell, found := os.LookupEnv("SHELL")
 	if !found {
