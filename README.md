@@ -47,7 +47,7 @@ See [Run Demo](#run-demo) for setting up and running a demo to get started with 
 ### Install with Go 1.18+
 
 ```bash
-go install github.com/dgageot/demoit
+go install github.com/dgageot/demoit@latest
 ```
 
 *Make sure `$HOME/go/bin/` directory is in your `$PATH`.*
