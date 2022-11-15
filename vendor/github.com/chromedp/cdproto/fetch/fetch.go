@@ -83,8 +83,9 @@ type FailRequestParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Fetch#method-failRequest
 //
 // parameters:
-//   requestID - An id the client received in requestPaused event.
-//   errorReason - Causes the request to fail with the given reason.
+//
+//	requestID - An id the client received in requestPaused event.
+//	errorReason - Causes the request to fail with the given reason.
 func FailRequest(requestID RequestID, errorReason network.ErrorReason) *FailRequestParams {
 	return &FailRequestParams{
 		RequestID:   requestID,
@@ -112,8 +113,9 @@ type FulfillRequestParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Fetch#method-fulfillRequest
 //
 // parameters:
-//   requestID - An id the client received in requestPaused event.
-//   responseCode - An HTTP response code.
+//
+//	requestID - An id the client received in requestPaused event.
+//	responseCode - An HTTP response code.
 func FulfillRequest(requestID RequestID, responseCode int64) *FulfillRequestParams {
 	return &FulfillRequestParams{
 		RequestID:    requestID,
@@ -163,7 +165,7 @@ type ContinueRequestParams struct {
 	URL               string         `json:"url,omitempty"`               // If set, the request url will be modified in a way that's not observable by page.
 	Method            string         `json:"method,omitempty"`            // If set, the request method is overridden.
 	PostData          string         `json:"postData,omitempty"`          // If set, overrides the post data in the request.
-	Headers           []*HeaderEntry `json:"headers,omitempty"`           // If set, overrides the request headers.
+	Headers           []*HeaderEntry `json:"headers,omitempty"`           // If set, overrides the request headers. Note that the overrides do not extend to subsequent redirect hops, if a redirect happens. Another override may be applied to a different request produced by a redirect.
 	InterceptResponse bool           `json:"interceptResponse,omitempty"` // If set, overrides response interception behavior for this request.
 }
 
@@ -173,7 +175,8 @@ type ContinueRequestParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Fetch#method-continueRequest
 //
 // parameters:
-//   requestID - An id the client received in requestPaused event.
+//
+//	requestID - An id the client received in requestPaused event.
 func ContinueRequest(requestID RequestID) *ContinueRequestParams {
 	return &ContinueRequestParams{
 		RequestID: requestID,
@@ -199,7 +202,9 @@ func (p ContinueRequestParams) WithPostData(postData string) *ContinueRequestPar
 	return &p
 }
 
-// WithHeaders if set, overrides the request headers.
+// WithHeaders if set, overrides the request headers. Note that the overrides
+// do not extend to subsequent redirect hops, if a redirect happens. Another
+// override may be applied to a different request produced by a redirect.
 func (p ContinueRequestParams) WithHeaders(headers []*HeaderEntry) *ContinueRequestParams {
 	p.Headers = headers
 	return &p
@@ -230,8 +235,9 @@ type ContinueWithAuthParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Fetch#method-continueWithAuth
 //
 // parameters:
-//   requestID - An id the client received in authRequired event.
-//   authChallengeResponse - Response to  with an authChallenge.
+//
+//	requestID - An id the client received in authRequired event.
+//	authChallengeResponse - Response to  with an authChallenge.
 func ContinueWithAuth(requestID RequestID, authChallengeResponse *AuthChallengeResponse) *ContinueWithAuthParams {
 	return &ContinueWithAuthParams{
 		RequestID:             requestID,
@@ -262,7 +268,8 @@ type ContinueResponseParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Fetch#method-continueResponse
 //
 // parameters:
-//   requestID - An id the client received in requestPaused event.
+//
+//	requestID - An id the client received in requestPaused event.
 func ContinueResponse(requestID RequestID) *ContinueResponseParams {
 	return &ContinueResponseParams{
 		RequestID: requestID,
@@ -324,7 +331,8 @@ type GetResponseBodyParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Fetch#method-getResponseBody
 //
 // parameters:
-//   requestID - Identifier for the intercepted request to get body for.
+//
+//	requestID - Identifier for the intercepted request to get body for.
 func GetResponseBody(requestID RequestID) *GetResponseBodyParams {
 	return &GetResponseBodyParams{
 		RequestID: requestID,
@@ -340,7 +348,8 @@ type GetResponseBodyReturns struct {
 // Do executes Fetch.getResponseBody against the provided context.
 //
 // returns:
-//   body - Response body.
+//
+//	body - Response body.
 func (p *GetResponseBodyParams) Do(ctx context.Context) (body []byte, err error) {
 	// execute
 	var res GetResponseBodyReturns
@@ -386,7 +395,8 @@ type TakeResponseBodyAsStreamParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Fetch#method-takeResponseBodyAsStream
 //
 // parameters:
-//   requestID
+//
+//	requestID
 func TakeResponseBodyAsStream(requestID RequestID) *TakeResponseBodyAsStreamParams {
 	return &TakeResponseBodyAsStreamParams{
 		RequestID: requestID,
@@ -401,7 +411,8 @@ type TakeResponseBodyAsStreamReturns struct {
 // Do executes Fetch.takeResponseBodyAsStream against the provided context.
 //
 // returns:
-//   stream
+//
+//	stream
 func (p *TakeResponseBodyAsStreamParams) Do(ctx context.Context) (stream io.StreamHandle, err error) {
 	// execute
 	var res TakeResponseBodyAsStreamReturns

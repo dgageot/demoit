@@ -1103,6 +1103,8 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoCachestorage11(in *jlexer.Lex
 			out.CacheID = CacheID(in.String())
 		case "securityOrigin":
 			out.SecurityOrigin = string(in.String())
+		case "storageKey":
+			out.StorageKey = string(in.String())
 		case "cacheName":
 			out.CacheName = string(in.String())
 		default:
@@ -1128,6 +1130,11 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoCachestorage11(out *jwriter.W
 		const prefix string = ",\"securityOrigin\":"
 		out.RawString(prefix)
 		out.String(string(in.SecurityOrigin))
+	}
+	{
+		const prefix string = ",\"storageKey\":"
+		out.RawString(prefix)
+		out.String(string(in.StorageKey))
 	}
 	{
 		const prefix string = ",\"cacheName\":"

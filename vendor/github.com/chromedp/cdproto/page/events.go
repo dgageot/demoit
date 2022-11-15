@@ -19,19 +19,18 @@ type EventDomContentEventFired struct {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Page#event-fileChooserOpened
 type EventFileChooserOpened struct {
-	FrameID       cdp.FrameID           `json:"frameId"`       // Id of the frame containing input node.
-	BackendNodeID cdp.BackendNodeID     `json:"backendNodeId"` // Input node id.
-	Mode          FileChooserOpenedMode `json:"mode"`          // Input mode.
+	FrameID       cdp.FrameID           `json:"frameId"`                 // Id of the frame containing input node.
+	Mode          FileChooserOpenedMode `json:"mode"`                    // Input mode.
+	BackendNodeID cdp.BackendNodeID     `json:"backendNodeId,omitempty"` // Input node id. Only present for file choosers opened via an <input type="file"> element.
 }
 
 // EventFrameAttached fired when frame has been attached to its parent.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Page#event-frameAttached
 type EventFrameAttached struct {
-	FrameID       cdp.FrameID         `json:"frameId"`              // Id of the frame that has been attached.
-	ParentFrameID cdp.FrameID         `json:"parentFrameId"`        // Parent frame identifier.
-	Stack         *runtime.StackTrace `json:"stack,omitempty"`      // JavaScript stack trace of when frame was attached, only set if frame initiated from script.
-	AdScriptID    *AdScriptID         `json:"adScriptId,omitempty"` // Identifies the bottom-most script which caused the frame to be labelled as an ad. Only sent if frame is labelled as an ad and id is available.
+	FrameID       cdp.FrameID         `json:"frameId"`         // Id of the frame that has been attached.
+	ParentFrameID cdp.FrameID         `json:"parentFrameId"`   // Parent frame identifier.
+	Stack         *runtime.StackTrace `json:"stack,omitempty"` // JavaScript stack trace of when frame was attached, only set if frame initiated from script.
 }
 
 // EventFrameDetached fired when frame has been detached from its parent.
@@ -149,9 +148,10 @@ type EventBackForwardCacheNotUsed struct {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Page#event-prerenderAttemptCompleted
 type EventPrerenderAttemptCompleted struct {
-	InitiatingFrameID cdp.FrameID          `json:"initiatingFrameId"` // The frame id of the frame initiating prerendering.
-	PrerenderingURL   string               `json:"prerenderingUrl"`
-	FinalStatus       PrerenderFinalStatus `json:"finalStatus"`
+	InitiatingFrameID   cdp.FrameID          `json:"initiatingFrameId"` // The frame id of the frame initiating prerendering.
+	PrerenderingURL     string               `json:"prerenderingUrl"`
+	FinalStatus         PrerenderFinalStatus `json:"finalStatus"`
+	DisallowedAPIMethod string               `json:"disallowedApiMethod,omitempty"` // This is used to give users more information about the name of the API call that is incompatible with prerender and has caused the cancellation of the attempt
 }
 
 // EventLoadEventFired [no description].

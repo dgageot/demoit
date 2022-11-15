@@ -2307,6 +2307,10 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoNetwork20(in *jlexer.Lexer, o
 			}
 		case "certificateTransparencyCompliance":
 			(out.CertificateTransparencyCompliance).UnmarshalEasyJSON(in)
+		case "serverSignatureAlgorithm":
+			out.ServerSignatureAlgorithm = int64(in.Int64())
+		case "encryptedClientHello":
+			out.EncryptedClientHello = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -2419,6 +2423,16 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoNetwork20(out *jwriter.Writer
 		const prefix string = ",\"certificateTransparencyCompliance\":"
 		out.RawString(prefix)
 		(in.CertificateTransparencyCompliance).MarshalEasyJSON(out)
+	}
+	if in.ServerSignatureAlgorithm != 0 {
+		const prefix string = ",\"serverSignatureAlgorithm\":"
+		out.RawString(prefix)
+		out.Int64(int64(in.ServerSignatureAlgorithm))
+	}
+	{
+		const prefix string = ",\"encryptedClientHello\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.EncryptedClientHello))
 	}
 	out.RawByte('}')
 }
@@ -2759,6 +2773,8 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoNetwork23(in *jlexer.Lexer, o
 			out.CacheStorageCacheName = string(in.String())
 		case "protocol":
 			out.Protocol = string(in.String())
+		case "alternateProtocolUsage":
+			(out.AlternateProtocolUsage).UnmarshalEasyJSON(in)
 		case "securityState":
 			(out.SecurityState).UnmarshalEasyJSON(in)
 		case "securityDetails":
@@ -2921,6 +2937,11 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoNetwork23(out *jwriter.Writer
 		const prefix string = ",\"protocol\":"
 		out.RawString(prefix)
 		out.String(string(in.Protocol))
+	}
+	if in.AlternateProtocolUsage != "" {
+		const prefix string = ",\"alternateProtocolUsage\":"
+		out.RawString(prefix)
+		(in.AlternateProtocolUsage).MarshalEasyJSON(out)
 	}
 	{
 		const prefix string = ",\"securityState\":"
@@ -7431,6 +7452,8 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoNetwork69(in *jlexer.Lexer, o
 				}
 				(*out.ClientSecurityState).UnmarshalEasyJSON(in)
 			}
+		case "siteHasCookieInOtherPartition":
+			out.SiteHasCookieInOtherPartition = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -7510,6 +7533,11 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoNetwork69(out *jwriter.Writer
 		const prefix string = ",\"clientSecurityState\":"
 		out.RawString(prefix)
 		(*in.ClientSecurityState).MarshalEasyJSON(out)
+	}
+	if in.SiteHasCookieInOtherPartition {
+		const prefix string = ",\"siteHasCookieInOtherPartition\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.SiteHasCookieInOtherPartition))
 	}
 	out.RawByte('}')
 }
