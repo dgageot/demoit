@@ -42,12 +42,12 @@ const (
 
 var defaultFlags = []string{"--auth=none", "--disable-telemetry", "--disable-update-check", "--force"}
 
-var startLock sync.Once
+var startOnce sync.Once
 
 func Start() {
-	startLock.Do(func() {
+	startOnce.Do(func() {
 		if err := startVsCodeServer(context.Background()); err != nil {
-			log.Fatalln(err)
+			log.Println(err)
 		}
 	})
 }
