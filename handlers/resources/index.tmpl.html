@@ -18,6 +18,6 @@
 		</div>
 		<div id="progression" style="width: calc(100vw * {{ .CurrentStep }} / {{ .StepCount }})"></div>
 	</body>
-	<script src="/js/demoit.js?hash={{ "js/demoit.js" | hash }}"></script>
+	<script type="module" src="/js/demoit.js?hash={{ "js/demoit.js" | hash }}"></script>
 	{{ if .DevMode }}<script src="/livereload.js"></script>{{ end }}
 </html>

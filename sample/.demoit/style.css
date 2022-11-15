@@ -183,3 +183,18 @@ em {
     font-weight: bold;
     text-align: center;
 }
+
+.mermaid {
+    visibility: hidden;
+    height: calc(100% - 14vw);
+}
+
+.mermaid[data-processed="true"] {
+    visibility: visible;
+}
+
+.mermaid svg {
+    min-width: 100%;
+    min-height: 100%;
+}
+
