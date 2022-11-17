@@ -72,6 +72,9 @@ This font can be found [here](https://github.com/powerline/fonts/tree/master/Inc
 ```bash
 cd $HOME; mkdir my_demoit_presentations; cd $HOME/my_demoit_presentations
 cp -r $HOME/go/src/github.com/dgageot/demoit/sample .
+# if an error occured, you need to do 
+# go get github.com/dgageot/demoit 
+# to retrieve sources into go/src and re-run the precedent command
 demoit sample
 ```
 
