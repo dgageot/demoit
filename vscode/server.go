@@ -40,9 +40,10 @@ const (
 	containerName = "demoit-vscode"
 )
 
-var defaultFlags = []string{"--auth=none", "--disable-telemetry", "--disable-update-check", "--force"}
-
-var startOnce sync.Once
+var (
+	defaultFlags = []string{"--auth=none", "--disable-telemetry", "--disable-update-check", "--force"}
+	startOnce    sync.Once
+)
 
 func Start() {
 	startOnce.Do(func() {
