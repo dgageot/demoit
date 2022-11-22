@@ -12,9 +12,11 @@ require (
 	github.com/jung-kurt/gofpdf v1.16.2
 	github.com/rjeczalik/notify v0.9.2
 	github.com/sorenisanerd/gotty v1.5.0
+	golang.org/x/term v0.2.0
 )
 
 require (
+	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/Microsoft/go-winio v0.6.0 // indirect
 	github.com/NYTimes/gziphandler v1.1.1 // indirect
 	github.com/chromedp/sysutil v1.0.0 // indirect
@@ -26,6 +28,7 @@ require (
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/gobwas/ws v1.1.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
+	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/moby/term v0.0.0-20221105221325-4eb28fa6025c // indirect

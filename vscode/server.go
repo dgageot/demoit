@@ -20,6 +20,7 @@ package vscode
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/user"
@@ -31,7 +32,9 @@ import (
 	"github.com/docker/docker/api/types"
 	containertypes "github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/jsonmessage"
 	"github.com/docker/go-connections/nat"
+	"golang.org/x/term"
 )
 
 const (
@@ -72,9 +75,13 @@ func startVsCodeServer(ctx context.Context) error {
 	// Ignore error
 	_ = client.ContainerRemove(ctx, containerName, types.ContainerRemoveOptions{Force: true})
 
-	// Ignore error
-	if resp, _ := client.ImagePull(ctx, dockerImage, types.ImagePullOptions{}); resp != nil {
-		resp.Close()
+	rc, err := client.ImagePull(ctx, dockerImage, types.ImagePullOptions{})
+	if err != nil {
+		return fmt.Errorf("unable to initiate vscode image pull: %w", err)
+	}
+	defer rc.Close()
+	if err := streamDockerMessages(rc); err != nil {
+		return fmt.Errorf("unable to pull vscode image: %w", err)
 	}
 
 	body, err := client.ContainerCreate(ctx, &containertypes.Config{
@@ -109,4 +116,24 @@ func newDockerlient(ctx context.Context) (client.CommonAPIClient, error) {
 	cli.NegotiateAPIVersion(ctx)
 
 	return cli, nil
+}
+
+func streamDockerMessages(src io.Reader) error {
+	dst := os.Stdout
+	termFd, isTerm := isTerminal(dst)
+	return jsonmessage.DisplayJSONMessagesStream(src, dst, termFd, isTerm, nil)
+}
+
+func isTerminal(w io.Writer) (uintptr, bool) {
+	type descriptor interface {
+		Fd() uintptr
+	}
+
+	if f, ok := w.(descriptor); ok {
+		termFd := f.Fd()
+		isTerm := term.IsTerminal(int(termFd))
+		return termFd, isTerm
+	}
+
+	return 0, false
 }
