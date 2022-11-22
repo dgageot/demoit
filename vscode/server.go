@@ -36,7 +36,7 @@ import (
 
 const (
 	Port          = 18080
-	dockerImage   = "codercom/code-server:4.4.0@sha256:f0b4cdac7b7742ec83167666b5bc8abb90c4f2660247d482f55fee916d079cb6"
+	dockerImage   = "codercom/code-server:4.8.3@sha256:c0e99db852b2c4e3602c912b658d1fd509d02643a1c437d1f7bb80197535cd76"
 	containerName = "demoit-vscode"
 )
 
