@@ -1,0 +1,16 @@
+name: Build binaries
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          version: latest
+      - name: Build binaries
+        uses: docker/bake-action@v2
+        with:
+          targets: binaries
