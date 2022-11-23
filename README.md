@@ -44,7 +44,7 @@ See [Run Demo](#run-demo) for setting up and running a demo to get started with 
 
 ## Install
 
-### Install with Go 1.18+
+### Install with Go 1.19+
 
 ```bash
 go install github.com/dgageot/demoit@latest
@@ -60,7 +60,7 @@ cd demoit
 go install
 ```
 
-*This requires Go 1.18 or later.*
+*This requires Go 1.19 or later.*
 
 ### Add shell font
 
