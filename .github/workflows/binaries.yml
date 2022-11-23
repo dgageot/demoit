@@ -22,7 +22,7 @@ jobs:
           mkdir bin
           mv ./out/darwin_amd64/demoit ./bin/demoit-darwin-amd64
           mv ./out/darwin_arm64/demoit ./bin/demoit-darwin-arm64
-          mv ./out/linux_arm64/demoit ./bin/demoit-linux-arm64
+          mv ./out/linux_amd64/demoit ./bin/demoit-linux-amd64
           mv ./out/linux_arm64/demoit ./bin/demoit-linux-arm64
       - name: GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
