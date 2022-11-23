@@ -17,3 +17,19 @@ jobs:
           set: |
             *.cache-from=type=gha,scope=binaries
             *.cache-to=type=gha,scope=binaries
+      - name: Rename binaries
+        run: |
+          mkdir bin
+          mv ./out/darwin_amd64/demoit ./bin/demoit-darwin-amd64
+          mv ./out/darwin_arm64/demoit ./bin/demoit-darwin-arm64
+          mv ./out/linux_arm64/demoit ./bin/demoit-linux-arm64
+          mv ./out/linux_arm64/demoit ./bin/demoit-linux-arm64
+      - name: GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@1e07f4398721186383de40550babbdf2b84acfc5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          draft: true
+          files: bin/*
+          generate_release_notes: true
