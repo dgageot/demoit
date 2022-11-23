@@ -25,7 +25,7 @@ rich web content composed of text, images and smart web components.
 Those web components make most of the *magic*.
 
  + One component displays multi-tab ttys that can be used to run any command.
- + Another is a web browser view that auto refreses itself.
+ + Another is a web browser view that auto refreshes itself.
  + Another is a code viewer with highlighing and tabs that look like a real IDE,
 
 ## How do I use Demoit?
