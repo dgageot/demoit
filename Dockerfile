@@ -10,7 +10,7 @@ FROM --platform=$BUILDPLATFORM golang:1.19.3-alpine3.16 AS build
 COPY --link --from=xx / /
 RUN apk add --no-cache gcc clang llvm
 ARG TARGETPLATFORM
-RUN xx-apk add --no-cache musl-dev
+RUN xx-apk add --no-cache gcc musl-dev
 WORKDIR /src
 ENV CGO_ENABLED=1
 RUN --mount=type=bind,target=. \
