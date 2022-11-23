@@ -6,7 +6,7 @@ FROM --platform=$BUILDPLATFORM tonistiigi/xx:1.1.2 AS xx
 # osxcross contains the MacOSX cross toolchain for xx
 FROM crazymax/osxcross:12.3-r0-alpine AS osxcross
 
-FROM --platform=$BUILDPLATFORM golang:1.19.2-alpine3.16 AS build
+FROM --platform=$BUILDPLATFORM golang:1.19.3-alpine3.16 AS build
 COPY --link --from=xx / /
 RUN apk add --no-cache gcc clang llvm
 ARG TARGETPLATFORM
