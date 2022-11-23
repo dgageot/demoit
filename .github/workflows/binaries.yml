@@ -14,3 +14,6 @@ jobs:
         uses: docker/bake-action@v2
         with:
           targets: binaries
+          set: |
+            *.cache-from=type=gha,scope=binaries
+            *.cache-to=type=gha,scope=binaries
