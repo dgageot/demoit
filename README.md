@@ -47,7 +47,7 @@ See [Run Demo](#run-demo) for setting up and running a demo to get started with 
 ### Install with Go 1.18+
 
 ```bash
-go install github.com/dgageot/demoit
+go install github.com/dgageot/demoit@latest
 ```
 
 *Make sure `$HOME/go/bin/` directory is in your `$PATH`.*
@@ -72,6 +72,9 @@ This font can be found [here](https://github.com/powerline/fonts/tree/master/Inc
 ```bash
 cd $HOME; mkdir my_demoit_presentations; cd $HOME/my_demoit_presentations
 cp -r $HOME/go/src/github.com/dgageot/demoit/sample .
+# if an error occured, you need to do 
+# go get github.com/dgageot/demoit 
+# to retrieve sources into go/src and re-run the precedent command
 demoit sample
 ```
 
