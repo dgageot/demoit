@@ -5,7 +5,7 @@ require (
 	github.com/boombuler/barcode v1.0.1
 	github.com/chromedp/cdproto v0.0.0-20221114202156-f470c7c7306e
 	github.com/chromedp/chromedp v0.8.6
-	github.com/docker/docker v20.10.21+incompatible
+	github.com/docker/docker v20.10.24+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.5.0
