@@ -22,7 +22,7 @@ require (
 	github.com/chromedp/sysutil v1.0.0 // indirect
 	github.com/creack/pty v1.1.11 // indirect
 	github.com/dlclark/regexp2 v1.4.0 // indirect
-	github.com/docker/distribution v2.8.1+incompatible // indirect
+	github.com/docker/distribution v2.8.2+incompatible // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
