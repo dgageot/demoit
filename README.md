@@ -57,7 +57,7 @@ Then, browse to http://localhost:8888
 
 *Pro tip:* Run `demoit -dev` instead and enjoy live reload each time you change the content of the slides.
 
-### How do I customize my presenttion then?
+### How do I customize my presentation then?
 
 Basically, the idea is to:
 
