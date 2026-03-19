@@ -1,6 +1,6 @@
 # AGENTS.md — DemoIt
 
-Go CLI tool for live-coding presentations. Serves an HTML slide deck with web terminals, syntax-highlighted code, QR codes, PDF export, and live reload. Slides defined in `demoit.html` separated by `---`.
+Go CLI tool for live-coding presentations. Serves an HTML slide deck with web terminals, syntax-highlighted code, QR codes, and live reload. Slides defined in `demoit.html` separated by `---`.
 
 ## Commands
 
@@ -28,7 +28,6 @@ main.go            CLI flags, gorilla/mux router, starts shell + web servers
 │   ├── static.go      Static files from .demoit/
 │   ├── ping.go        HTTP HEAD proxy
 │   ├── qrcode.go      QR code generation
-│   ├── pdf.go         PDF export via headless Chrome (chromedp + gofpdf)
 │   ├── speakernotes.go  Speaker notes (BroadcastChannel sync)
 │   ├── grid.go        Grid view of all slides
 │   ├── vscode.go      VSCode via code-server Docker container
@@ -47,6 +46,6 @@ main.go            CLI flags, gorilla/mux router, starts shell + web servers
 
 ## Important Notes
 
-- `vscode` feature requires Docker. PDF export requires headless Chrome.
+- `vscode` feature requires Docker.
 - GoTTY shell runs on separate port (default 9999), reverse-proxied via `/tty`.
 - Presentations need `demoit.html` + `.demoit/` dir (with `style.css`, `js/demoit.js`; optional: `.bashrc`, `.bash_history`, `fonts/`, `images/`).
