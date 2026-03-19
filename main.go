@@ -43,7 +43,6 @@ func main() {
 	r.HandleFunc("/style.css", handlers.Static).Methods("GET")
 	r.HandleFunc("/favicon.ico", handlers.Static).Methods("GET")
 	r.HandleFunc("/qrcode", handlers.QRCode).Methods("GET")
-	r.HandleFunc("/grid", handlers.Grid).Methods("GET")
 
 	// Live Reload Server.
 	if *flags.DevMode {
