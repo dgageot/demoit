@@ -105,28 +105,3 @@ func copyFile(file string) (string, error) {
 
 	return tmpFile.Name(), nil
 }
-
-func localURL(r *http.Request, port int, params map[string]string) string {
-	domain := localhost(r)
-	localhost := fmt.Sprintf("http://%s:%d", domain, port)
-
-	if len(params) > 0 {
-		parameters := url.Values{}
-		for k, v := range params {
-			parameters.Set(k, v)
-		}
-		localhost += "?" + parameters.Encode()
-	}
-
-	return localhost
-}
-
-func localhost(r *http.Request) string {
-	if referer := r.Header.Get("Referer"); referer != "" {
-		if refererURL, err := url.Parse(referer); err == nil {
-			return strings.Split(refererURL.Host, ":")[0]
-		}
-	}
-
-	return "localhost"
-}

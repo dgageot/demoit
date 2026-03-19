@@ -30,11 +30,9 @@ main.go            CLI flags, gorilla/mux router, starts shell + web servers
 │   ├── qrcode.go      QR code generation
 │   ├── speakernotes.go  Speaker notes (BroadcastChannel sync)
 │   ├── grid.go        Grid view of all slides
-│   ├── vscode.go      VSCode via code-server Docker container
 │   └── resources/     Embedded HTML templates (//go:embed)
 ├── livereload/    WebSocket live reload (LiveReload protocol)
 ├── shell/         GoTTY wrapper for browser terminals
-└── vscode/        Docker-based code-server management
 ```
 
 ## Code Conventions
@@ -46,6 +44,5 @@ main.go            CLI flags, gorilla/mux router, starts shell + web servers
 
 ## Important Notes
 
-- `vscode` feature requires Docker.
 - GoTTY shell runs on separate port (default 9999), reverse-proxied via `/tty`.
 - Presentations need `demoit.html` + `.demoit/` dir (with `style.css`, `js/demoit.js`; optional: `.bashrc`, `.bash_history`, `fonts/`, `images/`).

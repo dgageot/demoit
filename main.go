@@ -64,7 +64,6 @@ func main() {
 	r.HandleFunc("/qrcode", handlers.QRCode).Methods("GET")
 	r.HandleFunc("/speakernotes", handlers.SpeakerNotes).Methods("GET")
 	r.HandleFunc("/grid", handlers.Grid).Methods("GET")
-	r.HandleFunc("/beta/vscode/{folder}", handlers.VSCode).Methods("GET")
 
 	// Reverse Proxy Shell Server
 	proxy := httputil.NewSingleHostReverseProxy(mustParseURL(fmt.Sprintf("http://127.0.0.1:%d", *flags.ShellPort)))
