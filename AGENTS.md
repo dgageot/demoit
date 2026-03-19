@@ -40,7 +40,7 @@ main.go            CLI flags, gorilla/mux router, starts shell + web servers
 - **Go 1.19**, no generics. Dependencies **vendored** (`go mod vendor` after changes).
 - Templates embedded via `//go:embed`. Global state: `files.Root`, `flags.*`.
 - Error handling: `http.Error()` in handlers, `log.Fatal()` at startup, `fmt.Errorf("…: %w", err)` for wrapping.
-- Apache 2.0 license headers on all source files. Standard Go naming; no interfaces or DI.
+- Standard Go naming; no interfaces or DI.
 
 ## Important Notes
 
