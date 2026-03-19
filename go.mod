@@ -2,7 +2,7 @@ module github.com/dgageot/demoit
 
 require (
 	github.com/alecthomas/chroma/v2 v2.23.1
-	github.com/boombuler/barcode v1.0.1
+	github.com/boombuler/barcode v1.1.0
 	github.com/creack/pty v1.1.11
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.5.0

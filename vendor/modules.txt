@@ -4,7 +4,7 @@ github.com/alecthomas/chroma/v2
 github.com/alecthomas/chroma/v2/formatters/html
 github.com/alecthomas/chroma/v2/lexers
 github.com/alecthomas/chroma/v2/styles
-# github.com/boombuler/barcode v1.0.1
+# github.com/boombuler/barcode v1.1.0
 ## explicit
 github.com/boombuler/barcode
 github.com/boombuler/barcode/qr
