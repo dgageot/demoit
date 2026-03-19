@@ -10,6 +10,12 @@ type Emitter interface {
 	Emit(groups []string, state *LexerState) Iterator
 }
 
+// ValidatingEmitter is an Emitter that can validate against a compiled rule.
+type ValidatingEmitter interface {
+	Emitter
+	ValidateEmitter(rule *CompiledRule) error
+}
+
 // SerialisableEmitter is an Emitter that can be serialised and deserialised to/from JSON.
 type SerialisableEmitter interface {
 	Emitter
@@ -30,12 +36,21 @@ type byGroupsEmitter struct {
 	Emitters
 }
 
+var _ ValidatingEmitter = (*byGroupsEmitter)(nil)
+
 // ByGroups emits a token for each matching group in the rule's regex.
 func ByGroups(emitters ...Emitter) Emitter {
 	return &byGroupsEmitter{Emitters: emitters}
 }
 
 func (b *byGroupsEmitter) EmitterKind() string { return "bygroups" }
+
+func (b *byGroupsEmitter) ValidateEmitter(rule *CompiledRule) error {
+	if len(rule.Regexp.GetGroupNumbers())-1 != len(b.Emitters) {
+		return fmt.Errorf("number of groups %d does not match number of emitters %d", len(rule.Regexp.GetGroupNumbers())-1, len(b.Emitters))
+	}
+	return nil
+}
 
 func (b *byGroupsEmitter) Emit(groups []string, state *LexerState) Iterator {
 	iterators := make([]Iterator, 0, len(groups)-1)
@@ -81,42 +96,39 @@ func ByGroupNames(emitters map[string]Emitter) Emitter {
 }
 
 // UsingByGroup emits tokens for the matched groups in the regex using a
-// "sublexer". Used when lexing code blocks where the name of a sublexer is
+// sublexer. Used when lexing code blocks where the name of a sublexer is
 // contained within the block, for example on a Markdown text block or SQL
 // language block.
 //
-// The sublexer will be retrieved using sublexerGetFunc (typically
-// internal.Get), using the captured value from the matched sublexerNameGroup.
-//
-// If sublexerGetFunc returns a non-nil lexer for the captured sublexerNameGroup,
-// then tokens for the matched codeGroup will be emitted using the retrieved
-// lexer. Otherwise, if the sublexer is nil, then tokens will be emitted from
-// the passed emitter.
+// An attempt to load the sublexer will be made using the captured value from
+// the text of the matched sublexerNameGroup. If a sublexer matching the
+// sublexerNameGroup is available, then tokens for the matched codeGroup will
+// be emitted using the sublexer. Otherwise, if no sublexer is available, then
+// tokens will be emitted from the passed emitter.
 //
 // Example:
 //
-// 	var Markdown = internal.Register(MustNewLexer(
-// 		&Config{
-// 			Name:      "markdown",
-// 			Aliases:   []string{"md", "mkd"},
-// 			Filenames: []string{"*.md", "*.mkd", "*.markdown"},
-// 			MimeTypes: []string{"text/x-markdown"},
-// 		},
-// 		Rules{
-// 			"root": {
-// 				{"^(```)(\\w+)(\\n)([\\w\\W]*?)(^```$)",
-// 					UsingByGroup(
-// 						internal.Get,
-// 						2, 4,
-// 						String, String, String, Text, String,
-// 					),
-// 					nil,
-// 				},
-// 			},
-// 		},
-// 	))
+//	var Markdown = internal.Register(MustNewLexer(
+//		&Config{
+//			Name:      "markdown",
+//			Aliases:   []string{"md", "mkd"},
+//			Filenames: []string{"*.md", "*.mkd", "*.markdown"},
+//			MimeTypes: []string{"text/x-markdown"},
+//		},
+//		Rules{
+//			"root": {
+//				{"^(```)(\\w+)(\\n)([\\w\\W]*?)(^```$)",
+//					UsingByGroup(
+//						2, 4,
+//						String, String, String, Text, String,
+//					),
+//					nil,
+//				},
+//			},
+//		},
+//	))
 //
-// See the lexers/m/markdown.go for the complete example.
+// See the lexers/markdown.go for the complete example.
 //
 // Note: panic's if the number of emitters does not equal the number of matched
 // groups in the regex.

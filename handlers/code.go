@@ -105,7 +105,7 @@ func style(name string) *chroma.Style {
 		}
 	}
 
-	return styles.GitHub
+	return styles.Get("github")
 }
 
 func highligtedLines(r *http.Request) [][2]int {
