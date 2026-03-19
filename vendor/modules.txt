@@ -1,6 +1,3 @@
-# github.com/NYTimes/gziphandler v1.1.1
-## explicit; go 1.11
-github.com/NYTimes/gziphandler
 # github.com/alecthomas/chroma/v2 v2.3.0
 ## explicit; go 1.17
 github.com/alecthomas/chroma/v2
@@ -25,20 +22,9 @@ github.com/gorilla/mux
 # github.com/gorilla/websocket v1.5.0
 ## explicit; go 1.12
 github.com/gorilla/websocket
-# github.com/pkg/errors v0.9.1
-## explicit
-github.com/pkg/errors
 # github.com/rjeczalik/notify v0.9.2
 ## explicit
 github.com/rjeczalik/notify
-# github.com/sorenisanerd/gotty v1.5.0
-## explicit; go 1.16
-github.com/sorenisanerd/gotty/backend/localcommand
-github.com/sorenisanerd/gotty/bindata
-github.com/sorenisanerd/gotty/pkg/homedir
-github.com/sorenisanerd/gotty/pkg/randomstring
-github.com/sorenisanerd/gotty/server
-github.com/sorenisanerd/gotty/webtty
 # golang.org/x/sys v0.2.0
 ## explicit; go 1.17
 golang.org/x/sys/unix

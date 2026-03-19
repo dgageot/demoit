@@ -100,6 +100,8 @@ linters:
         - G120 # FormValue without MaxBytesReader — local dev tool
         - G203 # template.HTML from variable — intentional for slide rendering
         - G704 # SSRF via taint — intentional for ping endpoint
+        - G204 # Subprocess with variable — intentional for shell command
+        - G702 # Command injection via taint — shell command is server-generated
         - G304 # File path from variable — intentional for file serving
     nestif:
       min-complexity: 5

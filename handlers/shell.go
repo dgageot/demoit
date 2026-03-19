@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	_ "embed"
 	"errors"
 	"fmt"
 	"net/http"
@@ -10,10 +11,14 @@ import (
 	"strings"
 
 	"github.com/dgageot/demoit/files"
+	"github.com/dgageot/demoit/shell"
 	"github.com/gorilla/mux"
 )
 
-// Shell redirects to the url of a shell running in the given folder.
+//go:embed resources/terminal.html
+var terminalHTML []byte
+
+// Shell serves an HTML page with a ghostty-web terminal connected via WebSocket.
 func Shell(w http.ResponseWriter, r *http.Request) {
 	folder := mux.Vars(r)["folder"]
 
@@ -22,24 +27,44 @@ func Shell(w http.ResponseWriter, r *http.Request) {
 		path += "/" + folder
 	}
 
-	commands, err := commands(path)
+	// Redirect to the terminal page with the shell command as a query parameter.
+	commands, err := shellCommands(path)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	redirectURL := "/tty?arg=" + url.QueryEscape(strings.Join(commands, ";"))
+	redirectURL := "/terminal?cmd=" + url.QueryEscape(strings.Join(commands, ";"))
 	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
 }
 
-func commands(path string) ([]string, error) {
+// TerminalPage serves the ghostty-web terminal HTML page.
+func TerminalPage(w http.ResponseWriter, _ *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+	if _, err := w.Write(terminalHTML); err != nil {
+		http.Error(w, "Unable to serve terminal page", http.StatusInternalServerError)
+	}
+}
+
+// TerminalWebSocket upgrades to WebSocket and bridges to a PTY.
+func TerminalWebSocket(w http.ResponseWriter, r *http.Request) {
+	cmd := r.URL.Query().Get("cmd")
+	if cmd == "" {
+		http.Error(w, "Missing cmd parameter", http.StatusBadRequest)
+		return
+	}
+
+	shell.HandleWebSocket(w, r, cmd)
+}
+
+func shellCommands(path string) ([]string, error) {
 	commands := []string{"cd " + path + ">/dev/null"}
 
-	shell, found := os.LookupEnv("SHELL")
+	shellBin, found := os.LookupEnv("SHELL")
 	if !found {
-		shell = "bash"
+		shellBin = "bash"
 	}
-	fmt.Println("Using shell", shell)
+	fmt.Println("Using shell", shellBin)
 
 	// Source custom .bashrc.
 	bashRc, err := filepath.Abs(filepath.Join(files.Root, ".demoit", ".bashrc"))
@@ -58,9 +83,9 @@ func commands(path string) ([]string, error) {
 	}
 	if bashHistory != "" {
 		fmt.Println("Using history", bashHistory)
-		commands = append(commands, fmt.Sprintf("HISTFILE=%s exec %s", bashHistory, shell))
+		commands = append(commands, fmt.Sprintf("HISTFILE=%s exec %s", bashHistory, shellBin))
 	} else {
-		commands = append(commands, "exec "+shell)
+		commands = append(commands, "exec "+shellBin)
 	}
 
 	return commands, nil
@@ -70,7 +95,6 @@ func copyFile(file string) (string, error) {
 	content, err := files.Read(".demoit", file)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			// Ignore silently.
 			return "", nil
 		}
 		return "", fmt.Errorf("unable to read file %s: %w", file, err)

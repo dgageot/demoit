@@ -5,14 +5,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/http/httputil"
-	"net/url"
 
 	"github.com/dgageot/demoit/files"
 	"github.com/dgageot/demoit/flags"
 	"github.com/dgageot/demoit/handlers"
 	"github.com/dgageot/demoit/livereload"
-	"github.com/dgageot/demoit/shell"
 	"github.com/gorilla/mux"
 	"github.com/rjeczalik/notify"
 )
@@ -21,7 +18,6 @@ func main() {
 	flags.DevMode = flag.Bool("dev", false, "dev mode with live reload")
 	flags.WebServerPort = flag.Int("port", 8888, "presentation port")
 	flags.WebServerHost = flag.String("host", "localhost", "host to bind the presentation server")
-	flags.ShellPort = flag.Int("shellport", 9999, "shell server port (terminal)")
 	flag.Parse()
 	if args := flag.Args(); len(args) > 0 {
 		files.Root = args[0]
@@ -37,6 +33,8 @@ func main() {
 	r.PathPrefix("/sourceCode/").HandlerFunc(handlers.Code).Methods("GET")
 	r.HandleFunc("/shell/", handlers.Shell).Methods("GET")
 	r.HandleFunc("/shell/{folder}", handlers.Shell).Methods("GET")
+	r.HandleFunc("/terminal", handlers.TerminalPage).Methods("GET")
+	r.HandleFunc("/ws/terminal", handlers.TerminalWebSocket)
 	r.PathPrefix("/ping").HandlerFunc(handlers.Ping).Methods("HEAD", "GET")
 	r.PathPrefix("/js/").HandlerFunc(handlers.Static).Methods("GET")
 	r.PathPrefix("/fonts/").HandlerFunc(handlers.Static).Methods("GET")
@@ -48,11 +46,7 @@ func main() {
 	r.HandleFunc("/speakernotes", handlers.SpeakerNotes).Methods("GET")
 	r.HandleFunc("/grid", handlers.Grid).Methods("GET")
 
-	// Reverse Proxy Shell Server
-	proxy := httputil.NewSingleHostReverseProxy(mustParseURL(fmt.Sprintf("http://127.0.0.1:%d", *flags.ShellPort)))
-	r.PathPrefix("/tty").HandlerFunc(proxy.ServeHTTP)
-
-	// Live Reload Server
+	// Live Reload Server.
 	if *flags.DevMode {
 		lr := livereload.New(*flags.WebServerPort)
 		lr.RegisterHandlers(r)
@@ -74,20 +68,7 @@ func main() {
 		fmt.Println(`"Dev Mode" to live reload your slides can be enabled with '--dev'`)
 	}
 
-	go func() {
-		port := *flags.ShellPort
-		log.Fatal(shell.ListenAndServe(port, "sh", "-c"))
-	}()
-
 	addr := flags.WebServerAddress()
 	fmt.Println("Welcome to DemoIt. Please, open http://" + addr)
 	log.Fatal(http.ListenAndServe(addr, r))
-}
-
-func mustParseURL(rawURL string) *url.URL {
-	parsed, err := url.Parse(rawURL)
-	if err != nil {
-		panic(err)
-	}
-	return parsed
 }

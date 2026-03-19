@@ -20,13 +20,13 @@ docker buildx bake                        # cross-compile (darwin/linux, amd64/a
 ## Architecture
 
 ```
-main.go            CLI flags, gorilla/mux router, starts shell + web servers
+main.go            CLI flags, gorilla/mux router, starts web server
 ├── files/         File I/O helpers rooted at configurable Root path
 ├── flags/         Global CLI flag variables
 ├── handlers/      HTTP handlers (all routes)
 │   ├── step.go        Slide parsing/rendering; VerifyConfiguration() validates setup
 │   ├── code.go        Syntax-highlighted source viewer (chroma)
-│   ├── shell.go       GoTTY terminal redirect with custom .bashrc/.bash_history
+│   ├── shell.go       Terminal page (ghostty-web) + WebSocket PTY bridge
 │   ├── static.go      Static files from .demoit/
 │   ├── ping.go        HTTP HEAD proxy
 │   ├── qrcode.go      QR code generation
@@ -34,7 +34,7 @@ main.go            CLI flags, gorilla/mux router, starts shell + web servers
 │   ├── grid.go        Grid view of all slides
 │   └── resources/     Embedded HTML templates (//go:embed)
 ├── livereload/    WebSocket live reload (LiveReload protocol)
-├── shell/         GoTTY wrapper for browser terminals
+├── shell/         WebSocket PTY server using creack/pty
 ```
 
 ## Code Conventions
@@ -46,5 +46,5 @@ main.go            CLI flags, gorilla/mux router, starts shell + web servers
 
 ## Important Notes
 
-- GoTTY shell runs on separate port (default 9999), reverse-proxied via `/tty`.
+- Web terminal uses [ghostty-web](https://github.com/coder/ghostty-web) (PR #136) with a Go WebSocket PTY backend.
 - Presentations need `demoit.html` + `.demoit/` dir (with `style.css`, `js/demoit.js`; optional: `.bashrc`, `.bash_history`, `fonts/`, `images/`).
