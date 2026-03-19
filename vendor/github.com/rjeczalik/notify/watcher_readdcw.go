@@ -1,7 +1,8 @@
-// Copyright (c) 2014-2018 The Notify Authors. All rights reserved.
+// Copyright (c) 2014-2020 The Notify Authors. All rights reserved.
 // Use of this source code is governed by the MIT license that can be
 // found in the LICENSE file.
 
+//go:build windows
 // +build windows
 
 package notify
@@ -32,10 +33,11 @@ const (
 )
 
 // Filter used in current implementation was split into four segments:
-//  - bits  0-11 store ReadDirectoryChangesW filters,
-//  - bits 12-19 store File notify actions,
-//  - bits 20-27 store notify specific events and flags,
-//  - bits 28-31 store states which are used in loop's FSM.
+//   - bits  0-11 store ReadDirectoryChangesW filters,
+//   - bits 12-19 store File notify actions,
+//   - bits 20-27 store notify specific events and flags,
+//   - bits 28-31 store states which are used in loop's FSM.
+//
 // Constants below are used as masks to retrieve only specific filter parts.
 const (
 	onlyNotifyChanges uint32 = 0x00000FFF
@@ -358,11 +360,14 @@ func (r *readdcw) loop() {
 			continue
 		}
 		overEx := (*overlappedEx)(unsafe.Pointer(overlapped))
-		if n != 0 {
+		if overEx == nil || overEx.parent == nil {
+			dbgprintf("incomplete completion status transferred=%d, overlapped=%#v, key=%#b", n, overEx, key)
+			continue
+		} else if n != 0 {
 			r.loopevent(n, overEx)
-			if err = overEx.parent.readDirChanges(); err != nil {
-				// TODO: error handling
-			}
+		}
+		if err = overEx.parent.readDirChanges(); err != nil {
+			// TODO: error handling
 		}
 		r.loopstate(overEx)
 	}
@@ -584,7 +589,9 @@ func decode(filter, action uint32) (Event, Event) {
 	case syscall.FILE_ACTION_RENAMED_NEW_NAME:
 		return gensys(filter, Rename, FileActionRenamedNewName)
 	}
-	panic(`notify: cannot decode internal mask`)
+	dbgprintf("cannot decode internal mask: %d", action)
+
+	return 0, 0
 }
 
 // gensys decides whether the Windows action, system-independent event or both

@@ -6,7 +6,7 @@ package notify
 
 import (
 	"errors"
-	"io/ioutil"
+	"io/fs"
 	"os"
 	"path/filepath"
 )
@@ -49,7 +49,7 @@ func (nd node) addchild(name, base string) node {
 }
 
 func (nd node) Add(name string) node {
-	i := indexbase(nd.Name, name)
+	i := indexrel(nd.Name, name)
 	if i == -1 {
 		return node{}
 	}
@@ -78,12 +78,12 @@ Traverse:
 		}
 		// TODO(rjeczalik): tolerate open failures - add failed names to
 		// AddDirError and notify users which names are not added to the tree.
-		fi, err := ioutil.ReadDir(nd.Name)
+		fi, err := os.ReadDir(nd.Name)
 		if err != nil {
 			return err
 		}
 		for _, fi := range fi {
-			if fi.Mode()&(os.ModeSymlink|os.ModeDir) == os.ModeDir {
+			if fi.Type()&(fs.ModeSymlink|fs.ModeDir) == fs.ModeDir {
 				name := filepath.Join(nd.Name, fi.Name())
 				stack = append(stack, nd.addchild(name, name[len(nd.Name)+1:]))
 			}
@@ -93,7 +93,7 @@ Traverse:
 }
 
 func (nd node) Get(name string) (node, error) {
-	i := indexbase(nd.Name, name)
+	i := indexrel(nd.Name, name)
 	if i == -1 {
 		return node{}, errnotexist(name)
 	}
@@ -111,7 +111,7 @@ func (nd node) Get(name string) (node, error) {
 }
 
 func (nd node) Del(name string) error {
-	i := indexbase(nd.Name, name)
+	i := indexrel(nd.Name, name)
 	if i == -1 {
 		return errnotexist(name)
 	}
@@ -122,13 +122,13 @@ func (nd node) Del(name string) error {
 			return errnotexist(name[:i+j])
 		}
 		stack = append(stack, nd)
+		i += j + 1
 	}
-	if nd, ok = nd.Child[name[i:]]; !ok {
+	if _, ok = nd.Child[name[i:]]; !ok {
 		return errnotexist(name)
 	}
-	nd.Child = nil
-	nd.Watch = nil
-	for name, i = base(nd.Name), len(stack); i != 0; name, i = base(nd.Name), i-1 {
+	delete(nd.Child, name[i:])
+	for name, i = name[i:], len(stack); i != 0; name, i = base(nd.Name), i-1 {
 		nd = stack[i-1]
 		if nd := nd.Child[name]; len(nd.Watch) > 1 || len(nd.Child) != 0 {
 			break
@@ -167,7 +167,7 @@ Traverse:
 }
 
 func (nd node) WalkPath(name string, fn walkPathFunc) error {
-	i := indexbase(nd.Name, name)
+	i := indexrel(nd.Name, name)
 	if i == -1 {
 		return errnotexist(name)
 	}

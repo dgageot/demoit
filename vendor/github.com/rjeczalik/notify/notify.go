@@ -40,20 +40,20 @@ var defaultTree = newTree()
 // watchpoint expands its event set. The only way to shrink it, is to call
 // Stop on its channel.
 //
-// Calling Watch with empty event list does expand nor shrink watchpoint's event
-// set. If c is the first channel to listen for events on the given path, Watch
-// will seamlessly create a watch on the filesystem.
+// Calling Watch with empty event list does not expand nor shrink watchpoint's
+// event set. If c is the first channel to listen for events on the given path,
+// Watch will seamlessly create a watch on the filesystem.
 //
 // Notify dispatches copies of single filesystem event to all channels registered
 // for each path. If a single filesystem event contains multiple coalesced events,
 // each of them is dispatched separately. E.g. the following filesystem change:
 //
-//   ~ $ echo Hello > Notify.txt
+//	~ $ echo Hello > Notify.txt
 //
 // dispatches two events - notify.Create and notify.Write. However, it may depend
 // on the underlying watcher implementation whether OS reports both of them.
 //
-// Windows and recursive watches
+// # Windows and recursive watches
 //
 // If a directory which path was used to create recursive watch under Windows
 // gets deleted, the OS will not report such event. It is advised to keep in

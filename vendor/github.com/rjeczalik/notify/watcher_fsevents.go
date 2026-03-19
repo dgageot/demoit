@@ -2,7 +2,8 @@
 // Use of this source code is governed by the MIT license that can be
 // found in the LICENSE file.
 
-// +build darwin,!kqueue
+//go:build darwin && !kqueue && cgo
+// +build darwin,!kqueue,cgo
 
 package notify
 
@@ -55,35 +56,34 @@ type watch struct {
 
 // Example format:
 //
-//   ~ $ (trigger command) # (event set) -> (effective event set)
+//	~ $ (trigger command) # (event set) -> (effective event set)
 //
 // Heuristics:
 //
 // 1. Create event is removed when it was present in previous event set.
 // Example:
 //
-//   ~ $ echo > file # Create|Write -> Create|Write
-//   ~ $ echo > file # Create|Write|InodeMetaMod -> Write|InodeMetaMod
+//	~ $ echo > file # Create|Write -> Create|Write
+//	~ $ echo > file # Create|Write|InodeMetaMod -> Write|InodeMetaMod
 //
 // 2. Remove event is removed if it was present in previouse event set.
 // Example:
 //
-//   ~ $ touch file # Create -> Create
-//   ~ $ rm file    # Create|Remove -> Remove
-//   ~ $ touch file # Create|Remove -> Create
+//	~ $ touch file # Create -> Create
+//	~ $ rm file    # Create|Remove -> Remove
+//	~ $ touch file # Create|Remove -> Create
 //
 // 3. Write event is removed if not followed by InodeMetaMod on existing
 // file. Example:
 //
-//   ~ $ echo > file   # Create|Write -> Create|Write
-//   ~ $ chmod +x file # Create|Write|ChangeOwner -> ChangeOwner
+//	~ $ echo > file   # Create|Write -> Create|Write
+//	~ $ chmod +x file # Create|Write|ChangeOwner -> ChangeOwner
 //
 // 4. Write&InodeMetaMod is removed when effective event set contain Remove event.
 // Example:
 //
-//   ~ $ echo > file # Write|InodeMetaMod -> Write|InodeMetaMod
-//   ~ $ rm file     # Remove|Write|InodeMetaMod -> Remove
-//
+//	~ $ echo > file # Write|InodeMetaMod -> Write|InodeMetaMod
+//	~ $ rm file     # Remove|Write|InodeMetaMod -> Remove
 func (w *watch) strip(base string, set uint32) uint32 {
 	const (
 		write = FSEventsModified | FSEventsInodeMetaMod
@@ -129,7 +129,7 @@ func (w *watch) Dispatch(ev []FSEvent) {
 		}
 		dbgprintf("%v (0x%x) (%s, i=%d, ID=%d, len=%d)\n", Event(ev[i].Flags),
 			ev[i].Flags, ev[i].Path, i, ev[i].ID, len(ev))
-		if ev[i].Flags&failure != 0 {
+		if ev[i].Flags&failure != 0 && failure&events == 0 {
 			// TODO(rjeczalik): missing error handling
 			continue
 		}
@@ -258,13 +258,13 @@ func (fse *fsevents) RecursiveUnwatch(path string) error {
 	return fse.unwatch(path)
 }
 
-// RecrusiveRewatch implements RecursiveWatcher interface. It fails:
+// RecursiveRewatch implements RecursiveWatcher interface. It fails:
 //
-//   * with errNotWatched when the given path is not being watched
-//   * with errInvalidEventSet when oldevent does not match the current event set
-//   * with errAlreadyWatched when watch-point given by the oldpath was meant to
+//   - with errNotWatched when the given path is not being watched
+//   - with errInvalidEventSet when oldevent does not match the current event set
+//   - with errAlreadyWatched when watch-point given by the oldpath was meant to
 //     be relocated to newpath, but the newpath is already watched
-//   * a non-nil error when setting the watch-point with FSEvents fails
+//   - a non-nil error when setting the watch-point with FSEvents fails
 //
 // TODO(rjeczalik): Improve handling of watch-point relocation? See two TODOs
 // that follows.
