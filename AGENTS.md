@@ -30,7 +30,6 @@ main.go            CLI flags, gorilla/mux router, starts web server
 │   ├── static.go      Static files from .demoit/
 │   ├── ping.go        HTTP HEAD proxy
 │   ├── qrcode.go      QR code generation
-│   ├── speakernotes.go  Speaker notes (BroadcastChannel sync)
 │   ├── grid.go        Grid view of all slides
 │   └── resources/     Embedded HTML templates (//go:embed)
 ├── livereload/    WebSocket live reload (LiveReload protocol)
