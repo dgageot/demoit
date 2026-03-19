@@ -6,33 +6,54 @@ linters:
     - asasalint
     - asciicheck
     - bidichk
+    - bodyclose
+    - canonicalheader
     - containedctx
+    - contextcheck
     - copyloopvar
     - decorder
     - dogsled
+    - dupl
+    - dupword
     - durationcheck
     - errcheck
+    - errchkjson
     - errname
     - errorlint
+    - exhaustive
     - exptostd
     - fatcontext
+    - forcetypeassert
     - gocheckcompilerdirectives
     - gochecknoinits
+    - gochecksumtype
+    - goconst
     - gocritic
+    - godot
     - gomoddirectives
     - gomodguard
     - goprintffuncname
+    - gosec
     - govet
     - grouper
+    - iface
     - importas
     - inamedparam
     - ineffassign
     - intrange
-    - misspell
+    - iotamixing
+    - makezero
     - mirror
+    - misspell
     - modernize
+    - musttag
     - nakedret
+    - nestif
+    - nilerr
+    - nilnesserr
+    - noctx
     - nolintlint
+    - nonamedreturns
     - nosprintfhostport
     - perfsprint
     - predeclared
@@ -40,15 +61,17 @@ linters:
     - recvcheck
     - revive
     - rowserrcheck
+    - sloglint
     - staticcheck
+    - testableexamples
     - thelper
     - unconvert
     - unparam
     - unused
     - usestdlibvars
     - usetesting
-    - whitespace
     - wastedassign
+    - whitespace
   settings:
     gocritic:
       disabled-checks:
@@ -70,6 +93,18 @@ linters:
     staticcheck:
       checks:
         - all
+    gosec:
+      excludes:
+        - G107 # Variable URL in HTTP request — intentional for ping/proxy
+        - G114 # HTTP server without timeouts — local dev tool
+        - G120 # FormValue without MaxBytesReader — local dev tool
+        - G203 # template.HTML from variable — intentional for slide rendering
+        - G704 # SSRF via taint — intentional for ping endpoint
+        - G304 # File path from variable — intentional for file serving
+    nestif:
+      min-complexity: 5
+    exhaustive:
+      default-signifies-exhaustive: true
   exclusions:
     generated: lax
     presets:

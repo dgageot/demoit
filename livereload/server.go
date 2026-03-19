@@ -40,7 +40,9 @@ func (s *Server) RegisterHandlers(router *mux.Router) {
 
 func (s *Server) Reload(file string) {
 	s.connSet.Range(func(k, _ any) bool {
-		k.(*conn).reloadChan <- file
+		if c, ok := k.(*conn); ok {
+			c.reloadChan <- file
+		}
 		return true
 	})
 }
