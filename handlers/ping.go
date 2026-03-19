@@ -22,7 +22,7 @@ func Ping(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		http.Error(w, "Unable to ping", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadGateway)
 		return
 	}
 	defer resp.Body.Close()

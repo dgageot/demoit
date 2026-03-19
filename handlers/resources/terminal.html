@@ -13,10 +13,11 @@
     <div id="terminal"></div>
 
     <script type="module">
-        // Use ghostty-web from PR #136 branch via jsDelivr GitHub proxy.
-        // https://github.com/coder/ghostty-web/pull/136
+        // Use ghostty-web terminal emulator.
+        // PR #136 (https://github.com/coder/ghostty-web/pull/136) fixes wheel
+        // events with mouse tracking for proper tmux/vim pane scrolling.
         const { init, Terminal } = await import(
-            'https://cdn.jsdelivr.net/gh/coder/ghostty-web@jmcampanini/fix-wheel-events/dist/ghostty-web.js'
+            'https://cdn.jsdelivr.net/npm/ghostty-web@0.4.0/dist/ghostty-web.js'
         );
 
         await init();
