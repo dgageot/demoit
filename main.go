@@ -85,9 +85,9 @@ func main() {
 }
 
 func mustParseURL(rawURL string) *url.URL {
-	url, err := url.Parse(rawURL)
+	parsed, err := url.Parse(rawURL)
 	if err != nil {
 		panic(err)
 	}
-	return url
+	return parsed
 }

@@ -147,7 +147,7 @@ func (c *conn) close(code int, err error) {
 		errMsg = err.Error()
 	}
 
-	c.conn.WriteControl(
+	_ = c.conn.WriteControl(
 		websocket.CloseMessage,
 		websocket.FormatCloseMessage(code, errMsg),
 		time.Now().Add(time.Second),

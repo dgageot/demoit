@@ -1,6 +1,8 @@
 // Lot's of inspiration from https://github.com/jaschaephraim/lrserver.
 package livereload
 
+import "slices"
+
 var supportedProtocols = []string{
 	"http://livereload.com/protocols/official-7",
 	"http://livereload.com/protocols/official-8",
@@ -20,10 +22,8 @@ func validateHello(hello clientHello) bool {
 	}
 
 	for _, protocol := range hello.Protocols {
-		for _, supported := range supportedProtocols {
-			if protocol == supported {
-				return true
-			}
+		if slices.Contains(supportedProtocols, protocol) {
+			return true
 		}
 	}
 

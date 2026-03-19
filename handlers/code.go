@@ -61,23 +61,25 @@ func (n *nonDefaultYAMLLexer) Tokenise(options *chroma.TokeniseOptions, text str
 	updated := iterator.Tokens()
 
 	for i, token := range updated {
-		if token.Type == chroma.Text {
-			if token.Value == "-" {
-				continue
-			}
-
-			if i+1 >= len(updated) {
-				continue
-			}
-
-			next := updated[i+1]
-			if next.Type == chroma.Punctuation && next.Value == ":" {
-				continue
-			}
-
-			token.Type = chroma.LiteralStringSingle
-			updated[i] = token
+		if token.Type != chroma.Text {
+			continue
 		}
+
+		if token.Value == "-" {
+			continue
+		}
+
+		if i+1 >= len(updated) {
+			continue
+		}
+
+		next := updated[i+1]
+		if next.Type == chroma.Punctuation && next.Value == ":" {
+			continue
+		}
+
+		token.Type = chroma.LiteralStringSingle
+		updated[i] = token
 	}
 
 	return chroma.Literator(updated...), nil

@@ -12,9 +12,9 @@ func Ping(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url := r.FormValue("url")
+	pingURL := r.FormValue("url")
 
-	resp, err := http.Head(url)
+	resp, err := http.Head(pingURL)
 	if err != nil {
 		http.Error(w, "Unable to ping", http.StatusInternalServerError)
 		return

@@ -1,0 +1,36 @@
+version: "3"
+
+tasks:
+  default:
+    cmd: task --list
+
+  lint:
+    desc: Run golangci-lint
+    cmds:
+      - golangci-lint run
+    sources:
+      - "**/*.go"
+      - ".golangci.yml"
+      - "go.mod"
+      - "go.sum"
+
+  format:
+    desc: Format code
+    cmd: golangci-lint fmt
+    sources:
+      - "**/*.go"
+      - ".golangci.yml"
+
+  build:
+    desc: Build the application binary
+    cmd: go build -o demoit
+
+  run:
+    desc: Run the application
+    deps: ["build"]
+    cmd: ./demoit {{.CLI_ARGS}}
+
+  run-dev:
+    desc: Run with live reload
+    deps: ["build"]
+    cmd: ./demoit -dev {{.CLI_ARGS}}

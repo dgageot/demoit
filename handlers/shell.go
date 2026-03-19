@@ -48,7 +48,7 @@ func commands(path string) ([]string, error) {
 	}
 	if _, err := os.Stat(bashRc); err == nil {
 		fmt.Println("Using bashrc file", bashRc)
-		commands = append(commands, fmt.Sprintf("source %s", bashRc))
+		commands = append(commands, "source "+bashRc)
 	}
 
 	// Bash history needs to be copied because it's going to be modified by the shell.
@@ -60,7 +60,7 @@ func commands(path string) ([]string, error) {
 		fmt.Println("Using history", bashHistory)
 		commands = append(commands, fmt.Sprintf("HISTFILE=%s exec %s", bashHistory, shell))
 	} else {
-		commands = append(commands, fmt.Sprintf("exec %s", shell))
+		commands = append(commands, "exec "+shell)
 	}
 
 	return commands, nil

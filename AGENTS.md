@@ -10,7 +10,9 @@ go build -o demoit                        # build locally
 ./demoit                                  # run on http://localhost:8888
 ./demoit -dev                             # live reload mode
 ./demoit -port 9000 -host 0.0.0.0        # custom bind
-golangci-lint run -c golangci.yml ./...   # lint
+golangci-lint run                         # lint (or: task lint)
+task lint                                 # lint via Taskfile
+task format                               # format code
 docker buildx bake                        # cross-compile (darwin/linux, amd64/arm64)
 # No tests exist in this project.
 ```
@@ -37,7 +39,7 @@ main.go            CLI flags, gorilla/mux router, starts shell + web servers
 
 ## Code Conventions
 
-- **Go 1.19**, no generics. Dependencies **vendored** (`go mod vendor` after changes).
+- **Go 1.26**. Dependencies **vendored** (`go mod vendor` after changes).
 - Templates embedded via `//go:embed`. Global state: `files.Root`, `flags.*`.
 - Error handling: `http.Error()` in handlers, `log.Fatal()` at startup, `fmt.Errorf("…: %w", err)` for wrapping.
 - Standard Go naming; no interfaces or DI.
