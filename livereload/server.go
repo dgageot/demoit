@@ -84,6 +84,7 @@ type conn struct {
 	reloadChan chan string
 	closeChan  chan bool
 	handshake  bool
+	closeOnce  sync.Once
 }
 
 func (c *conn) start() {
@@ -144,17 +145,19 @@ func (c *conn) transmit() {
 }
 
 func (c *conn) close(code int, err error) {
-	var errMsg string
-	if err != nil {
-		errMsg = err.Error()
-	}
+	c.closeOnce.Do(func() {
+		var errMsg string
+		if err != nil {
+			errMsg = err.Error()
+		}
 
-	_ = c.conn.WriteControl(
-		websocket.CloseMessage,
-		websocket.FormatCloseMessage(code, errMsg),
-		time.Now().Add(time.Second),
-	)
+		_ = c.conn.WriteControl(
+			websocket.CloseMessage,
+			websocket.FormatCloseMessage(code, errMsg),
+			time.Now().Add(time.Second),
+		)
 
-	c.closeChan <- true
-	c.removeSelf(c)
+		c.closeChan <- true
+		c.removeSelf(c)
+	})
 }
