@@ -60,6 +60,7 @@ func (s *Server) webSocket(rw http.ResponseWriter, req *http.Request) {
 	wsConn, err := s.upgrader.Upgrade(rw, req, nil)
 	if err != nil {
 		log.Println(err)
+		return
 	}
 
 	c := s.newConn(wsConn)
