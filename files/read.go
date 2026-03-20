@@ -38,5 +38,5 @@ func Sha256(path ...string) (string, error) {
 }
 
 func fullpath(path ...string) string {
-	return filepath.Join(Root, filepath.Join(path...))
+	return filepath.Join(append([]string{Root}, path...)...)
 }
