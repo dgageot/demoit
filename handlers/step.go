@@ -129,7 +129,7 @@ func VerifyConfiguration() error {
 	}
 
 	info, err := os.Stat(filepath.Join(files.Root, ".demoit"))
-	if os.IsNotExist(err) {
+	if errors.Is(err, os.ErrNotExist) {
 		return errors.New(`mandatory resource folder ".demoit" doesn't exist`)
 	}
 
