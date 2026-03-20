@@ -1,0 +1,17 @@
+# Ignore everything by default
+*
+
+# Go module files
+!go.mod
+!go.sum
+
+# Go source files and embedded assets
+!main.go
+!files/
+!flags/
+!handlers/
+!livereload/
+!shell/
+
+# Vendored dependencies
+!vendor/
