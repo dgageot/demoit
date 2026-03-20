@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -16,14 +18,11 @@ import (
 func Code(w http.ResponseWriter, r *http.Request) {
 	filename := strings.TrimPrefix(r.URL.Path, "/sourceCode/")
 
-	var contents []byte
-
-	if !files.Exists(filename) {
+	contents, err := files.Read(filename)
+	if errors.Is(err, os.ErrNotExist) {
 		http.NotFound(w, r)
 		return
 	}
-	var err error
-	contents, err = files.Read(filename)
 	if err != nil {
 		http.Error(w, "Unable to read "+filename, http.StatusInternalServerError)
 		return
