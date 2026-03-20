@@ -23,8 +23,8 @@ func Shell(w http.ResponseWriter, r *http.Request) {
 	folder := mux.Vars(r)["folder"]
 
 	path := files.Root
-	if folder != "." {
-		path += "/" + folder
+	if folder != "." && folder != "" {
+		path = filepath.Join(path, folder)
 	}
 
 	// Redirect to the terminal page with the shell command as a query parameter.
