@@ -112,14 +112,9 @@ class FakeWindow extends BaseHTMLElement {
 
     connectedCallback() {
         super.connectedCallback();
-        this.$('#green').addEventListener('click', () => {
-            this.$('#main').classList.toggle('maximized');
-            // Refocus the iframe after zoom to keep terminal focus.
-            const iframe = this.querySelector('iframe');
-            if (iframe) {
-                iframe.focus();
-            }
-        });
+        // Prevent the green button from stealing focus (e.g. from a terminal iframe).
+        this.$('#green').addEventListener('mousedown', (e) => e.preventDefault());
+        this.$('#green').addEventListener('click', () => this.$('#main').classList.toggle('maximized'));
     }
 }
 

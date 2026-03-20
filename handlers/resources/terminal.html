@@ -88,6 +88,10 @@
         new ResizeObserver(() => {
             fitAddon.fit();
         }).observe(container);
+
+        // Re-focus the terminal when the iframe's window regains focus
+        // (e.g. after clicking the zoom button in the parent frame).
+        window.addEventListener('focus', () => term.focus());
     </script>
 </body>
 </html>
