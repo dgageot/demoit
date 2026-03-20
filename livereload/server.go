@@ -19,14 +19,14 @@ import (
 var js []byte
 
 type Server struct {
-	port     int
+	script   []byte
 	connSet  sync.Map
 	upgrader websocket.Upgrader
 }
 
 func New(port int) *Server {
 	return &Server{
-		port: port,
+		script: bytes.ReplaceAll(js, []byte("35729"), []byte(strconv.Itoa(port))),
 		upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool { return true },
 		},
@@ -47,12 +47,10 @@ func (s *Server) Reload(file string) {
 	})
 }
 
-func (s *Server) js(w http.ResponseWriter, r *http.Request) {
-	script := bytes.ReplaceAll(js, []byte("35729"), []byte(strconv.Itoa(s.port)))
-
+func (s *Server) js(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/javascript")
-	if _, err := w.Write(script); err != nil {
-		http.Error(w, "Unable to server livereload javascript", http.StatusInternalServerError)
+	if _, err := w.Write(s.script); err != nil {
+		http.Error(w, "Unable to serve livereload javascript", http.StatusInternalServerError)
 	}
 }
 
