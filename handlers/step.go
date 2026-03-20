@@ -70,33 +70,30 @@ func LastStep(w http.ResponseWriter, r *http.Request) {
 }
 
 func readSteps(folder string) ([]Page, error) {
-	var steps []Page
-
 	content, err := os.ReadFile(filepath.Join(folder, "demoit.html"))
 	if err != nil {
 		return nil, err
 	}
 
 	parts := bytes.Split(content, []byte("---"))
+	steps := make([]Page, len(parts))
 	for i, part := range parts {
-		var url string
-		if i == 0 {
-			url = "/"
-		} else {
+		url := "/"
+		if i > 0 {
 			url = fmt.Sprintf("/%d", i)
 		}
 
-		steps = append(steps, Page{
+		steps[i] = Page{
 			WorkingDir:  folder,
 			HTML:        template.HTML(part),
 			DevMode:     *flags.DevMode,
 			CurrentStep: i,
 			URL:         url,
-		})
+			StepCount:   len(parts) - 1,
+		}
 	}
 
 	for i := range steps {
-		steps[i].StepCount = len(steps) - 1
 		if i > 0 {
 			steps[i].PrevURL = steps[i-1].URL
 		}
