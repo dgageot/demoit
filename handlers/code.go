@@ -109,11 +109,16 @@ func style(name string) *chroma.Style {
 }
 
 func highligtedLines(r *http.Request) [][2]int {
-	lines := [][2]int{}
+	startParam := r.FormValue("startLine")
+	endParam := r.FormValue("endLine")
+	if startParam == "" || endParam == "" {
+		return nil
+	}
 
-	startLines := strings.Split(r.FormValue("startLine"), ",")
-	endLines := strings.Split(r.FormValue("endLine"), ",")
+	startLines := strings.Split(startParam, ",")
+	endLines := strings.Split(endParam, ",")
 
+	lines := make([][2]int, 0, len(startLines))
 	for i := range startLines {
 		startLine, _ := strconv.Atoi(startLines[i])
 		endLine, _ := strconv.Atoi(endLines[i])
