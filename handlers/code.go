@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -86,12 +85,12 @@ func (n *nonDefaultYAMLLexer) Tokenise(options *chroma.TokeniseOptions, text str
 }
 
 func lexer(file string) chroma.Lexer {
-	if lexer := lexers.Match(file); lexer != nil {
-		if strings.HasSuffix(file, ".yaml") || strings.HasSuffix(file, ".yml") {
-			fmt.Println("Using non default YAML Lexer")
-			return &nonDefaultYAMLLexer{lexers.Get(".yaml")}
-		}
-		return lexer
+	if strings.HasSuffix(file, ".yaml") || strings.HasSuffix(file, ".yml") {
+		return &nonDefaultYAMLLexer{lexers.Get(".yaml")}
+	}
+
+	if l := lexers.Match(file); l != nil {
+		return l
 	}
 
 	return lexers.Fallback
