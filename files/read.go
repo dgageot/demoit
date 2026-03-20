@@ -22,8 +22,8 @@ func Exists(path ...string) bool {
 }
 
 // Sha256 returns the sha256 digest of a file.
-func Sha256(path string) (string, error) {
-	file, err := os.Open(fullpath(".demoit", path))
+func Sha256(path ...string) (string, error) {
+	file, err := os.Open(fullpath(path...))
 	if err != nil {
 		return "", err
 	}

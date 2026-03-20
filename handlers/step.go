@@ -146,7 +146,7 @@ func VerifyConfiguration() error {
 
 // Ignore errors and return empty string if an error occurs.
 func hash(path string) string {
-	h, err := files.Sha256(path)
+	h, err := files.Sha256(".demoit", path)
 	if err != nil {
 		return ""
 	}
