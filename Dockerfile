@@ -23,5 +23,5 @@ RUN --mount=type=bind,target=. \
   xx-verify /out/demoit
 EOT
 
-FROM scratch as binaries
+FROM scratch AS binaries
 COPY --link --from=build /out /
