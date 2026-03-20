@@ -219,6 +219,7 @@ func copyHistoryFile(shellBin string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("unable to create temp file: %w", err)
 	}
+	defer tmpFile.Close()
 
 	_, err = tmpFile.Write(content)
 	if err != nil {
