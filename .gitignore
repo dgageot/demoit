@@ -2,3 +2,4 @@
 out/
 demoit
 !target
+.cache/
