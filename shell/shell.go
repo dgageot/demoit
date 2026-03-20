@@ -38,8 +38,7 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request, shellCommand string
 
 	// Start shell in a PTY.
 	cmd := exec.CommandContext(ctx, "sh", "-c", shellCommand)
-	cmd.Env = os.Environ()
-	cmd.Env = append(cmd.Env, "TERM=xterm-256color")
+	cmd.Env = append(os.Environ(), "TERM=xterm-256color")
 
 	ptmx, err := pty.StartWithSize(cmd, &pty.Winsize{Rows: 24, Cols: 80})
 	if err != nil {
