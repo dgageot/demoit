@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"sync"
 
 	"github.com/dgageot/demoit/files"
 	"github.com/dgageot/demoit/flags"
@@ -69,7 +70,23 @@ func LastStep(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, fmt.Sprintf("/%d", len(steps)-1), http.StatusSeeOther)
 }
 
+var (
+	cachedSteps    []Page
+	errCachedSteps error
+	cacheStepsOnce sync.Once
+)
+
 func readSteps(folder string) ([]Page, error) {
+	if !*flags.DevMode {
+		cacheStepsOnce.Do(func() {
+			cachedSteps, errCachedSteps = parseSteps(folder)
+		})
+		return cachedSteps, errCachedSteps
+	}
+	return parseSteps(folder)
+}
+
+func parseSteps(folder string) ([]Page, error) {
 	content, err := os.ReadFile(filepath.Join(folder, "demoit.html"))
 	if err != nil {
 		return nil, err
