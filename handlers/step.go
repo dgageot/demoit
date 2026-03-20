@@ -23,7 +23,6 @@ var indexTemplate = template.Must(template.New("index").Funcs(template.FuncMap{"
 
 // Page describes a page of the demo.
 type Page struct {
-	WorkingDir  string
 	HTML        template.HTML
 	URL         string
 	PrevURL     string
@@ -101,7 +100,6 @@ func parseSteps(folder string) ([]Page, error) {
 		}
 
 		steps[i] = Page{
-			WorkingDir:  folder,
 			HTML:        template.HTML(part),
 			DevMode:     *flags.DevMode,
 			CurrentStep: i,
