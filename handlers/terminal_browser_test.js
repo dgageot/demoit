@@ -44,7 +44,9 @@ test('terminal mouse, wheel, selection, and scrollback in Chromium', {
     } else {
       res.setHeader('Content-Type', 'text/html');
       res.end(req.url.startsWith('/terminal') ? html :
-        '<button id="other">Other control</button><iframe src="/terminal" style="width:800px;height:500px"></iframe>');
+        '<button id="other" autofocus>Other control</button>' +
+        '<iframe src="/terminal" style="width:800px;height:500px"></iframe>' +
+        '<iframe src="/terminal" style="width:800px;height:500px"></iframe>');
     }
   });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
@@ -106,11 +108,37 @@ test('terminal mouse, wheel, selection, and scrollback in Chromium', {
   await evaluate(`new Promise((resolve, reject) => {
     const start = Date.now();
     const timer = setInterval(() => {
-      const frame = document.querySelector('iframe');
-      if (frame?.contentWindow.socket?.sent.length) { clearInterval(timer); resolve(); }
+      const frames = [...document.querySelectorAll('iframe')];
+      if (frames.length && frames.every(frame => frame.contentWindow.socket?.sent.length)) {
+        clearInterval(timer); resolve();
+      }
       else if (Date.now() - start > 10000) { clearInterval(timer); reject(new Error('Terminal did not initialize')); }
     }, 20);
   })`);
+  assert.equal(await evaluate(`document.activeElement.id`), 'other');
+  // Native input also exercises focus transitions between distinct iframes.
+  for (const index of [1, 0]) {
+    const point = await evaluate(`(() => {
+      const frames = [...document.querySelectorAll('iframe')];
+      for (const frame of frames) frame.contentWindow.socket.sent.length = 0;
+      const frame = frames[${index}];
+      frame.scrollIntoView();
+      const rect = frame.getBoundingClientRect();
+      return { x: rect.left + frame.clientLeft + 20, y: rect.top + frame.clientTop + 20 };
+    })()`);
+    await send('Input.dispatchMouseEvent', { type: 'mousePressed', button: 'left', clickCount: 1, ...point }, sessionId);
+    await send('Input.dispatchMouseEvent', { type: 'mouseReleased', button: 'left', clickCount: 1, ...point }, sessionId);
+    await send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'a', code: 'KeyA', text: 'a' }, sessionId);
+    await send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'a', code: 'KeyA' }, sessionId);
+    const focus = await evaluate(`(() => {
+      const frames = [...document.querySelectorAll('iframe')];
+      return { active: frames.indexOf(document.activeElement),
+        input: frames.map(frame => frame.contentWindow.socket.sent.filter(data => data === 'a')) };
+    })()`);
+    assert.equal(focus.active, index);
+    assert.deepEqual(focus.input[index], ['a']);
+    assert.deepEqual(focus.input[1 - index], []);
+  }
   const results = await evaluate(`(async () => {
     const frame = document.querySelector('iframe');
     const w = frame.contentWindow;
@@ -184,4 +212,20 @@ test('terminal mouse, wheel, selection, and scrollback in Chromium', {
   assert.deepEqual(results.selectionInput, []);
   assert.equal(results.scrolled, true);
   assert.equal(results.bottom, 0);
+  assert.equal(await evaluate(`new Promise((resolve, reject) => {
+    document.getElementById('other').focus();
+    const frame = document.createElement('iframe');
+    frame.src = '/terminal?autofocus=1';
+    document.body.appendChild(frame);
+    const start = Date.now();
+    const timer = setInterval(() => {
+      if (frame.contentWindow.socket?.sent.length) {
+        clearInterval(timer);
+        resolve(document.activeElement === frame &&
+          frame.contentDocument.activeElement === frame.contentWindow.term.textarea);
+      } else if (Date.now() - start > 10000) {
+        clearInterval(timer); reject(new Error('Autofocus terminal did not initialize'));
+      }
+    }, 20);
+  })`), true);
 });
