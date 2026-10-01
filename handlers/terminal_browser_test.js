@@ -52,17 +52,18 @@ test('terminal mouse, wheel, selection, and scrollback in Chromium', {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   t.after(() => new Promise(resolve => server.close(resolve)));
   const profile = await mkdtemp(path.join(os.tmpdir(), 'demoit-terminal-browser-'));
-  t.after(() => rm(profile, { recursive: true, force: true }));
   const browser = spawn(chrome, [
     '--headless', '--no-sandbox', '--disable-gpu', '--remote-debugging-port=0',
     `--user-data-dir=${profile}`, 'about:blank',
   ], { stdio: ['ignore', 'ignore', 'pipe'] });
-  t.after(() => {
-    if (!browser.pid || browser.exitCode !== null || browser.signalCode !== null) return;
-    return new Promise(resolve => {
-      browser.once('exit', resolve);
-      browser.kill();
-    });
+  t.after(async () => {
+    if (browser.pid && browser.exitCode === null && browser.signalCode === null) {
+      await new Promise(resolve => {
+        browser.once('exit', resolve);
+        browser.kill();
+      });
+    }
+    await rm(profile, { recursive: true, force: true });
   });
   const endpoint = await new Promise((resolve, reject) => {
     let stderr = '';
@@ -139,6 +140,26 @@ test('terminal mouse, wheel, selection, and scrollback in Chromium', {
     assert.deepEqual(focus.input[index], ['a']);
     assert.deepEqual(focus.input[1 - index], []);
   }
+  const wheelPoint = await evaluate(`(() => {
+    const frame = document.querySelector('iframe');
+    frame.scrollIntoView();
+    document.getElementById('other').focus();
+    const rect = frame.getBoundingClientRect();
+    return { x: rect.left + frame.clientLeft + 20, y: rect.top + frame.clientTop + 20 };
+  })()`);
+  await send('Input.dispatchMouseEvent', {
+    type: 'mouseWheel', deltaX: 0, deltaY: 100, ...wheelPoint,
+  }, sessionId);
+  assert.equal(await evaluate(`new Promise(resolve => setTimeout(() => {
+    const frame = document.querySelector('iframe');
+    resolve(document.activeElement === frame &&
+      frame.contentDocument.activeElement === frame.contentWindow.term.textarea);
+  }, 100))`), true);
+  assert.equal(await evaluate(`new Promise(resolve => setTimeout(() => {
+    const frame = document.querySelector('iframe');
+    resolve(document.activeElement === frame &&
+      frame.contentDocument.activeElement === frame.contentWindow.term.textarea);
+  }, 150))`), true);
   const results = await evaluate(`(async () => {
     const frame = document.querySelector('iframe');
     const w = frame.contentWindow;
@@ -180,10 +201,6 @@ test('terminal mouse, wheel, selection, and scrollback in Chromium', {
     const trackpad = sent.splice(0);
     wheel(0, { deltaX: 100 });
     const horizontal = sent.splice(0);
-    document.getElementById('other').focus();
-    wheel(100);
-    await wait();
-    const focused = document.activeElement === frame && w.document.activeElement === term.textarea;
     sent.length = 0;
     term.write('\\x1b[?1049l\\x1b[?1003l\\x1b[?1006l');
     await wait();
@@ -199,7 +216,7 @@ test('terminal mouse, wheel, selection, and scrollback in Chromium', {
     const scrolled = term.getViewportY() > 0;
     wheel(100000);
     await wait();
-    return { clicks, down, up, trackpad, horizontal, focused, selected, selectionInput,
+    return { clicks, down, up, trackpad, horizontal, selected, selectionInput,
       scrolled, bottom: term.getViewportY() };
   })()`);
   assert.deepEqual(results.clicks, ['\x1b[<0;5;3M', '\x1b[<32;7;4M', '\x1b[<0;7;4m']);
@@ -207,7 +224,6 @@ test('terminal mouse, wheel, selection, and scrollback in Chromium', {
   assert.deepEqual(results.up, ['\x1b[<64;1;1M']);
   assert.deepEqual(results.trackpad, ['\x1b[<65;1;1M']);
   assert.deepEqual(results.horizontal, []);
-  assert.equal(results.focused, true);
   assert.equal(results.selected, 'hello ');
   assert.deepEqual(results.selectionInput, []);
   assert.equal(results.scrolled, true);
@@ -221,8 +237,8 @@ test('terminal mouse, wheel, selection, and scrollback in Chromium', {
     const timer = setInterval(() => {
       if (frame.contentWindow.socket?.sent.length) {
         clearInterval(timer);
-        resolve(document.activeElement === frame &&
-          frame.contentDocument.activeElement === frame.contentWindow.term.textarea);
+        setTimeout(() => resolve(document.activeElement === frame &&
+          frame.contentDocument.activeElement === frame.contentWindow.term.textarea), 150);
       } else if (Date.now() - start > 10000) {
         clearInterval(timer); reject(new Error('Autofocus terminal did not initialize'));
       }

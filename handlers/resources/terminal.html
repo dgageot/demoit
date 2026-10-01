@@ -114,6 +114,8 @@
         // Re-focus the terminal when the iframe's window regains focus
         // (e.g. after clicking the zoom button in the parent frame).
         window.addEventListener('focus', () => term.focus());
+        // Cancel deferred refocusing when the user switches to another iframe.
+        window.addEventListener('blur', () => term.blur());
         if (new URLSearchParams(location.search).has('autofocus')) {
             window.focus();
             term.focus();
