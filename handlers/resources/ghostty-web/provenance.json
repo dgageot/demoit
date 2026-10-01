@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "package": "ghostty-web",
+  "packageVersion": "0.4.0",
+  "artifact": "ghostty-web-0.4.0-hvir-g18fc0d2bddb0.tgz",
+  "sha256": "40b859ece2ea14118b0695814db91e8dfedfc4f3257d1df5ad1c2776a0d0dbe2",
+  "sourceRepository": "https://github.com/jarmak-personal/ghostty-web.git",
+  "sourceCommit": "18fc0d2bddb0c788ef5f1c58464603bd20d1c391",
+  "upstreamRepository": "https://github.com/coder/ghostty-web.git",
+  "upstreamBranch": "main",
+  "upstreamCommit": "1858a5947767a3e1c9e98dbf53b2ff87fedb2aab",
+  "ghosttyCommit": "332b2aefc6e72d363aa93ab6ecfc86eeeeb5ed28",
+  "buildPlatform": "linux-x64",
+  "toolchain": {
+    "bun": "1.3.14",
+    "node": "v24.18.0",
+    "npm": "11.16.0",
+    "zig": "0.15.2"
+  }
+}

@@ -34,6 +34,7 @@ func main() {
 	r.HandleFunc("/shell/", handlers.Shell).Methods("GET")
 	r.HandleFunc("/shell/{folder}", handlers.Shell).Methods("GET")
 	r.HandleFunc("/terminal", handlers.TerminalPage).Methods("GET")
+	r.HandleFunc("/terminal-assets/hvir-v0.4.0-20/{file}", handlers.TerminalAsset).Methods("GET", "HEAD")
 	r.HandleFunc("/ws/terminal", handlers.TerminalWebSocket)
 	r.PathPrefix("/ping").HandlerFunc(handlers.Ping).Methods("HEAD", "GET")
 	r.PathPrefix("/js/").HandlerFunc(handlers.Static).Methods("GET")
