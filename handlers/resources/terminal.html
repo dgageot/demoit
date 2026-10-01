@@ -22,9 +22,14 @@
 
         await init();
 
+        const frame = window.frameElement;
+        if (frame) {
+            frame.style.fontSize = 'var(--source-code-font-size, 16px)';
+        }
+
         const container = document.getElementById('terminal');
         const term = new Terminal({
-            fontSize: 14,
+            fontSize: terminalFontSize(),
             fontFamily: 'monospace',
             cursorBlink: true,
             scrollback: 10000,
@@ -73,6 +78,12 @@
             term.write('\r\n\x1b[90m[Session ended]\x1b[0m\r\n');
         };
 
+        function terminalFontSize() {
+            // CSS lengths are resolved in the presentation, not the iframe viewport.
+            const size = frame ? parseFloat(window.parent.getComputedStyle(frame).fontSize) : 16;
+            return Number.isFinite(size) && size > 0 ? size : 16;
+        }
+
         function sendResize() {
             ws.send(JSON.stringify({
                 type: 'resize',
@@ -86,12 +97,20 @@
         // recalculates cols/rows from the new container size, calls
         // term.resize(), which fires onResize → sendResize → PTY resize.
         new ResizeObserver(() => {
+            const fontSize = terminalFontSize();
+            if (term.options.fontSize !== fontSize) {
+                term.options.fontSize = fontSize;
+            }
             fitAddon.fit();
         }).observe(container);
 
         // Re-focus the terminal when the iframe's window regains focus
         // (e.g. after clicking the zoom button in the parent frame).
         window.addEventListener('focus', () => term.focus());
+        if (new URLSearchParams(location.search).has('autofocus')) {
+            window.focus();
+            term.focus();
+        }
     </script>
 </body>
 </html>

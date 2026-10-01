@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"unicode"
 
 	"github.com/dgageot/demoit/files"
 	"github.com/dgageot/demoit/shell"
@@ -17,6 +18,8 @@ import (
 
 //go:embed resources/terminal.html
 var terminalHTML []byte
+
+const zshShell = "zsh"
 
 // Shell serves an HTML page with a ghostty-web terminal connected via WebSocket.
 func Shell(w http.ResponseWriter, r *http.Request) {
@@ -27,14 +30,23 @@ func Shell(w http.ResponseWriter, r *http.Request) {
 		path = filepath.Join(path, folder)
 	}
 
+	prefill := r.URL.Query().Get("command")
+	if strings.ContainsFunc(prefill, unicode.IsControl) {
+		http.Error(w, "Command must not contain control characters", http.StatusBadRequest)
+		return
+	}
+
 	// Redirect to the terminal page with the shell command as a query parameter.
-	commands, err := shellCommands(path)
+	commands, err := shellCommands(path, prefill)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	redirectURL := "/terminal?cmd=" + url.QueryEscape(strings.Join(commands, ";"))
+	if prefill != "" {
+		redirectURL += "&autofocus=1"
+	}
 	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
 }
 
@@ -57,7 +69,7 @@ func TerminalWebSocket(w http.ResponseWriter, r *http.Request) {
 	shell.HandleWebSocket(w, r, cmd)
 }
 
-func shellCommands(path string) ([]string, error) {
+func shellCommands(path, prefill string) ([]string, error) {
 	commands := []string{"cd " + path + ">/dev/null"}
 
 	shellBin, found := os.LookupEnv("SHELL")
@@ -84,7 +96,7 @@ func shellCommands(path string) ([]string, error) {
 	// Build shell-specific exec command. Using a wrapper init file
 	// ensures HISTFILE is set after the shell's own startup files,
 	// which prevents the user's real history from overriding the demo history.
-	execCmd, err := shellExecCommand(shellBin, bashRc, historyFile)
+	execCmd, err := shellExecCommand(shellBin, bashRc, historyFile, prefill)
 	if err != nil {
 		return nil, err
 	}
@@ -108,12 +120,15 @@ func resolveDemoitFile(name string) string {
 
 // shellExecCommand builds the exec command for the given shell, including
 // wrapper init files when needed to ensure HISTFILE survives shell startup.
-func shellExecCommand(shellBin, bashRc, historyFile string) (string, error) {
+func shellExecCommand(shellBin, bashRc, historyFile, prefill string) (string, error) {
+	if prefill != "" && filepath.Base(shellBin) != zshShell {
+		return "", fmt.Errorf("command prefill requires zsh, got %s", shellBin)
+	}
 	switch filepath.Base(shellBin) {
 	case "bash":
 		return bashExecCommand(shellBin, bashRc, historyFile)
-	case "zsh":
-		return zshExecCommand(shellBin, bashRc, historyFile)
+	case zshShell:
+		return zshExecCommand(shellBin, bashRc, historyFile, prefill)
 	default:
 		return defaultExecCommand(shellBin, bashRc, historyFile), nil
 	}
@@ -148,8 +163,8 @@ func bashExecCommand(shellBin, bashRc, historyFile string) (string, error) {
 // zshExecCommand creates a temp ZDOTDIR with .zshenv and .zshrc wrappers
 // that source the user's real startup files, then set HISTFILE.
 // This ensures HISTFILE is set after the user's startup files.
-func zshExecCommand(shellBin, bashRc, historyFile string) (string, error) {
-	if bashRc == "" && historyFile == "" {
+func zshExecCommand(shellBin, bashRc, historyFile, prefill string) (string, error) {
+	if bashRc == "" && historyFile == "" && prefill == "" {
 		return "exec " + shellBin, nil
 	}
 
@@ -174,6 +189,10 @@ func zshExecCommand(shellBin, bashRc, historyFile string) (string, error) {
 	if historyFile != "" {
 		fmt.Fprintf(&zshrc, "export HISTFILE=%q\n", historyFile)
 		zshrc.WriteString("fc -R \"$HISTFILE\"\n")
+	}
+
+	if prefill != "" {
+		fmt.Fprintf(&zshrc, "print -rz -- %s\n", shellQuote(prefill))
 	}
 
 	if err := os.WriteFile(filepath.Join(zdotdir, ".zshrc"), []byte(zshrc.String()), 0o600); err != nil {
@@ -211,7 +230,7 @@ func copyHistoryFile(shellBin string) (string, error) {
 	}
 
 	// Convert bash history to zsh extended history format if needed.
-	if filepath.Base(shellBin) == "zsh" {
+	if filepath.Base(shellBin) == zshShell {
 		content = convertToZshHistory(content)
 	}
 
@@ -256,4 +275,8 @@ func writeTempFile(pattern, content string) (string, error) {
 		return "", fmt.Errorf("unable to close temp file: %w", err)
 	}
 	return f.Name(), nil
+}
+
+func shellQuote(value string) string {
+	return "'" + strings.ReplaceAll(value, "'", "'\\''") + "'"
 }
