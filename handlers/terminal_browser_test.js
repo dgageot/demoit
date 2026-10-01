@@ -25,10 +25,17 @@ test('terminal mouse, wheel, selection, and scrollback in Chromium', {
         constructor() {
           this.readyState = 1;
           this.sent = [];
+          this.failedSends = 0;
           window.socket = this;
           setTimeout(() => this.onopen(), 0);
         }
-        send(data) { this.sent.push(data); }
+        send(data) {
+          if (this.readyState !== WebSocket.OPEN) {
+            this.failedSends++;
+            throw new Error('Send on closed socket');
+          }
+          this.sent.push(data);
+        }
       };
     </script><script type="module">`)
     .replace('term.open(container);', 'window.term = term; term.open(container);');
@@ -228,6 +235,18 @@ test('terminal mouse, wheel, selection, and scrollback in Chromium', {
   assert.deepEqual(results.selectionInput, []);
   assert.equal(results.scrolled, true);
   assert.equal(results.bottom, 0);
+  const disconnected = await evaluate(`(async () => {
+    const w = document.querySelector('iframe').contentWindow;
+    w.socket.readyState = 3;
+    w.socket.onclose();
+    w.socket.sent.length = 0;
+    w.term.input('ignored', true);
+    w.term.resize(w.term.cols - 1, w.term.rows - 1);
+    await new Promise(resolve => setTimeout(resolve, 150));
+    return { failedSends: w.socket.failedSends, sent: w.socket.sent,
+      disabled: w.term.options.disableStdin };
+  })()`);
+  assert.deepEqual(disconnected, { failedSends: 0, sent: [], disabled: true });
   assert.equal(await evaluate(`new Promise((resolve, reject) => {
     document.getElementById('other').focus();
     const frame = document.createElement('iframe');

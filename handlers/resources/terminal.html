@@ -62,7 +62,9 @@
         ws.onopen = () => {
             // Forward user input to the server.
             term.onData((data) => {
-                ws.send(data);
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(data);
+                }
             });
 
             // Send initial resize.
@@ -82,6 +84,7 @@
         };
 
         ws.onclose = () => {
+            term.options.disableStdin = true;
             term.write('\r\n\x1b[90m[Session ended]\x1b[0m\r\n');
         };
 
@@ -92,6 +95,9 @@
         }
 
         function sendResize() {
+            if (ws.readyState !== WebSocket.OPEN) {
+                return;
+            }
             ws.send(JSON.stringify({
                 type: 'resize',
                 cols: term.cols || 80,
