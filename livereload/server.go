@@ -1,4 +1,4 @@
-// Lot's of inspiration from https://github.com/jaschaephraim/lrserver.
+// Package livereload serves the LiveReload protocol and browser client.
 package livereload
 
 import (
@@ -18,15 +18,32 @@ import (
 //go:embed livereload.js
 var js []byte
 
+const (
+	writeTimeout     = 5 * time.Second
+	handshakeTimeout = 5 * time.Second
+	pongTimeout      = 60 * time.Second
+	pingInterval     = 30 * time.Second
+	fullReloadPath   = "demoit.html"
+)
+
+type connTimeouts struct {
+	write     time.Duration
+	handshake time.Duration
+	pong      time.Duration
+	ping      time.Duration
+}
+
 type Server struct {
 	script   []byte
 	connSet  sync.Map
 	upgrader websocket.Upgrader
+	timeouts connTimeouts
 }
 
 func New(port int) *Server {
 	return &Server{
-		script: bytes.ReplaceAll(js, []byte("35729"), []byte(strconv.Itoa(port))),
+		timeouts: connTimeouts{write: writeTimeout, handshake: handshakeTimeout, pong: pongTimeout, ping: pingInterval},
+		script:   bytes.ReplaceAll(js, []byte("35729"), []byte(strconv.Itoa(port))),
 		upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool { return true },
 		},
@@ -38,10 +55,11 @@ func (s *Server) RegisterHandlers(router *mux.Router) {
 	router.HandleFunc("/livereload", s.webSocket)
 }
 
+// Reload queues a change without waiting for any browser's network connection.
 func (s *Server) Reload(file string) {
 	s.connSet.Range(func(k, _ any) bool {
 		if c, ok := k.(*conn); ok {
-			c.reloadChan <- file
+			c.enqueue(file)
 		}
 		return true
 	})
@@ -62,15 +80,15 @@ func (s *Server) webSocket(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	c := s.newConn(wsConn)
-	go c.start()
+	c.start()
 }
 
 func (s *Server) newConn(wsConn *websocket.Conn) *conn {
 	c := &conn{
 		conn:       wsConn,
-		reloadChan: make(chan string),
-		closeChan:  make(chan bool),
-		handshake:  false,
+		timeouts:   s.timeouts,
+		reloadChan: make(chan struct{}, 1),
+		done:       make(chan struct{}),
 		removeSelf: func(self *conn) { s.connSet.Delete(self) },
 	}
 	s.connSet.Store(c, true)
@@ -78,85 +96,127 @@ func (s *Server) newConn(wsConn *websocket.Conn) *conn {
 }
 
 type conn struct {
+	timeouts   connTimeouts
 	conn       *websocket.Conn
 	removeSelf func(*conn)
-	reloadChan chan string
-	closeChan  chan bool
-	handshake  bool
+	reloadChan chan struct{}
+	done       chan struct{}
 	closeOnce  sync.Once
+	pendingMu  sync.Mutex
+	pending    string
+}
+
+func (c *conn) enqueue(file string) {
+	select {
+	case <-c.done:
+		return
+	default:
+	}
+
+	c.pendingMu.Lock()
+	c.pending = mergeReload(c.pending, file)
+	c.pendingMu.Unlock()
+	select {
+	case c.reloadChan <- struct{}{}:
+	default:
+	}
+}
+
+// Different assets need a page refresh so coalescing never loses a change.
+func mergeReload(pending, file string) string {
+	if pending == "" || pending == file {
+		return file
+	}
+	return fullReloadPath
 }
 
 func (c *conn) start() {
-	go c.receive()
-	go c.transmit()
-
-	if err := c.conn.WriteJSON(newServerHello()); err != nil {
-		c.close(websocket.CloseInternalServerErr, err)
+	defer c.close(websocket.CloseNormalClosure)
+	c.conn.SetReadLimit(64 * 1024)
+	if err := c.conn.SetReadDeadline(time.Now().Add(c.timeouts.handshake)); err != nil {
+		return
+	}
+	if err := c.write(newServerHello()); err != nil {
+		return
 	}
 
-	<-c.closeChan
+	msgType, reader, err := c.conn.NextReader()
+	if err != nil {
+		return
+	}
+	if msgType != websocket.TextMessage {
+		c.close(websocket.CloseUnsupportedData)
+		return
+	}
+	var hello clientHello
+	if err := json.NewDecoder(reader).Decode(&hello); err != nil || !validateHello(hello) {
+		c.close(websocket.ClosePolicyViolation)
+		return
+	}
+
+	if err := c.conn.SetReadDeadline(time.Now().Add(c.timeouts.pong)); err != nil {
+		return
+	}
+	c.conn.SetPongHandler(func(string) error {
+		return c.conn.SetReadDeadline(time.Now().Add(c.timeouts.pong))
+	})
+	readerDone := make(chan struct{})
+	go func() {
+		defer close(readerDone)
+		c.receive()
+	}()
+	c.transmit()
+	c.close(websocket.CloseNormalClosure)
+	<-readerDone
 }
 
 func (c *conn) receive() {
+	defer c.close(websocket.CloseNormalClosure)
 	for {
-		msgType, reader, err := c.conn.NextReader()
-		if err != nil {
-			c.close(websocket.CloseInternalServerErr, err)
+		var message clientHello
+		if err := c.conn.ReadJSON(&message); err != nil {
 			return
 		}
-
-		if msgType == websocket.BinaryMessage {
-			c.close(websocket.CloseUnsupportedData, nil)
-			return
-		}
-
-		var hello clientHello
-		if err := json.NewDecoder(reader).Decode(&hello); err != nil {
-			c.close(websocket.ClosePolicyViolation, err)
-			return
-		}
-
-		if c.handshake {
-			continue
-		}
-
-		if !validateHello(hello) {
-			c.close(websocket.ClosePolicyViolation, websocket.ErrBadHandshake)
-			return
-		}
-		c.handshake = true
 	}
 }
 
 func (c *conn) transmit() {
+	ping := time.NewTicker(c.timeouts.ping)
+	defer ping.Stop()
 	for {
-		file := <-c.reloadChan
-		if !c.handshake {
-			c.close(websocket.ClosePolicyViolation, websocket.ErrBadHandshake)
+		select {
+		case <-c.done:
 			return
-		}
-
-		if err := c.conn.WriteJSON(newServerReload(file)); err != nil {
-			c.close(websocket.CloseInternalServerErr, err)
-			return
+		case <-c.reloadChan:
+			c.pendingMu.Lock()
+			file := c.pending
+			c.pending = ""
+			c.pendingMu.Unlock()
+			if file != "" {
+				if err := c.write(newServerReload(file)); err != nil {
+					return
+				}
+			}
+		case <-ping.C:
+			if err := c.conn.WriteControl(websocket.PingMessage, nil, time.Now().Add(c.timeouts.write)); err != nil {
+				return
+			}
 		}
 	}
 }
 
-func (c *conn) close(code int, err error) {
+func (c *conn) write(message any) error {
+	if err := c.conn.SetWriteDeadline(time.Now().Add(c.timeouts.write)); err != nil {
+		return err
+	}
+	return c.conn.WriteJSON(message)
+}
+
+func (c *conn) close(code int) {
 	c.closeOnce.Do(func() {
-		var errMsg string
-		if err != nil {
-			errMsg = err.Error()
-		}
-
-		_ = c.conn.WriteControl(
-			websocket.CloseMessage,
-			websocket.FormatCloseMessage(code, errMsg),
-			time.Now().Add(time.Second),
-		)
-
-		c.closeChan <- true
+		close(c.done)
 		c.removeSelf(c)
+		_ = c.conn.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(code, ""), time.Now().Add(time.Second))
+		_ = c.conn.Close()
 	})
 }

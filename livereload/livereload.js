@@ -2625,6 +2625,12 @@ var LiveReload = /*#__PURE__*/function () {
       connecting: function connecting() {},
       socketConnected: function socketConnected() {},
       connected: function connected(protocol) {
+        // Reconcile edits missed during a disconnect without reloading on initial load.
+        if (_this.hasConnected || _this.wasDisconnected) {
+          _this.window.location.reload();
+          return;
+        }
+        _this.hasConnected = true;
         if (typeof _this.listeners.connect === 'function') {
           _this.listeners.connect();
         }
@@ -2645,6 +2651,7 @@ var LiveReload = /*#__PURE__*/function () {
         }
       },
       disconnected: function disconnected(reason, nextDelay) {
+        _this.wasDisconnected = true;
         if (typeof _this.listeners.disconnect === 'function') {
           _this.listeners.disconnect();
         }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -11,7 +12,6 @@ import (
 	"github.com/dgageot/demoit/handlers"
 	"github.com/dgageot/demoit/livereload"
 	"github.com/gorilla/mux"
-	"github.com/rjeczalik/notify"
 )
 
 func main() {
@@ -49,19 +49,9 @@ func main() {
 		lr := livereload.New(*flags.WebServerPort)
 		lr.RegisterHandlers(r)
 
-		events := make(chan notify.EventInfo, 1)
-		if err := notify.Watch(files.Root+"/...", events, notify.All); err != nil {
+		if err := lr.Watch(context.Background(), files.Root); err != nil {
 			log.Fatal(err)
 		}
-
-		go func() {
-			for event := range events {
-				// TODO: Ignore files under .git
-				// TODO: Debounce
-				fmt.Println(event)
-				lr.Reload(event.Path())
-			}
-		}()
 	} else {
 		fmt.Println(`"Dev Mode" to live reload your slides can be enabled with '--dev'`)
 	}
