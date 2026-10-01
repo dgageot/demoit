@@ -40,6 +40,14 @@
         });
 
         term.open(container);
+        term.attachCustomWheelEventHandler((event) => {
+            if (!event.ctrlKey && !event.metaKey &&
+                (!document.hasFocus() || !container.contains(document.activeElement))) {
+                window.focus();
+                term.focus();
+            }
+            return false;
+        });
 
         // FitAddon recalculates terminal cols/rows from the container's
         // pixel dimensions and calls term.resize(), which fires onResize.
