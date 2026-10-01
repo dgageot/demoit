@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -57,6 +58,7 @@ func (s *Server) watch(ctx context.Context, root string, events chan notify.Even
 	ctx, cancel := context.WithCancel(ctx)
 	results := make(chan map[string]fileStamp)
 	workerDone := make(chan struct{})
+	var filters sync.WaitGroup
 	go func() {
 		defer close(workerDone)
 		reconcileFiles(ctx, root, snapshot, results)
@@ -65,15 +67,40 @@ func (s *Server) watch(ctx context.Context, root string, events chan notify.Even
 		cancel()
 		notify.Stop(events)
 		<-workerDone
+		filters.Wait()
 	}()
 	debounce := time.NewTimer(watchDelay)
 	debounce.Stop()
 	defer debounce.Stop()
 	var pending <-chan time.Time
 	var eventFile string
+	eventPaths := make(map[string]bool)
+	filtered := make(chan []string)
+	filtering := false
 
 	flush := func() {
-		if eventFile == "" {
+		if len(eventPaths) != 0 && !filtering {
+			paths := make([]string, 0, len(eventPaths))
+			for path := range eventPaths {
+				paths = append(paths, path)
+			}
+			clear(eventPaths)
+			filtering = true
+			filters.Go(func() {
+				ignored := ignoredEvents(ctx, root, paths)
+				var kept []string
+				for _, path := range paths {
+					if !ignored[path] {
+						kept = append(kept, strings.TrimSuffix(path, "/"))
+					}
+				}
+				select {
+				case filtered <- kept:
+				case <-ctx.Done():
+				}
+			})
+		}
+		if filtering || eventFile == "" {
 			return
 		}
 		s.Reload(eventFile)
@@ -89,7 +116,10 @@ func (s *Server) watch(ctx context.Context, root string, events chan notify.Even
 				continue
 			}
 			rel = filepath.ToSlash(rel)
-			eventFile = mergeReload(eventFile, rel)
+			if eventIsDir(event) {
+				rel += "/"
+			}
+			eventPaths[rel] = true
 			// Bound the delay even under a continuous stream of events.
 			if pending == nil {
 				debounce.Reset(watchDelay)
@@ -98,6 +128,19 @@ func (s *Server) watch(ctx context.Context, root string, events chan notify.Even
 		case <-pending:
 			pending = nil
 			flush()
+		case paths := <-filtered:
+			filtering = false
+			for _, path := range paths {
+				eventFile = mergeReload(eventFile, path)
+			}
+			if eventFile != "" {
+				s.Reload(eventFile)
+				eventFile = ""
+			}
+			if pending == nil && len(eventPaths) != 0 {
+				debounce.Reset(watchDelay)
+				pending = debounce.C
+			}
 		case current := <-results:
 			// Share the debounce window, but never suppress later edits to a path.
 			if file := changedFile(snapshot, current); file != "" {
@@ -151,6 +194,10 @@ func ignoredPath(path string) bool {
 // Failed paths retain their old stamps so unrelated changes can still reload.
 func scanFiles(ctx context.Context, root string, previous map[string]fileStamp, hashContent bool) (map[string]fileStamp, error) {
 	files := make(map[string]fileStamp)
+	ignored := gitIgnoredPaths(ctx, root, nil)
+	if ignored == nil {
+		ignored = make(map[string]bool)
+	}
 	var scanErr error
 	retain := func(rel string, err error) {
 		scanErr = errors.Join(scanErr, err)
@@ -169,7 +216,8 @@ func scanFiles(ctx context.Context, root string, previous map[string]fileStamp, 
 		if err != nil {
 			return err
 		}
-		if ignoredPath(rel) {
+		rel = filepath.ToSlash(rel)
+		if ignoredPath(rel) || ignored[rel] || ignored[rel+"/"] {
 			if entry != nil && entry.IsDir() {
 				return filepath.SkipDir
 			}
@@ -182,6 +230,13 @@ func scanFiles(ctx context.Context, root string, previous map[string]fileStamp, 
 			return nil
 		}
 		if entry.IsDir() {
+			if rel != "." {
+				if _, err := os.Lstat(filepath.Join(path, ".git")); err == nil {
+					for file := range gitIgnoredPaths(ctx, path, nil) {
+						ignored[rel+"/"+file] = true
+					}
+				}
+			}
 			return nil
 		}
 		stamp, err := stampFile(ctx, path, entry, hashContent)

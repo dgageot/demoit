@@ -56,6 +56,7 @@ demoit
 Then, browse to http://localhost:8888
 
 *Pro tip:* Run `demoit -dev` instead and enjoy live reload each time you change the content of the slides.
+When Git is available and the presentation is inside a repository, live reload skips Git-ignored files and directories (including nested `.gitignore` rules, `.git/info/exclude`, and global excludes). Tracked files still trigger reloads, even if they match an ignore rule. Outside a repository or without Git, live reload continues normally.
 
 ### How do I customize my presentation then?
 

@@ -38,7 +38,7 @@ func replaceFile(t *testing.T, root, path, content string, modTime time.Time) {
 func TestScanChanges(t *testing.T) {
 	root := t.TempDir()
 	writeFile(t, root, "demoit.html", "one")
-	writeFile(t, root, ".demoit/style.css", "css")
+	writeFile(t, root, testStylePath, "css")
 	writeFile(t, root, ".git/index", "ignored")
 	writeFile(t, root, ".DS_Store", "ignored")
 	before, err := scanFiles(t.Context(), root, nil, true)
@@ -53,7 +53,7 @@ func TestScanChanges(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "demoit.html", changedFile(before, after))
 
-	writeFile(t, root, ".demoit/style.css", "changed css")
+	writeFile(t, root, testStylePath, "changed css")
 	after, err = scanFiles(t.Context(), root, before, true)
 	require.NoError(t, err)
 	require.Equal(t, fullReloadPath, changedFile(before, after))
@@ -61,8 +61,8 @@ func TestScanChanges(t *testing.T) {
 	require.NoError(t, os.Remove(filepath.Join(root, ".demoit", "style.css")))
 	after, err = scanFiles(t.Context(), root, after, true)
 	require.NoError(t, err)
-	require.Equal(t, ".demoit/style.css", changedFile(map[string]fileStamp{
-		"demoit.html": after["demoit.html"], ".demoit/style.css": {},
+	require.Equal(t, testStylePath, changedFile(map[string]fileStamp{
+		"demoit.html": after["demoit.html"], testStylePath: {},
 	}, after))
 }
 
@@ -87,10 +87,14 @@ func TestScanUnreadableSubtree(t *testing.T) {
 	require.Equal(t, "demoit.html", changedFile(before, after))
 }
 
-func testWatcher(t *testing.T) (string, *conn, chan notify.EventInfo) {
+func testWatcher(t *testing.T, setup ...func(string)) (string, *conn, chan notify.EventInfo) {
 	t.Helper()
-	root := t.TempDir()
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	require.NoError(t, err)
 	writeFile(t, root, "demoit.html", "slides")
+	for _, prepare := range setup {
+		prepare(root)
+	}
 	snapshot, err := scanFiles(t.Context(), root, nil, true)
 	require.NoError(t, err)
 	s := New(8888)
@@ -129,8 +133,8 @@ func TestWatcherCoalescesEvents(t *testing.T) {
 	for range 100 {
 		events <- testEvent(filepath.Join(root, ".demoit", "style.css"))
 	}
-	require.Equal(t, ".demoit/style.css", takeReload(t, c))
-	for _, path := range []string{".demoit/style.css", "demoit.html", ".demoit/js/demoit.js"} {
+	require.Equal(t, testStylePath, takeReload(t, c))
+	for _, path := range []string{testStylePath, "demoit.html", ".demoit/js/demoit.js"} {
 		events <- testEvent(filepath.Join(root, path))
 	}
 	require.Equal(t, fullReloadPath, takeReload(t, c))
@@ -142,10 +146,10 @@ func TestWatcherReconcilesWithoutEvents(t *testing.T) {
 	require.NoError(t, err)
 	replaceFile(t, root, "demoit.html", "SLIDES", info.ModTime())
 	require.Equal(t, "demoit.html", takeReload(t, c))
-	writeFile(t, root, ".demoit/style.css", "new asset")
-	require.Equal(t, ".demoit/style.css", takeReload(t, c))
+	writeFile(t, root, testStylePath, "new asset")
+	require.Equal(t, testStylePath, takeReload(t, c))
 	require.NoError(t, os.Remove(filepath.Join(root, ".demoit", "style.css")))
-	require.Equal(t, ".demoit/style.css", takeReload(t, c))
+	require.Equal(t, testStylePath, takeReload(t, c))
 }
 
 func TestWatcherIgnoresGit(t *testing.T) {
@@ -157,6 +161,61 @@ func TestWatcherIgnoresGit(t *testing.T) {
 		t.Fatal("git activity triggered reload")
 	case <-time.After(pollInterval + watchDelay):
 	}
+}
+
+func TestWatcherIgnoresGitIgnoredFiles(t *testing.T) {
+	root, c, events := testWatcher(t, func(root string) {
+		initGitRepository(t, root)
+		writeFile(t, root, ".gitignore", "*.log\nbuild/\n")
+		writeFile(t, root, testIgnoredLog, "old output")
+		writeFile(t, root, "build/output", "old output")
+	})
+	writeFile(t, root, testIgnoredLog, "changed output")
+	writeFile(t, root, "build/output", "changed output")
+	writeFile(t, root, "created.log", "new output")
+	writeFile(t, root, "build/new", "new output")
+	require.NoError(t, os.Remove(filepath.Join(root, testIgnoredLog)))
+	for _, path := range []string{testIgnoredLog, "created.log", "build/output", "build/new"} {
+		events <- testEvent(filepath.Join(root, path))
+	}
+	select {
+	case <-c.reloadChan:
+		t.Fatal("Git-ignored files triggered reload")
+	case <-time.After(pollInterval + 2*watchDelay):
+	}
+	// Ignored events must not turn a single asset reload into a full refresh.
+	events <- testEvent(filepath.Join(root, "created.log"))
+	events <- testEvent(filepath.Join(root, ".demoit", "style.css"))
+	require.Equal(t, testStylePath, takeReload(t, c))
+}
+
+func TestWatcherIgnoresRemovedDirectory(t *testing.T) {
+	root, c, events := testWatcher(t, func(root string) {
+		initGitRepository(t, root)
+		writeFile(t, root, ".gitignore", "build/\n")
+		writeFile(t, root, "build/output", "ignored")
+	})
+	// Use real notifications to preserve the platform's directory identity.
+	root, err := filepath.EvalSymlinks(root)
+	require.NoError(t, err)
+	require.NoError(t, notify.Watch(filepath.Join(root, "..."), events, notify.All))
+	require.NoError(t, os.RemoveAll(filepath.Join(root, "build")))
+	select {
+	case <-c.reloadChan:
+		t.Fatal("removed Git-ignored directory triggered reload")
+	case <-time.After(2*pollInterval + watchDelay):
+	}
+}
+
+func TestWatcherReloadsTrackedIgnoredFile(t *testing.T) {
+	root, c, events := testWatcher(t, func(root string) {
+		initGitRepository(t, root)
+		writeFile(t, root, ".gitignore", "*.log\n")
+		writeFile(t, root, "tracked.log", "content")
+		gitCommand(t, root, "add", "-f", "tracked.log")
+	})
+	events <- testEvent(filepath.Join(root, "tracked.log"))
+	require.Equal(t, "tracked.log", takeReload(t, c))
 }
 
 func TestWatch(t *testing.T) {
