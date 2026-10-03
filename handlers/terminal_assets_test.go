@@ -27,6 +27,7 @@ func TestTerminalAssets(t *testing.T) {
 			TerminalAsset(w, r)
 			require.Equal(t, http.StatusOK, w.Code)
 			require.Equal(t, asset.contentType, w.Header().Get("Content-Type"))
+			require.Equal(t, "public, max-age=31536000, immutable", w.Header().Get("Cache-Control"))
 			require.Equal(t, asset.digest, fmt.Sprintf("%x", sha256.Sum256(w.Body.Bytes())))
 
 			r.Method = http.MethodHead
@@ -34,6 +35,7 @@ func TestTerminalAssets(t *testing.T) {
 			TerminalAsset(head, r)
 			require.Equal(t, http.StatusOK, head.Code)
 			require.Equal(t, w.Header().Get("Content-Length"), head.Header().Get("Content-Length"))
+			require.Equal(t, w.Header().Get("Cache-Control"), head.Header().Get("Cache-Control"))
 			require.Empty(t, head.Body.Bytes())
 		})
 	}
@@ -47,6 +49,7 @@ func TestTerminalAssetRejectsOtherFiles(t *testing.T) {
 			w := httptest.NewRecorder()
 			TerminalAsset(w, r)
 			require.Equal(t, http.StatusNotFound, w.Code)
+			require.Empty(t, w.Header().Get("Cache-Control"))
 		})
 	}
 }

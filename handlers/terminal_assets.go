@@ -30,5 +30,7 @@ func TerminalAsset(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+	// Asset bytes are pinned; changes must use a new versioned route.
+	w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
 	http.ServeContent(w, r, name, time.Time{}, bytes.NewReader(data))
 }
