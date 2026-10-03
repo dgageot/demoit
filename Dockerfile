@@ -18,6 +18,9 @@ RUN --mount=type=bind,target=. \
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=bind,from=osxcross,src=/osxsdk,target=/xx-sdk <<EOT
   set -ex
+  if [ "$TARGETPLATFORM" = "darwin/arm64" ]; then
+    export MACOSX_VERSION_MIN=11.0
+  fi
   xx-go --wrap
   go build -o /out/demoit
   xx-verify /out/demoit
