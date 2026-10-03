@@ -16,5 +16,19 @@
     "node": "v24.18.0",
     "npm": "11.16.0",
     "zig": "0.15.2"
+  },
+  "localPatches": [
+    {
+      "id": "demoit-render1",
+      "description": "Read the live viewport once per Canvas frame and reuse row snapshots for hover, highlights and cursor painting."
+    }
+  ],
+  "servedAssets": {
+    "ghostty-web.js": {
+      "sha256": "d113dbd9902d499d42b2b3c3428e14ba62eab4b8f545971cb66339138473793a"
+    },
+    "ghostty-vt.wasm": {
+      "sha256": "6af5b84ea69965745a1a62372a5081dd99a156a88e8d84affa1fd30558e78047"
+    }
   }
 }

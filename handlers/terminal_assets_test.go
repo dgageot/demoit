@@ -17,11 +17,11 @@ func TestTerminalAssets(t *testing.T) {
 		contentType string
 		digest      string
 	}{
-		{"ghostty-web.js", "text/javascript; charset=utf-8", "d22e9af08b6c40600ddb8903aebbcba5101476e1c820123572e84bf2e1792d8b"},
+		{"ghostty-web.js", "text/javascript; charset=utf-8", "d113dbd9902d499d42b2b3c3428e14ba62eab4b8f545971cb66339138473793a"},
 		{"ghostty-vt.wasm", "application/wasm", "6af5b84ea69965745a1a62372a5081dd99a156a88e8d84affa1fd30558e78047"},
 	} {
 		t.Run(asset.name, func(t *testing.T) {
-			r := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/terminal-assets/hvir-v0.4.0-20/"+asset.name, nil)
+			r := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/terminal-assets/hvir-v0.4.0-20-demoit-render1/"+asset.name, nil)
 			r = mux.SetURLVars(r, map[string]string{"file": asset.name})
 			w := httptest.NewRecorder()
 			TerminalAsset(w, r)
@@ -55,6 +55,6 @@ func TestTerminalAssetRejectsOtherFiles(t *testing.T) {
 }
 
 func TestTerminalUsesPinnedLocalEmulator(t *testing.T) {
-	require.Contains(t, string(terminalHTML), "'/terminal-assets/hvir-v0.4.0-20/ghostty-web.js'")
+	require.Contains(t, string(terminalHTML), "'/terminal-assets/hvir-v0.4.0-20-demoit-render1/ghostty-web.js'")
 	require.NotContains(t, string(terminalHTML), "cdn.jsdelivr.net")
 }

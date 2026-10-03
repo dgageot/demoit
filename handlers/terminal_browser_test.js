@@ -235,6 +235,58 @@ test('terminal mouse, wheel, selection, and scrollback in Chromium', {
   assert.deepEqual(results.selectionInput, []);
   assert.equal(results.scrolled, true);
   assert.equal(results.bottom, 0);
+  const accessible = await evaluate(`(async () => {
+    const w = document.querySelector('iframe').contentWindow;
+    const term = w.term;
+    term.clearSelection();
+    term.write('\\x1b[?1049h\\x1b[2J\\x1b[H界 e\\u0301 accessible\\r\\nsecond row');
+    await new Promise(resolve => setTimeout(resolve, 100));
+    const rows = [...w.document.querySelectorAll('[data-ghostty-accessibility-row]')]
+      .map(row => row.textContent);
+    const frames = term.getRenderStats().renderFrames;
+    term.write('\\x1b[?2026hhidden until synchronized output ends');
+    await new Promise(resolve => setTimeout(resolve, 40));
+    const paused = term.getRenderStats().renderFrames === frames;
+    term.write('\\x1b[?2026l');
+    await new Promise(resolve => setTimeout(resolve, 40));
+    return { rows, paused, resumed: term.getRenderStats().renderFrames > frames };
+  })()`);
+  assert.ok(accessible.rows[0].includes('界 e\u0301 accessible'));
+  assert.ok(accessible.rows[1].includes('second row'));
+  assert.equal(accessible.paused, true);
+  assert.equal(accessible.resumed, true);
+  if (process.env.DEMOIT_BENCHMARK === '1') {
+    const timings = await evaluate(`(async () => {
+      const term = document.querySelector('iframe').contentWindow.term;
+      const frame = () => new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
+      const median = values => values.sort((a, b) => a - b)[Math.floor(values.length / 2)];
+      const results = [];
+      term.options.cursorBlink = false;
+      for (const [cols, rows] of [[80, 24], [120, 40], [160, 60]]) {
+        term.resize(cols, rows);
+        const lines = Array.from({ length: rows }, (_, row) =>
+          '\\x1b[' + (row + 1) + ';1H' +
+          'const pokemon = getTeam(); // editor text '.repeat(5).slice(0, cols - 1)).join('');
+        term.write('\\x1b[?1049h\\x1b[2J' + lines);
+        await frame();
+        for (const full of [false, true]) {
+          const samples = [];
+          for (let run = 0; run < 40; run++) {
+            term.wasmTerm.write(full ? '\\x1b[2J' + lines :
+              '\\x1b[' + Math.floor(rows / 2) + ';1H' + (run % 2 ? 'a' : 'b'));
+            const start = performance.now();
+            term.renderer.render(term.wasmTerm, full);
+            samples.push(performance.now() - start);
+          }
+          results.push({ cols, rows, full, canvasMedianMs: median(samples) });
+        }
+      }
+      return results;
+    })()`);
+    for (const timing of timings) {
+      console.log(`Canvas ${timing.full ? 'full redraw' : 'one-row edit'} ${timing.cols}x${timing.rows}: ${timing.canvasMedianMs.toFixed(2)} ms median`);
+    }
+  }
   const disconnected = await evaluate(`(async () => {
     const w = document.querySelector('iframe').contentWindow;
     w.socket.readyState = 3;

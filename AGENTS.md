@@ -14,7 +14,9 @@ golangci-lint run                         # lint (or: task lint)
 task lint                                 # lint via Taskfile
 task format                               # format code
 docker buildx bake                        # cross-compile (darwin/linux, amd64/arm64)
-# No tests exist in this project.
+go test -race ./...                       # Go regression tests
+node --test handlers/terminal*_test.js    # terminal WASM and browser tests
+DEMOIT_BENCHMARK=1 node --test handlers/terminal_browser_test.js
 ```
 
 ## Architecture

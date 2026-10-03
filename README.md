@@ -77,5 +77,24 @@ cd demoit
 go install
 ```
 
-*This requires Go 1.19 or later.*
+*This requires Go 1.26 or later.*
+
+### Terminal validation and benchmarks
+
+```bash
+go test -race ./...
+golangci-lint run
+node --test handlers/terminal*_test.js
+DEMOIT_BENCHMARK=1 node --test handlers/terminal_browser_test.js
+```
+
+The browser test uses an installed Chrome/Chromium (or `CHROME_BIN`) and a mock
+WebSocket: it never starts shells or presentation commands. The benchmark reports
+Canvas CPU time for single-row edits and full redraws, not keyboard-to-display
+latency. Node tests also exercise the shipped WASM without a browser.
+
+Terminal assets are embedded in the binary. After changing them, run `go install`,
+restart DemoIt, and reload the presentation. Local emulator patches are recorded in
+`handlers/resources/ghostty-web/provenance.json`; update asset digests and the
+versioned route when bytes change so immutable browser caches cannot serve stale code.
 

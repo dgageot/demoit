@@ -2725,6 +2725,18 @@ class Ae {
     const h = !this.lastEffectiveColors || !Le(this.lastEffectiveColors, l.colors);
     h && (this.lastEffectiveColors = ke(l.colors)), this.effectiveColors = l.colors;
     const c = l.dimensions, u = r ? r.getScrollbackLength() : 0;
+    // Snapshot the viewport once; getLine() otherwise copies it for every row.
+    let viewport;
+    const readLine = (row) => {
+      if (typeof t.getViewport !== "function") return t.getLine(row);
+      if (row < 0 || row >= c.rows) return null;
+      // The native pool is reusable; do not retain its mutable cell objects.
+      viewport ??= t.getViewport(!1).map((cell) => ({ ...cell }));
+      const start = row * c.cols;
+      const cells = viewport.slice(start, start + c.cols).map((cell) => ({ ...cell }));
+      this.frameStats.materializedRows++, this.frameStats.materializedCells += cells.length;
+      return cells;
+    };
     (o || this.canvas.width !== this.toDevicePixels(c.cols * this.metrics.width) || this.canvas.height !== this.toDevicePixels(c.rows * this.metrics.height)) && (this.resize(c.cols, c.rows), e = !0);
     const m = Math.max(0, Math.floor(s)), f = Math.min(c.rows, m), g = Math.max(0, u - m);
     (h || l.dirty === K.FULL && f === 0) && (e = !0);
@@ -2769,10 +2781,10 @@ class Ae {
             _ = x(w);
           else {
             const A = w - f;
-            _ = t.getLine(A);
+            _ = readLine(A);
           }
         else
-          _ = t.getLine(w);
+          _ = readLine(w);
         if (_) {
           for (const A of _)
             if (A.hyperlink_id === this.hoveredHyperlinkId || A.hyperlink_id === this.previousHoveredHyperlinkId) {
@@ -2807,10 +2819,10 @@ class Ae {
           _ = x(w), r.getScrollbackGraphemeString && (A = (O) => r.getScrollbackGraphemeString(B, O));
         } else {
           const B = w - f;
-          _ = t.getLine(B), t.getGraphemeString && (A = (O) => t.getGraphemeString(B, O, !1));
+          _ = readLine(B), t.getGraphemeString && (A = (O) => t.getGraphemeString(B, O, !1));
         }
       else
-        _ = t.getLine(w), t.getGraphemeString && (A = (B) => t.getGraphemeString(w, B, !1));
+        _ = readLine(w), t.getGraphemeString && (A = (B) => t.getGraphemeString(w, B, !1));
       if (_) {
         const B = z && a.y === w && a.visible ? a.x : null;
         this.renderLine(_, w, c.cols, B, A), this.frameStats.renderedRows++;
@@ -2829,12 +2841,12 @@ class Ae {
         alternateScreen: ((wt = t.isAlternateScreen) == null ? void 0 : wt.call(t)) ?? !1,
         endCellWidth: (w, _) => {
           var O;
-          const A = w - (u - m), B = A < f ? x(A) : t.getLine(A - f);
+          const A = w - (u - m), B = A < f ? x(A) : readLine(A - f);
           return ((O = B == null ? void 0 : B[_]) == null ? void 0 : O.width) ?? 1;
         }
       },
       e
-    ) && this.clearRetainedRangeHighlight(), z && a.visible && this.cursorVisible && this.renderCursor(a.x, a.y, a.style), r && n > 0 && this.renderScrollbar(s, u, c.rows, n), this.lastCursorPosition = { x: a.x, y: a.y }, this.lastCursorState = { ...a }, t.clearDirty(), a;
+    ) && this.clearRetainedRangeHighlight(), z && a.visible && this.cursorVisible && this.renderCursor(a.x, a.y, a.style, a.style === "block" ? readLine(a.y) : void 0), r && n > 0 && this.renderScrollbar(s, u, c.rows, n), this.lastCursorPosition = { x: a.x, y: a.y }, this.lastCursorState = { ...a }, t.clearDirty(), a;
   }
   /**
    * Render a single line using two-pass approach:
@@ -3064,7 +3076,7 @@ class Ae {
   /**
    * Render cursor
    */
-  renderCursor(t, e, s) {
+  renderCursor(t, e, s, cells) {
     var o;
     const r = t * this.metrics.width, n = e * this.metrics.height;
     switch (this.ctx.fillStyle = this.rgbToCSS(
@@ -3075,7 +3087,7 @@ class Ae {
       case "block":
         this.ctx.fillRect(r, n, this.metrics.width, this.metrics.height);
         {
-          const h = (o = this.currentBuffer) == null ? void 0 : o.getLine(e);
+          const h = cells ?? ((o = this.currentBuffer) == null ? void 0 : o.getLine(e));
           h != null && h[t] && (this.ctx.save(), this.ctx.beginPath(), this.ctx.rect(r, n, this.metrics.width, this.metrics.height), this.ctx.clip(), this.renderCellText(h[t], t, e, this.theme.cursorAccent), this.ctx.restore());
         }
         break;
