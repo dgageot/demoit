@@ -129,11 +129,14 @@ func takeReload(t *testing.T, c *conn) string {
 
 func TestWatcherCoalescesEvents(t *testing.T) {
 	root, c, events := testWatcher(t)
-	// Delivered events must not depend on a metadata change being visible.
+	writeFile(t, root, testStylePath, "css")
 	for range 100 {
 		events <- testEvent(filepath.Join(root, ".demoit", "style.css"))
 	}
 	require.Equal(t, testStylePath, takeReload(t, c))
+	writeFile(t, root, testStylePath, "updated css")
+	writeFile(t, root, "demoit.html", "updated slides")
+	writeFile(t, root, ".demoit/js/demoit.js", "updated js")
 	for _, path := range []string{testStylePath, "demoit.html", ".demoit/js/demoit.js"} {
 		events <- testEvent(filepath.Join(root, path))
 	}
@@ -184,6 +187,7 @@ func TestWatcherIgnoresGitIgnoredFiles(t *testing.T) {
 	case <-time.After(pollInterval + 2*watchDelay):
 	}
 	// Ignored events must not turn a single asset reload into a full refresh.
+	writeFile(t, root, testStylePath, "css")
 	events <- testEvent(filepath.Join(root, "created.log"))
 	events <- testEvent(filepath.Join(root, ".demoit", "style.css"))
 	require.Equal(t, testStylePath, takeReload(t, c))
@@ -214,6 +218,7 @@ func TestWatcherReloadsTrackedIgnoredFile(t *testing.T) {
 		writeFile(t, root, "tracked.log", "content")
 		gitCommand(t, root, "add", "-f", "tracked.log")
 	})
+	writeFile(t, root, "tracked.log", "updated content")
 	events <- testEvent(filepath.Join(root, "tracked.log"))
 	require.Equal(t, "tracked.log", takeReload(t, c))
 }
@@ -280,6 +285,7 @@ func TestCancelledScan(t *testing.T) {
 
 func TestContinuousEventsHaveBoundedDelivery(t *testing.T) {
 	root, c, events := testWatcher(t)
+	writeFile(t, root, "style.css", "css")
 	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 	stopped := make(chan struct{})
@@ -303,13 +309,41 @@ func TestContinuousEventsHaveBoundedDelivery(t *testing.T) {
 
 func TestEventAndScanShareDebounce(t *testing.T) {
 	root, c, events := testWatcher(t)
-	writeFile(t, root, "demoit.html", "updated")
-	events <- testEvent(filepath.Join(root, "demoit.html"))
-	require.Equal(t, "demoit.html", takeReload(t, c))
+	// Save after the initial scan so reconciliation happens in a later window.
+	time.Sleep(2 * watchDelay)
+	writeFile(t, root, fullReloadPath, "updated")
+	events <- testEvent(filepath.Join(root, fullReloadPath))
+	require.Equal(t, fullReloadPath, takeReload(t, c))
 	select {
 	case <-c.reloadChan:
-		t.Fatal("overlapping event and scan were not coalesced")
+		t.Fatal("event and later scan reloaded the same save twice")
+	case <-time.After(2*pollInterval + watchDelay):
+	}
+}
+
+func TestDelayedEventDoesNotRepeatScanReload(t *testing.T) {
+	root, c, events := testWatcher(t)
+	writeFile(t, root, fullReloadPath, "updated")
+	require.Equal(t, fullReloadPath, takeReload(t, c))
+	events <- testEvent(filepath.Join(root, ".demoit.html.tmp-123"))
+	events <- testEvent(filepath.Join(root, fullReloadPath))
+	select {
+	case <-c.reloadChan:
+		t.Fatal("delayed event repeated the scan reload")
 	case <-time.After(2 * watchDelay):
+	}
+}
+
+func TestWatchDoesNotReloadUnchangedFiles(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, root, fullReloadPath, "slides")
+	s := New(8888)
+	c := s.newConn(nil)
+	require.NoError(t, s.Watch(t.Context(), root))
+	select {
+	case <-c.reloadChan:
+		t.Fatal("initial content scan reloaded unchanged files")
+	case <-time.After(pollInterval + 2*watchDelay):
 	}
 }
 
@@ -317,12 +351,94 @@ func TestReconciliationDoesNotSuppressLaterEdit(t *testing.T) {
 	root, c, events := testWatcher(t)
 	// Wait until the initial background scan is finished.
 	time.Sleep(2 * watchDelay)
-	info, err := os.Stat(filepath.Join(root, "demoit.html"))
+	writeFile(t, root, fullReloadPath, "edit B")
+	events <- testEvent(filepath.Join(root, fullReloadPath))
+	require.Equal(t, fullReloadPath, takeReload(t, c))
+	info, err := os.Stat(filepath.Join(root, fullReloadPath))
 	require.NoError(t, err)
-	writeFile(t, root, "demoit.html", "edit B")
-	events <- testEvent(filepath.Join(root, "demoit.html"))
-	require.Equal(t, "demoit.html", takeReload(t, c))
 	// A later edit to the same path has no delivered event and preserves metadata.
-	replaceFile(t, root, "demoit.html", "edit C", info.ModTime())
-	require.Equal(t, "demoit.html", takeReload(t, c))
+	replaceFile(t, root, fullReloadPath, "edit C", info.ModTime())
+	require.Equal(t, fullReloadPath, takeReload(t, c))
+}
+
+func TestIgnoreRuleSaveDoesNotReloadTwice(t *testing.T) {
+	root, c, events := testWatcher(t, func(root string) {
+		initGitRepository(t, root)
+		writeFile(t, root, ".gitignore", "")
+		writeFile(t, root, "debug.log", "output")
+	})
+	for _, rules := range []string{"*.log\n", ""} {
+		writeFile(t, root, ".gitignore", rules)
+		events <- testEvent(filepath.Join(root, ".gitignore"))
+		require.Equal(t, fullReloadPath, takeReload(t, c))
+		select {
+		case <-c.reloadChan:
+			t.Fatal("ignore rule save reloaded again during reconciliation")
+		case <-time.After(pollInterval + 2*watchDelay):
+		}
+	}
+}
+
+func TestMergeScanRetainsNewerEventRevisions(t *testing.T) {
+	const (
+		edited  = "edit"
+		created = "create"
+		polled  = "poll"
+	)
+	a := fileStamp{size: 1}
+	b := fileStamp{size: 2}
+	c := fileStamp{size: 3}
+	before := map[string]fileStamp{edited: a, "delete": a, polled: a}
+	current := map[string]fileStamp{edited: b, created: b, polled: a}
+	after := map[string]fileStamp{edited: c, "delete": c, created: c, polled: c, "new": c}
+	merged := mergeScan(current, before, after, nil)
+	require.Equal(t, map[string]fileStamp{edited: b, created: b, polled: c, "new": c}, merged)
+	// Neither input may be modified: the background scan still owns its baseline.
+	require.Equal(t, a, before[edited])
+	require.Equal(t, a, current[polled])
+	// A temporary file created and deleted during the scan must stay absent,
+	// even though its current state matches the scan's original baseline.
+	delete(current, created)
+	delete(before, created)
+	merged = mergeScan(current, before, after, map[string]bool{created: true})
+	require.NotContains(t, merged, created)
+}
+
+func TestEventObserverDoesNotWaitForPeriodicScan(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, root, fullReloadPath, "slides")
+	before, err := scanFiles(t.Context(), root, nil, true)
+	require.NoError(t, err)
+	// Stall periodic Git enumeration while event-specific Git checks remain fast.
+	bin := t.TempDir()
+	marker := filepath.Join(t.TempDir(), "scanning")
+	writeFile(t, bin, "git", "#!/bin/sh\ncase \"$*\" in\n  *ls-files*) touch \"$DEMOIT_SCAN_MARKER\"; sleep 3;;\nesac\nexit 1\n")
+	require.NoError(t, os.Chmod(filepath.Join(bin, "git"), 0o700)) //nolint:gosec // Test executable.
+	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
+	t.Setenv("DEMOIT_SCAN_MARKER", marker)
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+	requests := make(chan []string)
+	results := make(chan observedChange)
+	finished := make(chan struct{})
+	go func() {
+		defer close(finished)
+		reconcileFiles(ctx, root, before, requests, results)
+	}()
+	t.Cleanup(func() {
+		cancel()
+		waitFinished(t, finished)
+	})
+	require.Eventually(t, func() bool {
+		_, err := os.Stat(marker)
+		return err == nil
+	}, time.Second, 10*time.Millisecond)
+	writeFile(t, root, fullReloadPath, "updated")
+	requests <- []string{fullReloadPath}
+	select {
+	case change := <-results:
+		require.Equal(t, observedChange{file: fullReloadPath, event: true}, change)
+	case <-time.After(time.Second):
+		t.Fatal("event observation waited for the periodic scan")
+	}
 }

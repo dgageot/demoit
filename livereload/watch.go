@@ -8,8 +8,10 @@ import (
 	"io"
 	"io/fs"
 	"log"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"syscall"
@@ -46,7 +48,7 @@ func (s *Server) Watch(ctx context.Context, root string) error {
 	if err := notify.Watch(filepath.Join(root, "..."), events, notify.All); err != nil {
 		return fmt.Errorf("watch presentation: %w", err)
 	}
-	snapshot, err := scanFiles(ctx, root, nil, false)
+	snapshot, err := scanFiles(ctx, root, nil, true)
 	if err != nil {
 		log.Printf("Live reload scan: %v", err)
 	}
@@ -54,20 +56,24 @@ func (s *Server) Watch(ctx context.Context, root string) error {
 	return nil
 }
 
+type observedChange struct {
+	file  string
+	event bool
+}
+
 func (s *Server) watch(ctx context.Context, root string, events chan notify.EventInfo, snapshot map[string]fileStamp) {
 	ctx, cancel := context.WithCancel(ctx)
-	results := make(chan map[string]fileStamp)
+	requests := make(chan []string, 1)
+	results := make(chan observedChange)
 	workerDone := make(chan struct{})
-	var filters sync.WaitGroup
 	go func() {
 		defer close(workerDone)
-		reconcileFiles(ctx, root, snapshot, results)
+		reconcileFiles(ctx, root, snapshot, requests, results)
 	}()
 	defer func() {
 		cancel()
 		notify.Stop(events)
 		<-workerDone
-		filters.Wait()
 	}()
 	debounce := time.NewTimer(watchDelay)
 	debounce.Stop()
@@ -75,32 +81,19 @@ func (s *Server) watch(ctx context.Context, root string, events chan notify.Even
 	var pending <-chan time.Time
 	var eventFile string
 	eventPaths := make(map[string]bool)
-	filtered := make(chan []string)
-	filtering := false
+	observing := false
 
 	flush := func() {
-		if len(eventPaths) != 0 && !filtering {
+		if len(eventPaths) != 0 && !observing {
 			paths := make([]string, 0, len(eventPaths))
 			for path := range eventPaths {
 				paths = append(paths, path)
 			}
 			clear(eventPaths)
-			filtering = true
-			filters.Go(func() {
-				ignored := ignoredEvents(ctx, root, paths)
-				var kept []string
-				for _, path := range paths {
-					if !ignored[path] {
-						kept = append(kept, strings.TrimSuffix(path, "/"))
-					}
-				}
-				select {
-				case filtered <- kept:
-				case <-ctx.Done():
-				}
-			})
+			observing = true
+			requests <- paths
 		}
-		if filtering || eventFile == "" {
+		if observing || eventFile == "" {
 			return
 		}
 		s.Reload(eventFile)
@@ -128,58 +121,138 @@ func (s *Server) watch(ctx context.Context, root string, events chan notify.Even
 		case <-pending:
 			pending = nil
 			flush()
-		case paths := <-filtered:
-			filtering = false
-			for _, path := range paths {
-				eventFile = mergeReload(eventFile, path)
+		case change := <-results:
+			if change.file != "" {
+				eventFile = mergeReload(eventFile, change.file)
 			}
-			if eventFile != "" {
-				s.Reload(eventFile)
-				eventFile = ""
+			if change.event {
+				observing = false
+				if eventFile != "" {
+					s.Reload(eventFile)
+					eventFile = ""
+				}
 			}
-			if pending == nil && len(eventPaths) != 0 {
+			if pending == nil && (eventFile != "" || len(eventPaths) != 0) {
 				debounce.Reset(watchDelay)
 				pending = debounce.C
 			}
-		case current := <-results:
-			// Share the debounce window, but never suppress later edits to a path.
-			if file := changedFile(snapshot, current); file != "" {
-				eventFile = mergeReload(eventFile, file)
-				if pending == nil {
-					debounce.Reset(watchDelay)
-					pending = debounce.C
-				}
-			}
-			snapshot = current
 		}
 	}
 }
 
-// Hashing runs independently of event delivery, with a pause between scans.
-func reconcileFiles(ctx context.Context, root string, snapshot map[string]fileStamp, results chan<- map[string]fileStamp) {
+type scannedFiles struct {
+	before map[string]fileStamp
+	after  map[string]fileStamp
+	err    error
+}
+
+// Events and scans acknowledge revisions in one worker; full scans run separately.
+func reconcileFiles(ctx context.Context, root string, snapshot map[string]fileStamp, requests <-chan []string, results chan<- observedChange) {
 	timer := time.NewTimer(0)
 	defer timer.Stop()
+	scanned := make(chan scannedFiles)
+	var scans sync.WaitGroup
+	defer scans.Wait()
+	var changedDuringScan map[string]bool
 	for {
+		var current map[string]fileStamp
+		var event bool
+		var err error
 		select {
 		case <-ctx.Done():
 			return
+		case paths := <-requests:
+			event = true
+			ignored := ignoredEvents(ctx, root, paths)
+			paths = slices.DeleteFunc(paths, func(path string) bool { return ignored[path] })
+			current, err = scanEventFiles(ctx, root, snapshot, paths)
 		case <-timer.C:
+			before := snapshot
+			changedDuringScan = make(map[string]bool)
+			scans.Go(func() {
+				after, err := scanFiles(ctx, root, before, true)
+				select {
+				case scanned <- scannedFiles{before: before, after: after, err: err}:
+				case <-ctx.Done():
+				}
+			})
+			continue
+		case scan := <-scanned:
+			current = mergeScan(snapshot, scan.before, scan.after, changedDuringScan)
+			changedDuringScan = nil
+			err = scan.err
+			timer.Reset(pollInterval)
 		}
-		current, err := scanFiles(ctx, root, snapshot, true)
 		if ctx.Err() != nil {
 			return
 		}
 		if err != nil {
 			log.Printf("Live reload scan: %v", err)
 		}
+		file := changedFile(snapshot, current)
+		if event && changedDuringScan != nil {
+			for _, path := range changedFiles(snapshot, current) {
+				changedDuringScan[path] = true
+			}
+		}
+		snapshot = current
 		select {
 		case <-ctx.Done():
 			return
-		case results <- current:
+		case results <- observedChange{file: file, event: event}:
 		}
-		snapshot = current
-		timer.Reset(pollInterval)
 	}
+}
+
+// Do not let an in-flight scan overwrite revisions acknowledged by newer events.
+func mergeScan(current, before, after map[string]fileStamp, changedDuringScan map[string]bool) map[string]fileStamp {
+	merged := maps.Clone(current)
+	for _, path := range changedFiles(before, after) {
+		if changedDuringScan[path] {
+			continue
+		}
+		stamp, exists := current[path]
+		previous, existed := before[path]
+		if exists != existed || stamp != previous {
+			continue
+		}
+		if stamp, exists := after[path]; exists {
+			merged[path] = stamp
+		} else {
+			delete(merged, path)
+		}
+	}
+	return merged
+}
+
+func scanEventFiles(ctx context.Context, root string, previous map[string]fileStamp, paths []string) (map[string]fileStamp, error) {
+	current := maps.Clone(previous)
+	var scanErr error
+	for _, path := range paths {
+		if filepath.Base(path) == ".gitignore" {
+			return scanFiles(ctx, root, previous, true)
+		}
+		name := filepath.Join(root, filepath.FromSlash(path))
+		info, err := os.Lstat(name)
+		if strings.HasSuffix(path, "/") || (err == nil && info.IsDir()) {
+			return scanFiles(ctx, root, previous, true)
+		}
+		if errors.Is(err, os.ErrNotExist) {
+			delete(current, path)
+			continue
+		}
+		if err != nil {
+			scanErr = errors.Join(scanErr, err)
+			continue
+		}
+		stamp, err := stampFile(ctx, name, fs.FileInfoToDirEntry(info), true)
+		if err != nil {
+			scanErr = errors.Join(scanErr, err)
+			continue
+		}
+		current[path] = stamp
+	}
+	return current, scanErr
 }
 
 func ignoredPath(path string) bool {
@@ -288,15 +361,22 @@ func stampFile(ctx context.Context, path string, entry fs.DirEntry, hashContent 
 
 func changedFile(before, after map[string]fileStamp) string {
 	var changed string
+	for _, file := range changedFiles(before, after) {
+		changed = mergeReload(changed, file)
+	}
+	return changed
+}
+
+func changedFiles(before, after map[string]fileStamp) []string {
+	var changed []string
 	for file, stamp := range after {
-		// The first content scan also reconciles edits since the metadata baseline.
 		if previous, exists := before[file]; !exists || previous != stamp {
-			changed = mergeReload(changed, file)
+			changed = append(changed, file)
 		}
 	}
 	for file := range before {
 		if _, exists := after[file]; !exists {
-			changed = mergeReload(changed, file)
+			changed = append(changed, file)
 		}
 	}
 	return changed
