@@ -49,6 +49,85 @@ func TestBashCommandPrefillRejected(t *testing.T) {
 	require.ErrorContains(t, err, "requires zsh")
 }
 
+func TestShellPromptRedraw(t *testing.T) {
+	for _, name := range []string{"zsh", "bash"} {
+		t.Run(name, func(t *testing.T) {
+			shell, err := exec.LookPath(name)
+			if err != nil {
+				t.Skipf("%s is not installed", name)
+			}
+			home := t.TempDir()
+			args := []string{"-f", "-i"}
+			if name == "bash" {
+				args = []string{"--noprofile", "--norc", "-i"}
+			}
+			process := exec.CommandContext(t.Context(), shell, args...)
+			process.Env = []string{"HOME=" + home, "PATH=" + os.Getenv("PATH"), "TERM=xterm-256color", "PS1=READY> "}
+			terminal, err := pty.StartWithSize(process, &pty.Winsize{Rows: 24, Cols: 512})
+			require.NoError(t, err)
+			t.Cleanup(func() {
+				_ = terminal.Close()
+				_ = process.Process.Kill()
+				_, _ = process.Process.Wait()
+			})
+
+			var output bytes.Buffer
+			var mu sync.Mutex
+			go func() {
+				data := make([]byte, 4096)
+				for {
+					n, readErr := terminal.Read(data)
+					mu.Lock()
+					output.Write(data[:n])
+					mu.Unlock()
+					if bytes.Contains(data[:n], []byte("\x1b[5n")) {
+						_, _ = terminal.WriteString("\x1b[0n")
+					}
+					if readErr != nil {
+						return
+					}
+				}
+			}()
+			waitForOutput := func(text string) {
+				t.Helper()
+				require.Eventually(t, func() bool {
+					mu.Lock()
+					defer mu.Unlock()
+					return bytes.Contains(output.Bytes(), []byte(text))
+				}, 5*time.Second, 10*time.Millisecond)
+			}
+			redraw := func() {
+				t.Helper()
+				mu.Lock()
+				output.Reset()
+				mu.Unlock()
+				_, err = terminal.WriteString("\x0c")
+				require.NoError(t, err)
+				waitForOutput("READY> ")
+			}
+
+			waitForOutput("READY> ")
+			redraw() // An empty prompt reappears without Enter.
+			marker := filepath.Join(home, "ran")
+			pending := "printf done > " + shellQuote(marker)
+			_, err = terminal.WriteString(pending)
+			require.NoError(t, err)
+			waitForOutput(pending)
+			redraw()
+			waitForOutput(pending)
+			require.NoFileExists(t, marker)
+
+			// Redrawing preserves pending input but never accepts it.
+			_, err = terminal.WriteString("\r")
+			require.NoError(t, err)
+			require.Eventually(t, func() bool {
+				data, readErr := os.ReadFile(marker)
+				return readErr == nil && string(data) == "done"
+			}, 5*time.Second, 10*time.Millisecond)
+		})
+	}
+}
+
 func TestZshCommandPrefill(t *testing.T) {
 	testCommandPrefill(t, "zsh")
 }

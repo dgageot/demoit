@@ -39,6 +39,19 @@
         });
 
         term.open(container);
+        term.attachCustomKeyEventHandler((event) => {
+            if (!event.metaKey || event.ctrlKey || event.altKey || event.shiftKey ||
+                event.key.toLowerCase() !== 'k' || !document.hasFocus() ||
+                !container.contains(document.activeElement)) {
+                return false;
+            }
+            // Clear scrollback, then ask the shell to redraw without accepting input.
+            event.preventDefault();
+            event.stopPropagation();
+            term.clear();
+            term.input('\x0c', true);
+            return true;
+        });
         term.attachCustomWheelEventHandler((event) => {
             if (!event.ctrlKey && !event.metaKey &&
                 (!document.hasFocus() || !container.contains(document.activeElement))) {

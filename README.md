@@ -55,6 +55,10 @@ demoit
 
 Then, browse to http://localhost:8888
 
+Press **⌘K** in a focused terminal to clear its screen and scrollback, then send
+Ctrl-L to redraw the shell prompt and any pending input without executing it.
+Other terminals are unaffected; the session is not restarted.
+
 *Pro tip:* Run `demoit -dev` instead and enjoy live reload each time you change the content of the slides.
 When Git is available and the presentation is inside a repository, live reload skips Git-ignored files and directories (including nested `.gitignore` rules, `.git/info/exclude`, and global excludes). Tracked files still trigger reloads, even if they match an ignore rule. Outside a repository or without Git, live reload continues normally.
 

@@ -147,6 +147,70 @@ test('terminal mouse, wheel, selection, and scrollback in Chromium', {
     assert.deepEqual(focus.input[index], ['a']);
     assert.deepEqual(focus.input[1 - index], []);
   }
+  // Command-K clears locally and requests a redraw only in the focused iframe.
+  await evaluate(`(async () => {
+    const frames = [...document.querySelectorAll('iframe')];
+    for (const [index, frame] of frames.entries()) {
+      const w = frame.contentWindow;
+      for (let line = 0; line < 100; line++) w.term.write('history ' + line + '\\r\\n');
+      w.term.write('terminal ' + index);
+      w.socket.sent.length = 0;
+    }
+    await new Promise(resolve => setTimeout(resolve, 100));
+  })()`);
+  async function terminalStates() {
+    return evaluate(`new Promise(resolve => setTimeout(() => {
+      resolve([...document.querySelectorAll('iframe')].map(frame => {
+        const w = frame.contentWindow;
+        return {
+          text: Array.from({ length: w.term.rows }, (_, row) =>
+            w.term.buffer.active.getLine(w.term.buffer.active.baseY + row)
+              .translateToString(true)).join('').trim(),
+          history: w.term.wasmTerm.getScrollbackLength(),
+          sent: w.socket.sent,
+          connected: w.socket.readyState === w.WebSocket.OPEN,
+          focused: document.activeElement === frame &&
+            w.document.activeElement === w.term.textarea,
+        };
+      }));
+    }, 100))`);
+  }
+  async function commandK() {
+    await send('Input.dispatchKeyEvent', {
+      type: 'keyDown', key: 'k', code: 'KeyK', modifiers: 4,
+    }, sessionId);
+    await send('Input.dispatchKeyEvent', {
+      type: 'keyUp', key: 'k', code: 'KeyK', modifiers: 4,
+    }, sessionId);
+  }
+  const beforeClear = await terminalStates();
+  assert.ok(beforeClear.every(state => state.history > 0));
+  await evaluate(`document.getElementById('other').focus()`);
+  await commandK();
+  const outsideClear = await terminalStates();
+  assert.deepEqual(outsideClear.map(state => state.text), beforeClear.map(state => state.text));
+  assert.deepEqual(outsideClear.map(state => state.history), beforeClear.map(state => state.history));
+  assert.deepEqual(outsideClear.map(state => state.sent), [[], []]);
+  for (const index of [1, 0]) {
+    await evaluate(`(() => {
+      const frames = [...document.querySelectorAll('iframe')];
+      for (const frame of frames) frame.contentWindow.socket.sent.length = 0;
+      const w = frames[${index}].contentWindow;
+      w.focus(); w.term.focus();
+    })()`);
+    await commandK();
+    const states = await terminalStates();
+    assert.equal(states[index].text, '');
+    assert.equal(states[index].history, 0);
+    assert.equal(states[index].focused, true);
+    assert.ok(states.every(state => state.connected));
+    assert.deepEqual(states[index].sent, ['\x0c']);
+    assert.deepEqual(states[1 - index].sent, []);
+    if (index === 1) {
+      assert.equal(states[0].text, beforeClear[0].text);
+      assert.equal(states[0].history, beforeClear[0].history);
+    }
+  }
   const wheelPoint = await evaluate(`(() => {
     const frame = document.querySelector('iframe');
     frame.scrollIntoView();
